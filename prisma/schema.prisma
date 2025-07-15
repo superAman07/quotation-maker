@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js" 
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         Int      @id @default(autoincrement())
+  email      String      @unique
+  name       String?
+  password   String
+  role       Role        @default(Employee)
+  quotations Quotation[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model Quotation {
+  id            String          @id @default(uuid())
+  quotationNo   String          @unique
+  clientName    String
+  clientEmail   String?
+  clientAddress String?
+  items         Json
+  subtotal      Float
+  tax           Float
+  discount      Float?
+  total         Float
+  status        QuotationStatus @default(DRAFT)
+  createdBy     User            @relation(fields: [createdById], references: [id])
+  createdById   Int
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+enum Role {
+  Employee
+  Admin
+}
+
+enum QuotationStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REJECTED
+  CANCELLED
+}
