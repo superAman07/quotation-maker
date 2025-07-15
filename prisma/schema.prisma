@@ -24,16 +24,50 @@ model Quotation {
   clientName    String
   clientEmail   String?
   clientAddress String?
-  items         Json
-  subtotal      Float
-  tax           Float
-  discount      Float?
-  total         Float
-  status        QuotationStatus @default(DRAFT)
-  createdBy     User            @relation(fields: [createdById], references: [id])
-  createdById   Int
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  // ── Travel Details ───────────────────────────────────────────────
+  departureCity    String
+  destinationCity  String
+  departureDate    DateTime
+  returnDate       DateTime?         
+  travelersCount   Int
+
+  // ── Pricing ───────────────────────────────────────────────────────
+  subtotal         Float
+  tax              Float
+  discount         Float?
+  total            Float
+
+  status           QuotationStatus  @default(DRAFT)
+
+  // ── Relations ────────────────────────────────────────────────────
+  createdBy        User             @relation(fields: [createdById], references: [id])
+  createdById      Int
+  itineraryItems   ItineraryItem[]  
+  services         ServiceItem[]    
+
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+model ItineraryItem {
+  id            Int       @id @default(autoincrement())
+  day           Int        
+  description   String
+  date          DateTime
+  cost          Float
+
+  quotation     Quotation @relation(fields: [quotationId], references: [id])
+  quotationId   String
+}
+
+model ServiceItem {
+  id            Int       @id @default(autoincrement())
+  type          ServiceType
+  details       String
+  cost          Float
+
+  quotation     Quotation @relation(fields: [quotationId], references: [id])
+  quotationId   String
 }
 
 enum Role {
@@ -47,4 +81,12 @@ enum QuotationStatus {
   ACCEPTED
   REJECTED
   CANCELLED
+}
+
+enum ServiceType {
+  HOTEL
+  FLIGHT
+  TOUR
+  INSURANCE
+  OTHER
 }
