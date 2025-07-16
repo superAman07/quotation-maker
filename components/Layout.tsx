@@ -16,7 +16,8 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link';
+import Link from 'next/link'; 
+import { getUserFromToken } from '@/lib/getUserFromToken';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -27,6 +28,7 @@ export default function Layout({ children }: LayoutProps) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationCount] = useState(3);
   const [isMobile, setIsMobile] = useState(false);
+  const user = typeof window !== "undefined" ? getUserFromToken() : null;
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -58,7 +60,7 @@ export default function Layout({ children }: LayoutProps) {
   }, [sidebarOpen, isMobile]);
 
   const navigation = [
-    { name: 'Dashboard', href: '/', icon: Home, current: true },
+    { name: 'Dashboard', href: '/user/dashboard', icon: Home, current: true },
     { name: 'New Quotation', href: '/user/dashboard/quotation/new', icon: Plus, current: false },
     { name: 'All Quotations', href: '/user/dashboard/quotations', icon: FileText, current: false },
     { name: 'Settings', href: '/settings', icon: Settings, current: false },
@@ -203,8 +205,8 @@ export default function Layout({ children }: LayoutProps) {
                     <User className="w-4 h-4 text-white" />
                   </div>
                   <div className="hidden sm:block text-left">
-                    <p className="text-sm font-medium text-[#252426]">Sarah Johnson</p>
-                    <p className="text-xs text-gray-500">Employee</p>
+                    <p className="text-sm font-medium text-[#252426]">{user?.name||"User"}</p>
+                    <p className="text-xs text-gray-500">{user?.role}</p>
                   </div>
                   <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
@@ -214,7 +216,7 @@ export default function Layout({ children }: LayoutProps) {
                   <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
                     {/* User info header */}
                     <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="text-sm font-medium text-[#252426]">Sarah Johnson</p>
+                      <p className="text-sm font-medium text-[#252426]">{user?.name||"User"}</p>
                       <p className="text-xs text-gray-500">sarah.johnson@travomine.com</p>
                     </div>
                     
