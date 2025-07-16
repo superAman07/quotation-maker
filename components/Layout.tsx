@@ -59,8 +59,8 @@ export default function Layout({ children }: LayoutProps) {
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: Home, current: true },
-    { name: 'New Quotation', href: '/quotation/new', icon: Plus, current: false },
-    { name: 'All Quotations', href: '/quotations', icon: FileText, current: false },
+    { name: 'New Quotation', href: '/user/dashboard/quotation/new', icon: Plus, current: false },
+    { name: 'All Quotations', href: '/user/dashboard/quotations', icon: FileText, current: false },
     { name: 'Settings', href: '/settings', icon: Settings, current: false },
   ];
 

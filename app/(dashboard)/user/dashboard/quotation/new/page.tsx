@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Layout from '@/components/Layout';
 import jsPDF from 'jspdf';
 import { Plus, Minus, Calendar, MapPin, Users, DollarSign } from 'lucide-react';
+import axios from 'axios';
 
 interface ItineraryItem {
   id: string;
@@ -176,6 +177,49 @@ export default function NewQuotation() {
   const taxAmount = subtotal * (pricing.taxRate / 100);
   const discountAmount = subtotal * (pricing.discount / 100);
   const grandTotal = subtotal + taxAmount - discountAmount;
+
+  const payload = {
+    quotationNo: `Q${Date.now()}`,
+    clientName: clientInfo.name,
+    clientEmail: clientInfo.email,
+    clientAddress: clientInfo.address,
+    departureCity: travelDetails.departureCity,
+    destinationCity: travelDetails.destination,
+    departureDate: travelDetails.departureDate,
+    returnDate: travelDetails.returnDate || null,
+    travelersCount: travelDetails.travelers,
+    subtotal,
+    tax: taxAmount,
+    discount: discountAmount,
+    total: grandTotal,
+    itinerary: itinerary.map(item => ({
+      day: item.day,
+      activity: item.activity,
+      date: item.date,
+      cost: item.cost,
+    })),
+    services: services.map(service => ({
+      type: service.type,
+      details: service.details,
+      cost: service.cost,
+    })),
+    notes: pricing.notes,
+    status: "SENT",
+  };
+
+  const handleSubmitQuotation = async () => {
+    try {
+      const res = await axios.post('/api/user/new-quotation', payload)
+      if (res.status === 201) {
+        alert("Quotation sent successfully!");
+      } else {
+        alert(res.data.error || "Failed to send quotation");
+      }
+    } catch (err: any) {
+      console.error("SEND QUOTATION ERROR:", err);
+      alert(err.response?.data?.error || "Something went wrong");
+    } finally {}
+  }
 
   return (
     <Layout>
@@ -537,7 +581,7 @@ export default function NewQuotation() {
             <button onClick={handlePreviewPDF} className="px-6 py-3 border border-[#6C733D] text-[#6C733D] rounded-lg hover:bg-[#6C733D] hover:text-white transition-colors">
               Preview PDF
             </button>
-            <button className="px-6 py-3 bg-[#6C733D] text-white rounded-lg hover:bg-[#5a5f33] transition-colors">
+            <button onClick={handleSubmitQuotation} className="px-6 py-3 bg-[#6C733D] text-white rounded-lg hover:bg-[#5a5f33] transition-colors">
               Send Quotation
             </button>
           </div>
