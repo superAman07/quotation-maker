@@ -15,6 +15,7 @@ import {
   Search,
   MoreHorizontal
 } from 'lucide-react';
+import Image from 'next/image';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -88,11 +89,8 @@ export default function Layout({ children }: LayoutProps) {
       >
         {/* Sidebar Header */}
         <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 bg-white">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-[#6C733D] to-[#9DA65D] rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">T</span>
-            </div>
-            <h1 className="text-xl font-bold text-[#252426]">Travomine</h1>
+          <div className="flex items-center">
+            <Image src={'/logo.png'} width={200} height={50} alt="Travomine Logo" className="text-xl font-bold text-[#252426]"/>
           </div>
           <button 
             onClick={() => setSidebarOpen(false)}

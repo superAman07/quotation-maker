@@ -67,9 +67,89 @@ export default function NewQuotation() {
 
   function handlePreviewPDF() {
     const doc = new jsPDF();
-    doc.text(`Quotation for ${clientInfo.name}`, 10, 10);
-    doc.text(`Grand Total: $${grandTotal.toFixed(2)}`, 10, 20);
-    // Add more details as needed
+
+    // Add Travomine logo (top right)
+    doc.addImage('/logo.png', 'PNG', 130, 15, 70, 20); // x, y, width, height
+
+    // Header
+    doc.setFontSize(22);
+    doc.setTextColor('#6C733D');
+    doc.text('Quotation', 20, 25);
+
+    doc.setFontSize(12);
+    doc.setTextColor('#252426');
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 35);
+
+    // Client Info
+    doc.setFontSize(14);
+    doc.setTextColor('#252426');
+    doc.text('Client Information', 20, 50);
+    doc.setFontSize(11);
+    doc.text(`Name: ${clientInfo.name}`, 20, 58);
+    doc.text(`Email: ${clientInfo.email}`, 20, 64);
+    doc.text(`Phone: ${clientInfo.phone}`, 20, 70);
+    doc.text(`Address: ${clientInfo.address}`, 20, 76);
+
+    // Travel Details
+    doc.setFontSize(14);
+    doc.text('Travel Details', 20, 90);
+    doc.setFontSize(11);
+    doc.text(`From: ${travelDetails.departureCity}`, 20, 98);
+    doc.text(`To: ${travelDetails.destination}`, 20, 104);
+    doc.text(`Departure: ${travelDetails.departureDate}`, 20, 110);
+    doc.text(`Return: ${travelDetails.returnDate || '-'}`, 20, 116);
+    doc.text(`Travelers: ${travelDetails.travelers}`, 20, 122);
+
+    // Itinerary Table
+    doc.setFontSize(14);
+    doc.text('Itinerary', 20, 136);
+    doc.setFontSize(11);
+    let y = 142;
+    itinerary.forEach((item, idx) => {
+      doc.text(`Day ${item.day}: ${item.activity} (${item.date}) - $${item.cost.toFixed(2)}`, 22, y);
+      y += 6;
+    });
+
+    // Additional Services
+    doc.setFontSize(14);
+    doc.text('Additional Services', 20, y + 8);
+    doc.setFontSize(11);
+    y += 14;
+    services.forEach(service => {
+      doc.text(`${service.type}: ${service.details} - $${service.cost.toFixed(2)}`, 22, y);
+      y += 6;
+    });
+
+    // Pricing Summary
+    y += 10;
+    doc.setFontSize(14);
+    doc.text('Pricing Summary', 20, y);
+    doc.setFontSize(11);
+    y += 8;
+    doc.text(`Subtotal: $${subtotal.toFixed(2)}`, 22, y);
+    y += 6;
+    doc.text(`Tax (${pricing.taxRate}%): $${taxAmount.toFixed(2)}`, 22, y);
+    y += 6;
+    doc.text(`Discount (${pricing.discount}%): -$${discountAmount.toFixed(2)}`, 22, y);
+    y += 6;
+    doc.setFontSize(13);
+    doc.setTextColor('#6C733D');
+    doc.text(`Grand Total: $${grandTotal.toFixed(2)}`, 22, y);
+
+    // Notes
+    y += 12;
+    doc.setFontSize(11);
+    doc.setTextColor('#252426');
+    doc.text('Notes & Terms:', 20, y);
+    y += 6;
+    doc.setFontSize(10);
+    doc.text(pricing.notes || '-', 22, y);
+
+    // Footer
+    doc.setFontSize(10);
+    doc.setTextColor('#888');
+    doc.text('Thank you for choosing Travomine!', 20, 280);
+
     doc.save('quotation.pdf');
   }
   const addService = () => {
@@ -113,7 +193,7 @@ export default function NewQuotation() {
                   type="text"
                   className="w-full px-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                   value={clientInfo.name}
-                  onChange={(e) => setClientInfo({...clientInfo, name: e.target.value})}
+                  onChange={(e) => setClientInfo({ ...clientInfo, name: e.target.value })}
                 />
               </div>
               <div>
@@ -122,7 +202,7 @@ export default function NewQuotation() {
                   type="email"
                   className="w-full px-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                   value={clientInfo.email}
-                  onChange={(e) => setClientInfo({...clientInfo, email: e.target.value})}
+                  onChange={(e) => setClientInfo({ ...clientInfo, email: e.target.value })}
                 />
               </div>
               <div>
@@ -131,7 +211,7 @@ export default function NewQuotation() {
                   type="tel"
                   className="w-full px-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                   value={clientInfo.phone}
-                  onChange={(e) => setClientInfo({...clientInfo, phone: e.target.value})}
+                  onChange={(e) => setClientInfo({ ...clientInfo, phone: e.target.value })}
                 />
               </div>
               <div>
@@ -140,7 +220,7 @@ export default function NewQuotation() {
                   className="w-full px-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                   rows={3}
                   value={clientInfo.address}
-                  onChange={(e) => setClientInfo({...clientInfo, address: e.target.value})}
+                  onChange={(e) => setClientInfo({ ...clientInfo, address: e.target.value })}
                 />
               </div>
             </div>
@@ -158,7 +238,7 @@ export default function NewQuotation() {
                     type="text"
                     className="w-full pl-10 text-gray-700 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                     value={travelDetails.departureCity}
-                    onChange={(e) => setTravelDetails({...travelDetails, departureCity: e.target.value})}
+                    onChange={(e) => setTravelDetails({ ...travelDetails, departureCity: e.target.value })}
                   />
                 </div>
               </div>
@@ -170,7 +250,7 @@ export default function NewQuotation() {
                     type="text"
                     className="w-full pl-10 pr-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                     value={travelDetails.destination}
-                    onChange={(e) => setTravelDetails({...travelDetails, destination: e.target.value})}
+                    onChange={(e) => setTravelDetails({ ...travelDetails, destination: e.target.value })}
                   />
                 </div>
               </div>
@@ -183,7 +263,7 @@ export default function NewQuotation() {
                     min="1"
                     className="w-full pl-10 pr-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                     value={travelDetails.travelers}
-                    onChange={(e) => setTravelDetails({...travelDetails, travelers: parseInt(e.target.value)})}
+                    onChange={(e) => setTravelDetails({ ...travelDetails, travelers: parseInt(e.target.value) })}
                   />
                 </div>
               </div>
@@ -195,7 +275,7 @@ export default function NewQuotation() {
                     type="date"
                     className="w-full pl-10 pr-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                     value={travelDetails.departureDate}
-                    onChange={(e) => setTravelDetails({...travelDetails, departureDate: e.target.value})}
+                    onChange={(e) => setTravelDetails({ ...travelDetails, departureDate: e.target.value })}
                   />
                 </div>
               </div>
@@ -207,7 +287,7 @@ export default function NewQuotation() {
                     type="date"
                     className="w-full pl-10 pr-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                     value={travelDetails.returnDate}
-                    onChange={(e) => setTravelDetails({...travelDetails, returnDate: e.target.value})}
+                    onChange={(e) => setTravelDetails({ ...travelDetails, returnDate: e.target.value })}
                   />
                 </div>
               </div>
@@ -243,8 +323,8 @@ export default function NewQuotation() {
                         className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                         value={item.activity}
                         onChange={(e) => {
-                          const updated = itinerary.map(i => 
-                            i.id === item.id ? {...i, activity: e.target.value} : i
+                          const updated = itinerary.map(i =>
+                            i.id === item.id ? { ...i, activity: e.target.value } : i
                           );
                           setItinerary(updated);
                         }}
@@ -257,8 +337,8 @@ export default function NewQuotation() {
                         className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                         value={item.date}
                         onChange={(e) => {
-                          const updated = itinerary.map(i => 
-                            i.id === item.id ? {...i, date: e.target.value} : i
+                          const updated = itinerary.map(i =>
+                            i.id === item.id ? { ...i, date: e.target.value } : i
                           );
                           setItinerary(updated);
                         }}
@@ -275,8 +355,8 @@ export default function NewQuotation() {
                           className="w-full pl-10 pr-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                           value={item.cost}
                           onChange={(e) => {
-                            const updated = itinerary.map(i => 
-                              i.id === item.id ? {...i, cost: parseFloat(e.target.value) || 0} : i
+                            const updated = itinerary.map(i =>
+                              i.id === item.id ? { ...i, cost: parseFloat(e.target.value) || 0 } : i
                             );
                             setItinerary(updated);
                           }}
@@ -320,8 +400,8 @@ export default function NewQuotation() {
                         className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                         value={service.type}
                         onChange={(e) => {
-                          const updated = services.map(s => 
-                            s.id === service.id ? {...s, type: e.target.value} : s
+                          const updated = services.map(s =>
+                            s.id === service.id ? { ...s, type: e.target.value } : s
                           );
                           setServices(updated);
                         }}
@@ -341,8 +421,8 @@ export default function NewQuotation() {
                         className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                         value={service.details}
                         onChange={(e) => {
-                          const updated = services.map(s => 
-                            s.id === service.id ? {...s, details: e.target.value} : s
+                          const updated = services.map(s =>
+                            s.id === service.id ? { ...s, details: e.target.value } : s
                           );
                           setServices(updated);
                         }}
@@ -359,8 +439,8 @@ export default function NewQuotation() {
                           className="w-full pl-10 pr-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                           value={service.cost}
                           onChange={(e) => {
-                            const updated = services.map(s => 
-                              s.id === service.id ? {...s, cost: parseFloat(e.target.value) || 0} : s
+                            const updated = services.map(s =>
+                              s.id === service.id ? { ...s, cost: parseFloat(e.target.value) || 0 } : s
                             );
                             setServices(updated);
                           }}
@@ -395,7 +475,7 @@ export default function NewQuotation() {
                       step="0.1"
                       className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                       value={pricing.taxRate}
-                      onChange={(e) => setPricing({...pricing, taxRate: parseFloat(e.target.value) || 0})}
+                      onChange={(e) => setPricing({ ...pricing, taxRate: parseFloat(e.target.value) || 0 })}
                     />
                   </div>
                   <div>
@@ -407,7 +487,7 @@ export default function NewQuotation() {
                       step="0.1"
                       className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                       value={pricing.discount}
-                      onChange={(e) => setPricing({...pricing, discount: parseFloat(e.target.value) || 0})}
+                      onChange={(e) => setPricing({ ...pricing, discount: parseFloat(e.target.value) || 0 })}
                     />
                   </div>
                 </div>
@@ -443,7 +523,7 @@ export default function NewQuotation() {
               rows={4}
               placeholder="Enter any special instructions, terms, or conditions..."
               value={pricing.notes}
-              onChange={(e) => setPricing({...pricing, notes: e.target.value})}
+              onChange={(e) => setPricing({ ...pricing, notes: e.target.value })}
             />
           </section>
         </div>
