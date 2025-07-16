@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Layout from '@/components/Layout';
+import jsPDF from 'jspdf';
 import { Plus, Minus, Calendar, MapPin, Users, DollarSign } from 'lucide-react';
 
 interface ItineraryItem {
@@ -64,6 +65,13 @@ export default function NewQuotation() {
     setItinerary(itinerary.filter(item => item.id !== id));
   };
 
+  function handlePreviewPDF() {
+    const doc = new jsPDF();
+    doc.text(`Quotation for ${clientInfo.name}`, 10, 10);
+    doc.text(`Grand Total: $${grandTotal.toFixed(2)}`, 10, 20);
+    // Add more details as needed
+    doc.save('quotation.pdf');
+  }
   const addService = () => {
     const newService: AdditionalService = {
       id: Date.now().toString(),
@@ -103,7 +111,7 @@ export default function NewQuotation() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Client Name</label>
                 <input
                   type="text"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                  className="w-full px-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                   value={clientInfo.name}
                   onChange={(e) => setClientInfo({...clientInfo, name: e.target.value})}
                 />
@@ -112,7 +120,7 @@ export default function NewQuotation() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
                 <input
                   type="email"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                  className="w-full px-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                   value={clientInfo.email}
                   onChange={(e) => setClientInfo({...clientInfo, email: e.target.value})}
                 />
@@ -121,7 +129,7 @@ export default function NewQuotation() {
                 <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
                 <input
                   type="tel"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                  className="w-full px-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                   value={clientInfo.phone}
                   onChange={(e) => setClientInfo({...clientInfo, phone: e.target.value})}
                 />
@@ -129,7 +137,7 @@ export default function NewQuotation() {
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Billing Address</label>
                 <textarea
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                  className="w-full px-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                   rows={3}
                   value={clientInfo.address}
                   onChange={(e) => setClientInfo({...clientInfo, address: e.target.value})}
@@ -148,7 +156,7 @@ export default function NewQuotation() {
                   <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="text"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                    className="w-full pl-10 text-gray-700 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                     value={travelDetails.departureCity}
                     onChange={(e) => setTravelDetails({...travelDetails, departureCity: e.target.value})}
                   />
@@ -160,7 +168,7 @@ export default function NewQuotation() {
                   <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="text"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                    className="w-full pl-10 pr-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                     value={travelDetails.destination}
                     onChange={(e) => setTravelDetails({...travelDetails, destination: e.target.value})}
                   />
@@ -173,7 +181,7 @@ export default function NewQuotation() {
                   <input
                     type="number"
                     min="1"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                    className="w-full pl-10 pr-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                     value={travelDetails.travelers}
                     onChange={(e) => setTravelDetails({...travelDetails, travelers: parseInt(e.target.value)})}
                   />
@@ -185,7 +193,7 @@ export default function NewQuotation() {
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="date"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                    className="w-full pl-10 pr-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                     value={travelDetails.departureDate}
                     onChange={(e) => setTravelDetails({...travelDetails, departureDate: e.target.value})}
                   />
@@ -197,7 +205,7 @@ export default function NewQuotation() {
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input
                     type="date"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                    className="w-full pl-10 pr-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                     value={travelDetails.returnDate}
                     onChange={(e) => setTravelDetails({...travelDetails, returnDate: e.target.value})}
                   />
@@ -232,7 +240,7 @@ export default function NewQuotation() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Activity Description</label>
                       <input
                         type="text"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                        className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                         value={item.activity}
                         onChange={(e) => {
                           const updated = itinerary.map(i => 
@@ -246,7 +254,7 @@ export default function NewQuotation() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
                       <input
                         type="date"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                        className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                         value={item.date}
                         onChange={(e) => {
                           const updated = itinerary.map(i => 
@@ -264,7 +272,7 @@ export default function NewQuotation() {
                           type="number"
                           min="0"
                           step="0.01"
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                          className="w-full pl-10 pr-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                           value={item.cost}
                           onChange={(e) => {
                             const updated = itinerary.map(i => 
@@ -309,7 +317,7 @@ export default function NewQuotation() {
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Service Type</label>
                       <select
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                        className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                         value={service.type}
                         onChange={(e) => {
                           const updated = services.map(s => 
@@ -330,7 +338,7 @@ export default function NewQuotation() {
                       <label className="block text-sm font-medium text-gray-700 mb-1">Details</label>
                       <input
                         type="text"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                        className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                         value={service.details}
                         onChange={(e) => {
                           const updated = services.map(s => 
@@ -348,7 +356,7 @@ export default function NewQuotation() {
                           type="number"
                           min="0"
                           step="0.01"
-                          className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                          className="w-full pl-10 pr-3 text-gray-700 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                           value={service.cost}
                           onChange={(e) => {
                             const updated = services.map(s => 
@@ -385,7 +393,7 @@ export default function NewQuotation() {
                       min="0"
                       max="100"
                       step="0.1"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                      className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                       value={pricing.taxRate}
                       onChange={(e) => setPricing({...pricing, taxRate: parseFloat(e.target.value) || 0})}
                     />
@@ -397,7 +405,7 @@ export default function NewQuotation() {
                       min="0"
                       max="100"
                       step="0.1"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                      className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                       value={pricing.discount}
                       onChange={(e) => setPricing({...pricing, discount: parseFloat(e.target.value) || 0})}
                     />
@@ -406,15 +414,15 @@ export default function NewQuotation() {
                 <div className="space-y-3">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal:</span>
-                    <span className="font-medium">${subtotal.toFixed(2)}</span>
+                    <span className="font-medium text-gray-700">${subtotal.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Tax ({pricing.taxRate}%):</span>
-                    <span className="font-medium">${taxAmount.toFixed(2)}</span>
+                    <span className="font-medium text-gray-700">${taxAmount.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Discount ({pricing.discount}%):</span>
-                    <span className="font-medium text-red-600">-${discountAmount.toFixed(2)}</span>
+                    <span className="font-medium text-red-600 ">-${discountAmount.toFixed(2)}</span>
                   </div>
                   <div className="border-t pt-3">
                     <div className="flex justify-between">
@@ -431,7 +439,7 @@ export default function NewQuotation() {
           <section className="mb-8">
             <h2 className="text-xl font-bold text-[#252426] mb-4 border-b-2 border-[#9DA65D] pb-2">Notes & Terms</h2>
             <textarea
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+              className="w-full px-3 py-2 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
               rows={4}
               placeholder="Enter any special instructions, terms, or conditions..."
               value={pricing.notes}
@@ -446,7 +454,7 @@ export default function NewQuotation() {
             <button className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
               Save Draft
             </button>
-            <button className="px-6 py-3 border border-[#6C733D] text-[#6C733D] rounded-lg hover:bg-[#6C733D] hover:text-white transition-colors">
+            <button onClick={handlePreviewPDF} className="px-6 py-3 border border-[#6C733D] text-[#6C733D] rounded-lg hover:bg-[#6C733D] hover:text-white transition-colors">
               Preview PDF
             </button>
             <button className="px-6 py-3 bg-[#6C733D] text-white rounded-lg hover:bg-[#5a5f33] transition-colors">

@@ -81,7 +81,7 @@ export default function Dashboard() {
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4">
           <a 
-            href="/quotation/new" 
+            href="/user/dashboard/quotation/new" 
             className="bg-[#6C733D] hover:bg-[#5a5f33] text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 justify-center"
           >
             <Plus className="w-5 h-5" />
