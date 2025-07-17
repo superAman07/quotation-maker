@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
+import {
   Menu,
   X,
   Home,
@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link'; 
-import { getUserFromToken } from '@/lib/getUserFromToken';
+import axios from 'axios';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -27,17 +27,24 @@ export default function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationCount] = useState(3);
-  const [isMobile, setIsMobile] = useState(false);
-  const user = typeof window !== "undefined" ? getUserFromToken() : null;
+  const [isMobile, setIsMobile] = useState(false); 
+  const [user, setUser] = useState<{ name?: string; email?: string; role?: string } | null>(null)
+  useEffect(() => {
+    try {
+      axios.get('/api/user/me')
+        .then(res => setUser(res.data.user))
+        .catch(() => setUser(null));
+    } catch { }
+  }, [])
 
   useEffect(() => {
     const checkScreenSize = () => {
       setIsMobile(window.innerWidth < 1024);
     };
-    
+
     checkScreenSize();
     window.addEventListener('resize', checkScreenSize);
-    
+
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
 
@@ -47,9 +54,9 @@ export default function Layout({ children }: LayoutProps) {
       if (sidebarOpen && isMobile) {
         const sidebar = document.getElementById('sidebar');
         const menuButton = document.getElementById('menu-button');
-        
-        if (sidebar && !sidebar.contains(event.target as Node) && 
-            menuButton && !menuButton.contains(event.target as Node)) {
+
+        if (sidebar && !sidebar.contains(event.target as Node) &&
+          menuButton && !menuButton.contains(event.target as Node)) {
           setSidebarOpen(false);
         }
       }
@@ -73,53 +80,55 @@ export default function Layout({ children }: LayoutProps) {
     { name: 'Support', href: '/support' },
   ];
 
+  async function handleLogout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.href = "/user/auth/login";
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && isMobile && (
-        <div 
+        <div
           className="fixed inset-0 bg-black/50 z-40 transition-opacity duration-300"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <div 
+      <div
         id="sidebar"
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-xl border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${
-          sidebarOpen || !isMobile ? 'translate-x-0' : '-translate-x-full'
-        } lg:translate-x-0`}
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-xl border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${sidebarOpen || !isMobile ? 'translate-x-0' : '-translate-x-full'
+          } lg:translate-x-0`}
       >
         {/* Sidebar Header */}
         <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 bg-white">
           <div className="flex items-center">
             <Link href={'/user/dashboard'}>
-              <Image src={'/logo.png'} width={200} height={50} alt="Travomine Logo" className="text-xl font-bold text-[#252426]"/>
+              <Image src={'/logo.png'} width={200} height={50} alt="Travomine Logo" className="text-xl font-bold text-[#252426]" />
             </Link>
           </div>
-          <button 
+          <button
             onClick={() => setSidebarOpen(false)}
             className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
           >
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
-        
+
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6 space-y-2">
           {navigation.map((item) => (
             <a
               key={item.name}
               href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group ${
-                item.current
-                  ? 'bg-[#6C733D] text-white shadow-lg'
-                  : 'text-gray-700 hover:bg-gray-100 hover:text-[#6C733D]'
-              }`}
+              className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group ${item.current
+                ? 'bg-[#6C733D] text-white shadow-lg'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-[#6C733D]'
+                }`}
             >
-              <item.icon className={`w-5 h-5 transition-colors ${
-                item.current ? 'text-white' : 'text-gray-500 group-hover:text-[#6C733D]'
-              }`} />
+              <item.icon className={`w-5 h-5 transition-colors ${item.current ? 'text-white' : 'text-gray-500 group-hover:text-[#6C733D]'
+                }`} />
               <span>{item.name}</span>
             </a>
           ))}
@@ -151,7 +160,7 @@ export default function Layout({ children }: LayoutProps) {
               >
                 <Menu className="w-5 h-5 text-gray-600" />
               </button>
-              
+
               {/* Search - Hidden on mobile, visible on tablet+ */}
               <div className="hidden md:block">
                 <div className="relative">
@@ -164,7 +173,7 @@ export default function Layout({ children }: LayoutProps) {
                 </div>
               </div>
             </div>
-            
+
             {/* Right side */}
             <div className="flex items-center gap-3">
               {/* Mobile search button */}
@@ -194,10 +203,10 @@ export default function Layout({ children }: LayoutProps) {
                   )}
                 </button>
               </div>
-              
+
               {/* User menu */}
               <div className="relative">
-                <button 
+                <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex items-center gap-2 h-10 px-2 rounded-lg hover:bg-gray-100 transition-colors"
                 >
@@ -205,21 +214,21 @@ export default function Layout({ children }: LayoutProps) {
                     <User className="w-4 h-4 text-white" />
                   </div>
                   <div className="hidden sm:block text-left">
-                    <p className="text-sm font-medium text-[#252426]">{user?.name||"User"}</p>
+                    <p className="text-sm font-medium text-[#252426]">{user?.name || "User"}</p>
                     <p className="text-xs text-gray-500">{user?.role}</p>
                   </div>
                   <ChevronDown className={`w-4 h-4 text-gray-500 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
-                
+
                 {/* User dropdown */}
                 {userMenuOpen && (
                   <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
                     {/* User info header */}
                     <div className="px-4 py-3 border-b border-gray-100">
-                      <p className="text-sm font-medium text-[#252426]">{user?.name||"User"}</p>
-                      <p className="text-xs text-gray-500">sarah.johnson@travomine.com</p>
+                      <p className="text-sm font-medium text-[#252426]">{user?.name || "User"}</p>
+                      <p className="text-xs text-gray-500">{user?.email || "Null"}</p>
                     </div>
-                    
+
                     {/* Navigation items */}
                     <div className="py-2">
                       {userNavigation.map((item) => (
@@ -232,10 +241,10 @@ export default function Layout({ children }: LayoutProps) {
                         </a>
                       ))}
                     </div>
-                    
+
                     {/* Logout */}
                     <div className="border-t border-gray-100 pt-2">
-                      <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-600 transition-colors flex items-center gap-2">
+                      <button onClick={handleLogout} className="w-full cursor-pointer text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-600 transition-colors flex items-center gap-2">
                         <LogOut className="w-4 h-4" />
                         Sign out
                       </button>

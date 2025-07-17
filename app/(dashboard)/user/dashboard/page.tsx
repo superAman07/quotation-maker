@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import { 
   FileText, 
@@ -11,6 +11,7 @@ import {
   Users,
   Calendar
 } from 'lucide-react';
+import axios from 'axios';
 
 export default function Dashboard() {
   const [stats] = useState({
@@ -26,12 +27,22 @@ export default function Dashboard() {
     { id: 'Q003', client: 'Mike Wilson', destination: 'London', amount: 1800, status: 'Approved' },
   ];
 
+  const [user,setUser] = useState<{ name?: string; email?: string; role?: string } | null>(null);
+
+  useEffect(()=>{
+    try{
+      axios.get("/api/user/me")
+      .then(res => setUser(res.data.user))
+      .catch(()=>setUser(null));
+    }catch{}
+  },[])
+
   return (
     <Layout>
       <div className="space-y-6">
         {/* Welcome Banner */}
         <div className="bg-gradient-to-r from-[#6C733D] to-[#9DA65D] text-white p-6 rounded-2xl">
-          <h1 className="text-2xl md:text-3xl font-bold mb-2">Welcome back, Sarah!</h1>
+          <h1 className="text-2xl md:text-3xl font-bold mb-2">Welcome back, {user?.name}!</h1>
           <p className="text-green-100">Ready to create amazing travel experiences?</p>
         </div>
 
