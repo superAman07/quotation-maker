@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js" 
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
+  id         Int         @id @default(autoincrement())
   email      String      @unique
   name       String?
   password   String
@@ -19,28 +19,35 @@ model User {
 }
 
 model Quotation {
-  id               String           @id @default(uuid())
-  quotationNo      String           @unique
+  id               String   @id @default(uuid())
+  quotationNo      String   @unique
   travelDate       DateTime
   groupSize        Int
   mealPlan         String?
   vehicleUsed      String?
+  localVehicleUsed String?
   flightCost       Float?
   flightImageUrl   String?
   landCostPerHead  Float?
   totalPerHead     Float?
   totalGroupCost   Float?
+  clientPhone      String?
+  clientName       String?
+  clientEmail      String?
+  clientAddress    String?
 
-  accommodation    Accommodation[]  
-  itinerary        ItineraryItem[]  
-  inclusions       Inclusion[]      
-  exclusions       Exclusion[]      
+  notes String?
 
-  createdBy        User             @relation(fields: [createdById], references: [id])
-  createdById      Int
-  status           QuotationStatus  @default(DRAFT)
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  accommodation Accommodation[]
+  itinerary     ItineraryItem[]
+  inclusions    Inclusion[]
+  exclusions    Exclusion[]
+
+  createdBy   User            @relation(fields: [createdById], references: [id])
+  createdById Int
+  status      QuotationStatus @default(DRAFT)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 }
 
 model Accommodation {
