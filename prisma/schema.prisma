@@ -30,6 +30,12 @@ model Quotation {
   landCostPerHead  Float?
   totalPerHead     Float?
   totalGroupCost   Float?
+  clientPhone      String?
+  clientName       String?      
+  clientEmail      String?      
+  clientAddress    String?  
+
+  notes            String?
 
   accommodation    Accommodation[]  
   itinerary        ItineraryItem[]  

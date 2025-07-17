@@ -182,6 +182,40 @@ export default function QuotationForm() {
     }));
   }, [costing.landCostPerPerson, travelSummary.flightCostPerPerson, travelSummary.groupSize]);
 
+  function generateQuotationNo() {
+    // Example: QTN-20240610-123456
+    const now = new Date();
+    const date = now.toISOString().slice(0, 10).replace(/-/g, '');
+    const rand = Math.floor(100000 + Math.random() * 900000);
+    return `QTN-${date}-${rand}`;
+  }
+  const payload = {
+    quotationNo: generateQuotationNo(),
+    travelDate: travelSummary.dateOfTravel,
+    groupSize: travelSummary.groupSize,
+    mealPlan: travelSummary.mealPlan,
+    vehicleUsed: travelSummary.vehicleUsed,
+    flightCost: travelSummary.flightCostPerPerson,
+    flightImageUrl: travelSummary.flightImageUrl,
+    landCostPerHead: costing.landCostPerPerson,
+    totalPerHead: costing.totalCostPerPerson,
+    totalGroupCost: costing.totalGroupCost,
+    clientPhone: clientInfo.phone,
+    accommodation: accommodations.map(acc => ({
+      location: acc.location,
+      hotelName: acc.hotelName,
+      nights: acc.numberOfNights,
+    })),
+    itinerary: itinerary.map(item => ({
+      dayTitle: item.dayTitle,
+      description: item.description,
+    })),
+    inclusions: inclusions.filter(Boolean).map(item => ({ item })),
+    exclusions: exclusions.filter(Boolean).map(item => ({ item })),
+    notes,
+    status: "SENT"
+  };
+
   return (
     <Layout>
       <div className="min-h-screen bg-gray-50">
