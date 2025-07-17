@@ -266,6 +266,7 @@ export default function QuotationForm() {
                       value={clientInfo.name}
                       onChange={(e) => setClientInfo(prev => ({ ...prev, name: e.target.value }))}
                       className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                      placeholder="e.g. Joe Smith"
                     />
                   </div>
                   <div>
@@ -276,6 +277,7 @@ export default function QuotationForm() {
                       value={clientInfo.email}
                       onChange={(e) => setClientInfo(prev => ({ ...prev, email: e.target.value }))}
                       className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                      placeholder="e.g. aman@email.com"
                     />
                   </div>
                 </div>
@@ -288,6 +290,7 @@ export default function QuotationForm() {
                       value={clientInfo.phone}
                       onChange={(e) => setClientInfo(prev => ({ ...prev, phone: e.target.value }))}
                       className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                      placeholder="e.g. +91 98765 43210"
                     />
                   </div>
                   <div>
@@ -298,6 +301,7 @@ export default function QuotationForm() {
                       value={clientInfo.address}
                       onChange={(e) => setClientInfo(prev => ({ ...prev, address: e.target.value }))}
                       className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                      placeholder="e.g. 123, Main Street, Lucknow"
                     />
                   </div>
                 </div>
@@ -322,12 +326,13 @@ export default function QuotationForm() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Local Vehicle Used</label>
-                    <input
+                    <Label className="text-gray-700 font-medium">Local Vehicle Used</Label>
+                    <Input
                       type="text"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
                       value={travelSummary.localVehicleUsed}
                       onChange={e => setTravelSummary({ ...travelSummary, localVehicleUsed: e.target.value })}
+                      placeholder="e.g. Innova, Tempo Traveller"
                     />
                   </div>
                   <div>
@@ -348,6 +353,7 @@ export default function QuotationForm() {
                       value={travelSummary.mealPlan}
                       onChange={(e) => setTravelSummary(prev => ({ ...prev, mealPlan: e.target.value }))}
                       className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                      placeholder="e.g. MAP (Breakfast + Dinner)"
                     />
                   </div>
                 </div>
@@ -359,6 +365,7 @@ export default function QuotationForm() {
                       value={travelSummary.vehicleUsed}
                       onChange={(e) => setTravelSummary(prev => ({ ...prev, vehicleUsed: e.target.value }))}
                       className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                      placeholder="e.g. Air India Flight AI-123"
                     />
                   </div>
                   <div>
@@ -370,6 +377,7 @@ export default function QuotationForm() {
                       value={travelSummary.flightCostPerPerson}
                       onChange={(e) => setTravelSummary(prev => ({ ...prev, flightCostPerPerson: parseFloat(e.target.value) || 0 }))}
                       className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                      placeholder="e.g. 12000"
                     />
                   </div>
                 </div>
