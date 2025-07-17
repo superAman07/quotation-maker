@@ -4,11 +4,12 @@ import axios from "axios";
 
 interface LoginForm {
     email: string;
-    password: string;
+    password: string; 
 }
 
 interface LoginResponse {
     error?: string;
+    role?: string;
 }
 
 export default function Login() {
@@ -24,7 +25,11 @@ export default function Login() {
         try {
             const res = await axios.post<LoginResponse>('/api/auth/login', form as LoginForm);
             if (res.status === 200) {
-                window.location.href = '/user/dashboard'; 
+                if (res.data.role === 'Employee') {
+                    window.location.href = '/user/dashboard';
+                } else {
+                    setError("Only user can log in here.");
+                }
             } else {
                 const error = res.data.error;
                 setError(error || "Login failed");
@@ -62,7 +67,7 @@ export default function Login() {
                                 placeholder="Enter your email"
                                 value={form.email}
                                 onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors placeholder-gray-400"
+                                className="w-full px-4 py-3 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors placeholder-gray-400"
                                 required
                             />
                         </div>
@@ -77,7 +82,7 @@ export default function Login() {
                                 placeholder="Enter your password"
                                 value={form.password}
                                 onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors placeholder-gray-400"
+                                className="w-full px-4 py-3 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors placeholder-gray-400"
                                 required
                             />
                         </div>

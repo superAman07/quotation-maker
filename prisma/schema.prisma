@@ -19,21 +19,59 @@ model User {
 }
 
 model Quotation {
-  id            String          @id @default(uuid())
-  quotationNo   String          @unique
-  clientName    String
-  clientEmail   String?
-  clientAddress String?
-  items         Json
-  subtotal      Float
-  tax           Float
-  discount      Float?
-  total         Float
-  status        QuotationStatus @default(DRAFT)
-  createdBy     User            @relation(fields: [createdById], references: [id])
-  createdById   Int
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  id               String           @id @default(uuid())
+  quotationNo      String           @unique
+  travelDate       DateTime
+  groupSize        Int
+  mealPlan         String?
+  vehicleUsed      String?
+  flightCost       Float?
+  flightImageUrl   String?
+  landCostPerHead  Float?
+  totalPerHead     Float?
+  totalGroupCost   Float?
+
+  accommodation    Accommodation[]  
+  itinerary        ItineraryItem[]  
+  inclusions       Inclusion[]      
+  exclusions       Exclusion[]      
+
+  createdBy        User             @relation(fields: [createdById], references: [id])
+  createdById      Int
+  status           QuotationStatus  @default(DRAFT)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+}
+
+model Accommodation {
+  id          Int       @id @default(autoincrement())
+  location    String
+  hotelName   String
+  nights      Int
+  quotation   Quotation @relation(fields: [quotationId], references: [id])
+  quotationId String
+}
+
+model ItineraryItem {
+  id          Int       @id @default(autoincrement())
+  dayTitle    String
+  description String
+  quotation   Quotation @relation(fields: [quotationId], references: [id])
+  quotationId String
+}
+
+model Inclusion {
+  id          Int       @id @default(autoincrement())
+  item        String
+  quotation   Quotation @relation(fields: [quotationId], references: [id])
+  quotationId String
+}
+
+model Exclusion {
+  id          Int       @id @default(autoincrement())
+  item        String
+  quotation   Quotation @relation(fields: [quotationId], references: [id])
+  quotationId String
 }
 
 enum Role {
@@ -47,4 +85,12 @@ enum QuotationStatus {
   ACCEPTED
   REJECTED
   CANCELLED
+}
+
+enum ServiceType {
+  HOTEL
+  FLIGHT
+  TOUR
+  INSURANCE
+  OTHER
 }
