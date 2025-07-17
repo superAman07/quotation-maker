@@ -157,15 +157,23 @@ export default function QuotationForm() {
     setExclusions(updated);
   };
 
-  const handleFlightImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFlightImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFlightImage(file);
-      const reader = new FileReader();
-      reader.onload = () => {
-        setFlightImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      setFlightImagePreview(data.url);
+      // setFlightImage(file);
+      // const reader = new FileReader();
+      // reader.onload = () => {
+      //   setFlightImagePreview(reader.result as string);
+      // };
+      // reader.readAsDataURL(file);
     }
   };
 
@@ -207,7 +215,8 @@ export default function QuotationForm() {
     vehicleUsed: travelSummary.vehicleUsed,
     localVehicleUsed: travelSummary.localVehicleUsed,
     flightCost: travelSummary.flightCostPerPerson,
-    flightImageUrl: travelSummary.flightImageUrl,
+    // flightImageUrl: travelSummary.flightImageUrl,
+    flightImageUrl: flightImagePreview,
     landCostPerHead: costing.landCostPerPerson,
     totalPerHead: costing.totalCostPerPerson,
     totalGroupCost: costing.totalGroupCost,

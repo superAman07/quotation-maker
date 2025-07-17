@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
             },
         });
 
-        return NextResponse.json({ message: "Quotation created", quotation }, { status: 201 });
+        return NextResponse.json({ message: "Quotation created", quotation ,status: 201});
     } catch (error) {
         console.error("QUOTATION CREATE ERROR:", error);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });

@@ -519,8 +519,8 @@ export function QuotationPDF({ payload }: any) {
                 <View style={styles.contentContainer}>
                     {/* Greeting */}
                     <View style={styles.greetingContainer}>
-                        <Text style={styles.greetingText}>
-                            <Text style={styles.greetingHighlight}>Greeting From Travomine. </Text>
+                        <Text style={styles.greetingText}>Greeting From 
+                            <Text style={styles.greetingHighlight}> Travomine</Text>.
                             At Travomine Leisure Pvt. Ltd., we don't just plan trips — we craft experiences. Every detail is curated to ensure your {location} adventure is nothing short of magical. From soaring mountain passes to tranquil blue lakes, prepare to be mesmerized by the raw beauty and timeless culture of this Himalayan paradise. Let's begin your unforgettable journey!
                         </Text>
                     </View>
