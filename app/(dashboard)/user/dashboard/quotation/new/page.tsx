@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Plus, Trash2, Upload, X } from 'lucide-react';
 import Layout from '@/components/Layout';
+import axios from 'axios';
 
 interface ClientInfo {
   name: string;
@@ -22,6 +23,7 @@ interface TravelSummary {
   groupSize: number;
   mealPlan: string;
   vehicleUsed: string;
+  localVehicleUsed: string;
   flightCostPerPerson: number;
   flightImageUrl: string;
 }
@@ -59,6 +61,7 @@ export default function QuotationForm() {
     groupSize: 1,
     mealPlan: '',
     vehicleUsed: '',
+    localVehicleUsed: '',
     flightCostPerPerson: 0,
     flightImageUrl: ''
   });
@@ -183,7 +186,6 @@ export default function QuotationForm() {
   }, [costing.landCostPerPerson, travelSummary.flightCostPerPerson, travelSummary.groupSize]);
 
   function generateQuotationNo() {
-    // Example: QTN-20240610-123456
     const now = new Date();
     const date = now.toISOString().slice(0, 10).replace(/-/g, '');
     const rand = Math.floor(100000 + Math.random() * 900000);
@@ -191,16 +193,22 @@ export default function QuotationForm() {
   }
   const payload = {
     quotationNo: generateQuotationNo(),
+    clientName: clientInfo.name,
+    clientEmail: clientInfo.email,
+    clientPhone: clientInfo.phone,
+    clientAddress: clientInfo.address,
     travelDate: travelSummary.dateOfTravel,
     groupSize: travelSummary.groupSize,
     mealPlan: travelSummary.mealPlan,
     vehicleUsed: travelSummary.vehicleUsed,
+    localVehicleUsed: travelSummary.localVehicleUsed,
     flightCost: travelSummary.flightCostPerPerson,
     flightImageUrl: travelSummary.flightImageUrl,
     landCostPerHead: costing.landCostPerPerson,
     totalPerHead: costing.totalCostPerPerson,
     totalGroupCost: costing.totalGroupCost,
-    clientPhone: clientInfo.phone,
+    notes,
+    status: "SENT",
     accommodation: accommodations.map(acc => ({
       location: acc.location,
       hotelName: acc.hotelName,
@@ -212,9 +220,23 @@ export default function QuotationForm() {
     })),
     inclusions: inclusions.filter(Boolean).map(item => ({ item })),
     exclusions: exclusions.filter(Boolean).map(item => ({ item })),
-    notes,
-    status: "SENT"
   };
+
+  const handleSubmitQuotation = async () => {
+    try {
+      const response = await axios.post('/api/user/new-quotation', payload);
+      console.log(response.data);
+      if (response.data.status === 201) {
+        alert('Quotation created successfully!');
+        // Optionally redirect or reset the form
+      } else {
+        alert('Failed to create quotation. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error creating quotation:', error);
+      alert('An error occurred while creating the quotation. Please try again.');
+    }
+  }
 
   return (
     <Layout>
@@ -297,6 +319,15 @@ export default function QuotationForm() {
                       value={travelSummary.dateOfTravel}
                       onChange={(e) => setTravelSummary(prev => ({ ...prev, dateOfTravel: e.target.value }))}
                       className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Local Vehicle Used</label>
+                    <input
+                      type="text"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                      value={travelSummary.localVehicleUsed}
+                      onChange={e => setTravelSummary({ ...travelSummary, localVehicleUsed: e.target.value })}
                     />
                   </div>
                   <div>
@@ -657,7 +688,7 @@ export default function QuotationForm() {
               <Button variant="ghost" className="border border-gray-300 hover:bg-gray-50 text-gray-700">
                 Preview PDF
               </Button>
-              <Button className="bg-green-600 hover:bg-green-700 text-white">
+              <Button onClick={handleSubmitQuotation} className="bg-green-600 hover:bg-green-700 text-white">
                 Send Quotation
               </Button>
             </div>
