@@ -19,55 +19,59 @@ model User {
 }
 
 model Quotation {
-  id            String          @id @default(uuid())
-  quotationNo   String          @unique
-  clientName    String
-  clientEmail   String?
-  clientAddress String?
-  // ── Travel Details ───────────────────────────────────────────────
-  departureCity    String
-  destinationCity  String
-  departureDate    DateTime
-  returnDate       DateTime?         
-  travelersCount   Int
+  id               String           @id @default(uuid())
+  quotationNo      String           @unique
+  travelDate       DateTime
+  groupSize        Int
+  mealPlan         String?
+  vehicleUsed      String?
+  flightCost       Float?
+  flightImageUrl   String?
+  landCostPerHead  Float?
+  totalPerHead     Float?
+  totalGroupCost   Float?
 
-  // ── Pricing ───────────────────────────────────────────────────────
-  subtotal         Float
-  tax              Float
-  discount         Float?
-  total            Float
+  accommodation    Accommodation[]  
+  itinerary        ItineraryItem[]  
+  inclusions       Inclusion[]      
+  exclusions       Exclusion[]      
 
-  status           QuotationStatus  @default(DRAFT)
-
-  // ── Relations ────────────────────────────────────────────────────
   createdBy        User             @relation(fields: [createdById], references: [id])
   createdById      Int
-  itineraryItems   ItineraryItem[]  
-  services         ServiceItem[]    
-
+  status           QuotationStatus  @default(DRAFT)
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
 }
 
-model ItineraryItem {
-  id            Int       @id @default(autoincrement())
-  day           Int        
-  description   String
-  date          DateTime
-  cost          Float
-
-  quotation     Quotation @relation(fields: [quotationId], references: [id])
-  quotationId   String
+model Accommodation {
+  id          Int       @id @default(autoincrement())
+  location    String
+  hotelName   String
+  nights      Int
+  quotation   Quotation @relation(fields: [quotationId], references: [id])
+  quotationId String
 }
 
-model ServiceItem {
-  id            Int       @id @default(autoincrement())
-  type          ServiceType
-  details       String
-  cost          Float
+model ItineraryItem {
+  id          Int       @id @default(autoincrement())
+  dayTitle    String
+  description String
+  quotation   Quotation @relation(fields: [quotationId], references: [id])
+  quotationId String
+}
 
-  quotation     Quotation @relation(fields: [quotationId], references: [id])
-  quotationId   String
+model Inclusion {
+  id          Int       @id @default(autoincrement())
+  item        String
+  quotation   Quotation @relation(fields: [quotationId], references: [id])
+  quotationId String
+}
+
+model Exclusion {
+  id          Int       @id @default(autoincrement())
+  item        String
+  quotation   Quotation @relation(fields: [quotationId], references: [id])
+  quotationId String
 }
 
 enum Role {
