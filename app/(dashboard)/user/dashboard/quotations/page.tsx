@@ -200,10 +200,10 @@ export default function QuotationsList() {
                     <Eye className="w-4 h-4" />
                     View
                   </button>
-                  <button className="flex-1 border border-[#6C733D] text-[#6C733D] py-2 px-3 rounded-lg text-sm font-medium hover:bg-[#6C733D] hover:text-white transition-colors flex items-center justify-center gap-1">
+                  {/* <button className="flex-1 border border-[#6C733D] text-[#6C733D] py-2 px-3 rounded-lg text-sm font-medium hover:bg-[#6C733D] hover:text-white transition-colors flex items-center justify-center gap-1">
                     <Edit className="w-4 h-4" />
                     Edit
-                  </button>
+                  </button> */}
                   <button className="flex-1 border border-gray-300 text-gray-600 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-1">
                     <Download className="w-4 h-4" />
                     PDF
@@ -259,9 +259,9 @@ export default function QuotationsList() {
                         <Link href={`/user/dashboard/quotations/${quote.id}`} className="text-[#6C733D] hover:text-[#5a5f33] p-1" title="View">
                           <Eye className="w-4 h-4" />
                         </Link>
-                        <Link href={`/user/dashboard/quotations/${quote.id}/edit`} className="text-[#6C733D] hover:text-[#5a5f33] p-1" title="Edit">
+                        {/* <Link href={`/user/dashboard/quotations/${quote.id}/edit`} className="text-[#6C733D] hover:text-[#5a5f33] p-1" title="Edit">
                           <Edit className="w-4 h-4" />
-                        </Link>
+                        </Link> */}
                         <Link href={`/api/quotation/${quote.id}/pdf`} target="_blank" className="text-[#6C733D] hover:text-[#5a5f33] p-1" title="Download PDF">
                           <Download className="w-4 h-4" />
                         </Link>
