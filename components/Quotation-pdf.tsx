@@ -606,7 +606,7 @@ export function QuotationPDF({ payload }: any) {
                         </View>
                         <View style={styles.costRow}>
                             <Text style={styles.costLabel}>• Total per person:</Text>
-                            <Text style={styles.costValue}>₹{payload.totalCostPerPerson || "0"}</Text>
+                            <Text style={styles.costValue}>₹{payload.totalPerHead || "0"}</Text>
                         </View>
                         <View style={styles.totalCostRow}>
                             <Text style={styles.totalCostLabel}>• Total for {payload.groupSize}:</Text>
