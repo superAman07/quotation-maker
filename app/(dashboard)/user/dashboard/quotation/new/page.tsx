@@ -24,6 +24,7 @@ interface TravelSummary {
   dateOfTravel: string;
   groupSize: number;
   mealPlan: string;
+  place: string;
   vehicleUsed: string;
   localVehicleUsed: string;
   flightCostPerPerson: number;
@@ -62,6 +63,7 @@ export default function QuotationForm() {
     dateOfTravel: '',
     groupSize: 1,
     mealPlan: '',
+    place: '',
     vehicleUsed: '',
     localVehicleUsed: '',
     flightCostPerPerson: 0,
@@ -202,6 +204,12 @@ export default function QuotationForm() {
     const rand = Math.floor(100000 + Math.random() * 900000);
     return `QTN-${date}-${rand}`;
   }
+
+  const totalNights = accommodations.reduce(
+    (sum, acc) => sum + (acc.numberOfNights || 0),
+    0
+  );
+
   const payload = {
     quotationNo: generateQuotationNo(),
     logoUrl: "/logo.png",
@@ -212,6 +220,7 @@ export default function QuotationForm() {
     travelDate: travelSummary.dateOfTravel,
     groupSize: travelSummary.groupSize,
     mealPlan: travelSummary.mealPlan,
+    place: travelSummary.place,
     vehicleUsed: travelSummary.vehicleUsed,
     localVehicleUsed: travelSummary.localVehicleUsed,
     flightCost: travelSummary.flightCostPerPerson,
@@ -227,6 +236,7 @@ export default function QuotationForm() {
       hotelName: acc.hotelName,
       nights: acc.numberOfNights,
     })),
+    totalNights,
     itinerary: itinerary.map(item => ({
       dayTitle: item.dayTitle,
       description: item.description,
@@ -369,6 +379,16 @@ export default function QuotationForm() {
                       placeholder="e.g. MAP (Breakfast + Dinner)"
                     />
                   </div>
+                  <div>
+                    <Label htmlFor="mealPlan" className="text-gray-700 font-medium">Place</Label>
+                    <Input
+                      id="place"
+                      value={travelSummary.place}
+                      onChange={(e) => setTravelSummary(prev => ({ ...prev, place: e.target.value }))}
+                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                      placeholder="e.g. Ladakh"
+                    />
+                  </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
@@ -453,7 +473,7 @@ export default function QuotationForm() {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                        className="absolute cursor-pointer top-2 right-2 text-red-500 hover:text-red-700"
                         onClick={() => removeAccommodation(accommodation.id)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -463,6 +483,7 @@ export default function QuotationForm() {
                       <div>
                         <Label className="text-gray-700 font-medium">Location</Label>
                         <Input
+                          placeholder='e.g. Leh, Ladakh'
                           value={accommodation.location}
                           onChange={(e) => updateAccommodation(accommodation.id, 'location', e.target.value)}
                           className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
@@ -471,6 +492,7 @@ export default function QuotationForm() {
                       <div>
                         <Label className="text-gray-700 font-medium">Hotel Name or Similar</Label>
                         <Input
+                          placeholder='e.g. Hotel Grand Dragon'
                           value={accommodation.hotelName}
                           onChange={(e) => updateAccommodation(accommodation.id, 'hotelName', e.target.value)}
                           className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
@@ -492,7 +514,7 @@ export default function QuotationForm() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full border-dashed border-green-400 text-green-600 hover:bg-green-50 hover:text-green-700"
+                  className="w-full cursor-pointer border-dashed border-green-400 text-green-600 hover:bg-green-50 hover:text-green-700"
                   onClick={addAccommodation}
                 >
                   <Plus className="h-4 w-4 mr-2" />
@@ -720,7 +742,7 @@ export default function QuotationForm() {
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg shadow-lg p-4 max-w-4xl w-full h-[80vh] flex flex-col">
             <Button
-              className="self-end mb-2 text-red-500"
+              className="self-end cursor-pointer mb-2 text-red-500"
               variant="ghost"
               onClick={() => setShowPdfPreview(false)}
             >

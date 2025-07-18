@@ -6,7 +6,28 @@ import {
     View,
     Image,
     StyleSheet,
+    Font,
 } from '@react-pdf/renderer';
+import path from 'path';
+
+Font.register({
+    family: 'NotoSans',
+    src: '/fonts/NotoSans-Regular.ttf',
+    fontWeight: 'normal',
+    fontStyle: 'normal',
+});
+Font.register({
+    family: 'NotoSans',
+    src: '/fonts/NotoSans-Bold.ttf',
+    fontWeight: 'bold',
+    fontStyle: 'normal',
+});
+Font.register({
+    family: 'NotoSans',
+    src: '/fonts/NotoSans-Italic.ttf',
+    fontWeight: 'normal',
+    fontStyle: 'italic',
+});
 
 // Professional color scheme matching the images
 const colors = {
@@ -27,7 +48,7 @@ const styles = StyleSheet.create({
     page: {
         padding: 0,
         fontSize: 11,
-        fontFamily: 'Helvetica',
+        fontFamily: 'NotoSans',
         backgroundColor: colors.white,
         color: colors.text,
     },
@@ -35,7 +56,9 @@ const styles = StyleSheet.create({
     // Header Section
     headerSection: {
         backgroundColor: colors.white,
-        padding: 20,
+        paddingTop: 20,
+        paddingLeft: 20,
+        paddingBottom: 10,
         marginBottom: 0,
         borderBottomWidth: 2,
         borderBottomColor: colors.primary,
@@ -58,8 +81,7 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: colors.primary,
         textAlign: 'left',
-        marginBottom: 8,
-        paddingLeft: 20,
+        paddingLeft: 15,
         backgroundColor: 'transparent',
     },
 
@@ -73,9 +95,8 @@ const styles = StyleSheet.create({
     // Travel Details Section
     travelDetailsContainer: {
         backgroundColor: colors.lightGray,
-        // padding: 15,
         paddingTop: 15,
-        paddingLeft: 50,
+        paddingLeft: 35,
         paddingBottom: 15,
         marginBottom: 0,
         alignItems: 'center',
@@ -103,7 +124,7 @@ const styles = StyleSheet.create({
     },
 
     detailLabel: {
-        fontSize: 10,
+        fontSize: 12,
         color: colors.darkGray,
         fontWeight: 'bold',
     },
@@ -126,8 +147,7 @@ const styles = StyleSheet.create({
     // Greeting Section
     greetingContainer: {
         backgroundColor: colors.background,
-        padding: 15,
-        borderRadius: 5,
+        padding: 15, 
         marginBottom: 20,
     },
 
@@ -157,7 +177,7 @@ const styles = StyleSheet.create({
         color: colors.primary,
         paddingTop: 10,
         paddingBottom: 10,
-        paddingLeft: 20,
+        paddingLeft: 10,
         fontSize: 14,
         fontWeight: 'bold',
         textAlign: 'left',
@@ -218,24 +238,19 @@ const styles = StyleSheet.create({
     // Itinerary Section
     itineraryHeader: {
         color: colors.primary,
-        padding: 10,
         fontSize: 14,
         fontWeight: 'bold',
         textAlign: 'left',
-        marginBottom: 15,
         paddingTop: 10,
-        paddingBottom: 10,
-        paddingLeft: 20,
+        paddingBottom: 5,
+        paddingLeft: 12,
         backgroundColor: 'transparent',
     },
 
     itineraryItem: {
         marginBottom: 15,
-        padding: 12,
-        backgroundColor: colors.background,
-        borderRadius: 5,
-        borderLeftWidth: 4,
-        borderLeftColor: colors.primary,
+        paddingLeft: 12,
+        backgroundColor: 'transparent',
     },
 
     dayTitle: {
@@ -256,8 +271,7 @@ const styles = StyleSheet.create({
     accommodationContainer: {
         backgroundColor: colors.white,
         borderWidth: 1,
-        borderColor: colors.mediumGray,
-        borderRadius: 5,
+        borderColor: colors.mediumGray, 
         marginBottom: 20,
     },
 
@@ -265,7 +279,7 @@ const styles = StyleSheet.create({
         color: colors.primary,
         paddingTop: 10,
         paddingBottom: 10,
-        paddingLeft: 20,
+        paddingLeft: 15,
         fontSize: 12,
         fontWeight: 'bold',
         textAlign: 'left',
@@ -274,7 +288,8 @@ const styles = StyleSheet.create({
 
     accommodationRow: {
         flexDirection: 'row',
-        padding: 10,
+        paddingLeft: 15,
+        paddingBottom: 10,
         borderBottomWidth: 1,
         borderBottomColor: colors.lightGray,
     },
@@ -296,8 +311,7 @@ const styles = StyleSheet.create({
     costContainer: {
         backgroundColor: colors.white,
         borderWidth: 1,
-        borderColor: colors.mediumGray,
-        borderRadius: 5,
+        borderColor: colors.mediumGray, 
         marginBottom: 20,
     },
 
@@ -306,7 +320,7 @@ const styles = StyleSheet.create({
         color: colors.primary,
         paddingTop: 10,
         paddingBottom: 10,
-        paddingLeft: 20,
+        paddingLeft: 15,
         fontSize: 12,
         fontWeight: 'bold',
         textAlign: 'left',
@@ -362,7 +376,6 @@ const styles = StyleSheet.create({
         backgroundColor: colors.white,
         borderWidth: 1,
         borderColor: colors.mediumGray,
-        borderRadius: 5,
     },
 
     inclusionHeader: {
@@ -450,9 +463,9 @@ const styles = StyleSheet.create({
         color: colors.primary,
         fontSize: 12,
         fontWeight: 'bold',
-        textAlign: 'left',  
+        textAlign: 'left',
         marginBottom: 10,
-        paddingLeft: 20,    
+        paddingLeft: 20,
         backgroundColor: 'transparent',
     },
 
@@ -506,7 +519,7 @@ export function QuotationPDF({ payload }: any) {
                     </View>
 
                     <Text style={styles.mainTitle}>
-                        Explore the Mystical Land of {location} | {payload.accommodation[0].nights} Nights / {payload.accommodation[0].nights + 1} Days
+                        Explore the Mystical Land of {payload.place} | {payload.totalNights} Nights / {payload.totalNights + 1} Days
                     </Text>
                 </View>
 
@@ -545,29 +558,36 @@ export function QuotationPDF({ payload }: any) {
 
                     {/* Flight Details */}
                     {payload.flightImageUrl && (
-                        <View style={{ alignItems: 'flex-start', marginBottom: 20 }}>
+                        <View style={{ alignItems: 'flex-start', marginBottom: 40 }}>
                             <Text style={styles.flightDetailsHeader}>Flight Details</Text>
-                            <Image src={payload.flightImageUrl} style={{ width: "100%", height: 250, objectFit: 'contain', borderRadius: 8 }} />
+                            <Image src={payload.flightImageUrl} style={{ width: "100%", height: 250, objectFit: 'contain', borderRadius: 1 }} />
+                            <Text style={{ fontWeight: 'bold', fontSize: 12, marginTop: 12, paddingLeft: 10, }}>
+                                Flight Per Person : &#8377; {payload.flightCost}
+                            </Text>
                         </View>
                     )}
 
                     {/* Itinerary */}
-                    <View style={styles.section}>
-                        <Text style={styles.itineraryHeader}>Your {location} Odyssey — Day by Day</Text>
-                        {payload.itinerary.map((item: any, i: number) => (
-                            <View style={styles.itineraryItem} key={i}>
-                                <Text style={styles.dayTitle}>{item.dayTitle}</Text>
-                                <Text style={styles.dayDescription}>{item.description}</Text>
-                            </View>
-                        ))}
-                    </View>
+                    {payload.itinerary && Array.isArray(payload.itinerary) && payload.itinerary.length > 0 && (
+                        <View style={styles.section}>
+                            <Text style={styles.itineraryHeader}>
+                                Your {payload.place} Odyssey — Day by Day
+                            </Text>
+                            {payload.itinerary.map((item: any, i: number) => (
+                                <View style={styles.itineraryItem} key={i}>
+                                    <Text style={styles.dayTitle}>{item.dayTitle}</Text>
+                                    <Text style={styles.dayDescription}>{item.description}</Text>
+                                </View>
+                            ))}
+                        </View>
+                    )}
 
                     {/* Accommodation */}
                     <View style={styles.accommodationContainer}>
                         <Text style={styles.accommodationHeader}>Accommodation Details</Text>
                         {payload.accommodation.map((acc: any, i: number) => (
                             <View style={styles.accommodationRow} key={i}>
-                                <Text style={styles.accommodationLocation}>{acc.location} ({acc.numberOfNights} Nights):</Text>
+                                <Text style={styles.accommodationLocation}>{acc.location} ({acc.nights} Nights):</Text>
                                 <Text style={styles.accommodationHotel}>{acc.hotelName}</Text>
                             </View>
                         ))}
@@ -582,14 +602,14 @@ export function QuotationPDF({ payload }: any) {
                         </View>
                         <View style={styles.costRow}>
                             <Text style={styles.costLabel}>• Flight (Delhi-Leh RT approx.):</Text>
-                            <Text style={styles.costValue}>₹{payload.flightCostPerPerson} per person</Text>
+                            <Text style={styles.costValue}>₹{payload.flightCost} per person</Text>
                         </View>
                         <View style={styles.costRow}>
                             <Text style={styles.costLabel}>• Total per person:</Text>
-                            <Text style={styles.costValue}>₹{payload.totalCostPerPerson}</Text>
+                            <Text style={styles.costValue}>₹{payload.totalPerHead || "0"}</Text>
                         </View>
                         <View style={styles.totalCostRow}>
-                            <Text style={styles.totalCostLabel}>• Total for 4:</Text>
+                            <Text style={styles.totalCostLabel}>• Total for {payload.groupSize}:</Text>
                             <Text style={styles.totalCostValue}>₹{payload.totalGroupCost}</Text>
                         </View>
                     </View>

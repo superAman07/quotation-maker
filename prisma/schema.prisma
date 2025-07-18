@@ -24,6 +24,7 @@ model Quotation {
   travelDate       DateTime
   groupSize        Int
   mealPlan         String?
+  place            String?
   vehicleUsed      String?
   localVehicleUsed String?
   flightCost       Float?
@@ -36,7 +37,8 @@ model Quotation {
   clientEmail      String?
   clientAddress    String?
 
-  notes String?
+  notes       String?
+  totalNights Int     @default(0)
 
   accommodation Accommodation[]
   itinerary     ItineraryItem[]
