@@ -12,12 +12,14 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight
-} from 'lucide-react';
+} from 'lucide-react'; 
+import Link from 'next/link';
 
 export default function QuotationsList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
+ 
 
   const [quotations, setQuotations] = useState<any>([]);
   const [loading, setLoading] = useState(true);
@@ -254,15 +256,15 @@ export default function QuotationsList() {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex gap-2">
-                        <button className="text-[#6C733D] hover:text-[#5a5f33] p-1" title="View">
+                        <Link href={`/user/dashboard/quotations/${quote.id}`} className="text-[#6C733D] hover:text-[#5a5f33] p-1" title="View">
                           <Eye className="w-4 h-4" />
-                        </button>
-                        <button className="text-[#9DA65D] hover:text-[#6C733D] p-1" title="Edit">
+                        </Link>
+                        <Link href={`/user/dashboard/quotations/${quote.id}/edit`} className="text-[#6C733D] hover:text-[#5a5f33] p-1" title="Edit">
                           <Edit className="w-4 h-4" />
-                        </button>
-                        <button className="text-gray-600 hover:text-gray-800 p-1" title="Download PDF">
+                        </Link>
+                        <Link href={`/api/quotation/${quote.id}/pdf`} target="_blank" className="text-[#6C733D] hover:text-[#5a5f33] p-1" title="Download PDF">
                           <Download className="w-4 h-4" />
-                        </button>
+                        </Link>
                       </div>
                     </td>
                   </tr>
