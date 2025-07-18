@@ -140,10 +140,10 @@ export default function QuotationDetail() {
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
-                <button className="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-center gap-2">
+                {/* <Link href={`/user/dashboard/quotations/${quotation.id}/edit`} className="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-center gap-2">
                   <Edit className="w-4 h-4" />
                   Edit
-                </button>
+                </Link> */}
                 <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
                   <Download className="w-4 h-4" />
                   Download PDF
