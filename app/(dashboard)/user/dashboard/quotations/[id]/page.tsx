@@ -2,87 +2,48 @@
 
 import { useParams } from 'next/navigation';
 import Layout from '@/components/Layout';
-import { 
-  ArrowLeft, 
-  Edit, 
-  Download, 
-  Send, 
-  MapPin, 
-  Calendar, 
+import {
+  ArrowLeft,
+  Edit,
+  Download,
+  Send,
+  MapPin,
+  Calendar,
   Users,
   DollarSign
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+
+
+interface ServiceItem {
+  type: string;
+  details: string;
+  cost: number;
+}
+
 
 export default function QuotationDetail() {
   const params = useParams();
-  const quotationId = params.id;
+  const quotationId = params.id as string;
 
-  // Mock data - in real app, this would come from an API
-  const quotation = {
-    id: 'Q001',
-    client: {
-      name: 'John Smith',
-      email: 'john.smith@email.com',
-      phone: '+1 (555) 123-4567',
-      address: '123 Main St, New York, NY 10001'
-    },
-    travel: {
-      departureCity: 'New York',
-      destination: 'Paris, France',
-      departureDate: '2024-03-15',
-      returnDate: '2024-03-25',
-      travelers: 2
-    },
-    itinerary: [
-      {
-        day: 1,
-        activity: 'Arrival & Hotel Check-in',
-        date: '2024-03-15',
-        cost: 200
-      },
-      {
-        day: 2,
-        activity: 'Eiffel Tower & Seine River Cruise',
-        date: '2024-03-16',
-        cost: 150
-      },
-      {
-        day: 3,
-        activity: 'Louvre Museum & Montmartre',
-        date: '2024-03-17',
-        cost: 180
-      }
-    ],
-    services: [
-      {
-        type: 'Hotel',
-        details: '4-star hotel in city center',
-        cost: 1200
-      },
-      {
-        type: 'Flight',
-        details: 'Round-trip flights',
-        cost: 800
-      },
-      {
-        type: 'Insurance',
-        details: 'Travel insurance coverage',
-        cost: 120
-      }
-    ],
-    pricing: {
-      subtotal: 2650,
-      taxRate: 10,
-      taxAmount: 265,
-      discount: 5,
-      discountAmount: 132.5,
-      grandTotal: 2782.5
-    },
-    status: 'Draft',
-    notes: 'Client requested vegetarian meals and late checkout.',
-    createdDate: '2024-01-15'
-  };
+  const [quotation, setQuotation] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    fetch(`/api/user/quotations/${quotationId}`)
+      .then(res => res.json())
+      .then(data => {
+        setQuotation(data);
+        setLoading(false);
+      });
+  }, [quotationId]);
+
+  interface ItineraryItem {
+    day: number;
+    activity: string;
+    date: string;
+    cost: number;
+  }
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Draft': return 'bg-yellow-100 text-yellow-800';
@@ -93,14 +54,30 @@ export default function QuotationDetail() {
     }
   };
 
+  if (loading) {
+    return (
+      <Layout>
+        <div className="max-w-4xl mx-auto py-20 text-center text-gray-500">Loading...</div>
+      </Layout>
+    );
+  }
+
+  if (!quotation || quotation.error) {
+    return (
+      <Layout>
+        <div className="max-w-4xl mx-auto py-20 text-center text-red-500">Quotation not found or access denied.</div>
+      </Layout>
+    );
+  }
+
   return (
     <Layout>
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <a 
-              href="/quotations"
+            <a
+              href="/user/dashboard/quotations"
               className="flex items-center gap-2 text-[#6C733D] hover:text-[#5a5f33] transition-colors"
             >
               <ArrowLeft className="w-5 h-5" />
@@ -113,7 +90,7 @@ export default function QuotationDetail() {
                   {quotation.status}
                 </span>
                 <span className="text-sm text-gray-600">
-                  Created on {new Date(quotation.createdDate).toLocaleDateString()}
+                  Created on {new Date(quotation.createdAt).toLocaleDateString()}
                 </span>
               </div>
             </div>
@@ -137,14 +114,14 @@ export default function QuotationDetail() {
             <div>
               <h3 className="text-sm font-medium text-gray-700 mb-2">Contact Details</h3>
               <div className="space-y-2">
-                <p className="text-[#252426] font-medium">{quotation.client.name}</p>
-                <p className="text-gray-600">{quotation.client.email}</p>
-                <p className="text-gray-600">{quotation.client.phone}</p>
+                <p className="text-[#252426] font-medium">{quotation.clientName}</p>
+                <p className="text-gray-600">{quotation.clientEmail}</p>
+                <p className="text-gray-600">{quotation.clientPhone}</p>
               </div>
             </div>
             <div>
               <h3 className="text-sm font-medium text-gray-700 mb-2">Billing Address</h3>
-              <p className="text-gray-600">{quotation.client.address}</p>
+              <p className="text-gray-600">{quotation.clientAddress}</p>
             </div>
           </div>
         </div>
@@ -157,35 +134,21 @@ export default function QuotationDetail() {
               <MapPin className="w-5 h-5 text-[#6C733D]" />
               <div>
                 <p className="text-sm text-gray-600">From</p>
-                <p className="font-medium text-[#252426]">{quotation.travel.departureCity}</p>
+                <p className="font-medium text-[#252426]">{quotation.place ?? "N/A"}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <MapPin className="w-5 h-5 text-[#9DA65D]" />
               <div>
                 <p className="text-sm text-gray-600">To</p>
-                <p className="font-medium text-[#252426]">{quotation.travel.destination}</p>
+                <p className="font-medium text-[#252426]">{quotation.place ?? 'N/A'}</p>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <Users className="w-5 h-5 text-[#6C733D]" />
               <div>
                 <p className="text-sm text-gray-600">Travelers</p>
-                <p className="font-medium text-[#252426]">{quotation.travel.travelers}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Calendar className="w-5 h-5 text-[#6C733D]" />
-              <div>
-                <p className="text-sm text-gray-600">Departure</p>
-                <p className="font-medium text-[#252426]">{new Date(quotation.travel.departureDate).toLocaleDateString()}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <Calendar className="w-5 h-5 text-[#9DA65D]" />
-              <div>
-                <p className="text-sm text-gray-600">Return</p>
-                <p className="font-medium text-[#252426]">{new Date(quotation.travel.returnDate).toLocaleDateString()}</p>
+                <p className="font-medium text-[#252426]">{quotation.groupSize}</p>
               </div>
             </div>
           </div>
@@ -195,21 +158,14 @@ export default function QuotationDetail() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <h2 className="text-xl font-bold text-[#252426] mb-4 border-b-2 border-[#9DA65D] pb-2">Itinerary</h2>
           <div className="space-y-4">
-            {quotation.itinerary.map((item) => (
-              <div key={item.day} className="bg-gray-50 p-4 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-3">
-                    <span className="bg-[#6C733D] text-white px-3 py-1 rounded-full text-sm font-medium">
-                      Day {item.day}
-                    </span>
-                    <span className="text-sm text-gray-600">{new Date(item.date).toLocaleDateString()}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-[#6C733D] font-medium">
-                    <DollarSign className="w-4 h-4" />
-                    {item.cost}
-                  </div>
+            {quotation.itinerary.map((item: any) => (
+              <div key={item.id} className="bg-gray-50 p-4 rounded-lg">
+                <div className="flex items-center gap-3 mb-2">
+                  <span className="bg-[#6C733D] text-white px-3 py-1 rounded-full text-sm font-medium">
+                    {item.dayTitle}
+                  </span>
                 </div>
-                <p className="text-[#252426] font-medium">{item.activity}</p>
+                <p className="text-[#252426] font-medium">{item.description}</p>
               </div>
             ))}
           </div>
@@ -219,18 +175,13 @@ export default function QuotationDetail() {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
           <h2 className="text-xl font-bold text-[#252426] mb-4 border-b-2 border-[#9DA65D] pb-2">Additional Services</h2>
           <div className="space-y-4">
-            {quotation.services.map((service, index) => (
-              <div key={index} className="bg-gray-50 p-4 rounded-lg">
+
+            {quotation.accommodation.map((acc: any) => (
+              <div key={acc.id} className="bg-gray-50 p-4 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="bg-[#9DA65D] text-white px-3 py-1 rounded-full text-sm font-medium">
-                    {service.type}
-                  </span>
-                  <div className="flex items-center gap-1 text-[#6C733D] font-medium">
-                    <DollarSign className="w-4 h-4" />
-                    {service.cost}
-                  </div>
+                  <span className="font-medium text-gray-600">{acc.location} ({acc.nights} Nights)</span>
+                  <span className="text-gray-600">{acc.hotelName}</span>
                 </div>
-                <p className="text-[#252426] font-medium">{service.details}</p>
               </div>
             ))}
           </div>
@@ -241,22 +192,10 @@ export default function QuotationDetail() {
           <h2 className="text-xl font-bold text-[#252426] mb-4 border-b-2 border-[#9DA65D] pb-2">Pricing Summary</h2>
           <div className="bg-gray-50 p-6 rounded-lg">
             <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-600">Subtotal:</span>
-                <span className="font-medium">${quotation.pricing.subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Tax ({quotation.pricing.taxRate}%):</span>
-                <span className="font-medium">${quotation.pricing.taxAmount.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Discount ({quotation.pricing.discount}%):</span>
-                <span className="font-medium text-red-600">-${quotation.pricing.discountAmount.toFixed(2)}</span>
-              </div>
               <div className="border-t pt-3">
                 <div className="flex justify-between">
                   <span className="text-lg font-bold text-[#252426]">Grand Total:</span>
-                  <span className="text-lg font-bold text-[#6C733D]">${quotation.pricing.grandTotal.toFixed(2)}</span>
+                  <span className="text-lg font-bold text-[#6C733D]">₹{quotation.totalGroupCost.toLocaleString()}</span>
                 </div>
               </div>
             </div>
