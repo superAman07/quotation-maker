@@ -492,6 +492,7 @@ const styles = StyleSheet.create({
 
     companyInfo: {
         textAlign: 'center',
+        alignItems: 'center',
         marginTop: 10,
     },
 

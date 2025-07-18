@@ -74,9 +74,9 @@ export default function Layout({ children }: LayoutProps) {
   ];
 
   const userNavigation = [
-    { name: 'Your Profile', href: '/profile' },
-    { name: 'Account Settings', href: '/settings' },
-    { name: 'Billing', href: '/billing' },
+    { name: 'Your Profile', href: '/user/dashboard/profile' },
+    // { name: 'Account Settings', href: '/settings' },
+    // { name: 'Billing', href: '/billing' },
     { name: 'Support', href: '/support' },
   ];
 
@@ -84,6 +84,24 @@ export default function Layout({ children }: LayoutProps) {
     await fetch("/api/auth/logout", { method: "POST" });
     window.location.href = "/user/auth/login";
   }
+
+  useEffect(() => {
+  const handleUserMenuClickOutside = (event: MouseEvent) => {
+    const dropdown = document.getElementById('user-menu-dropdown');
+    const button = document.getElementById('user-menu-button');
+    if (
+      userMenuOpen &&
+      dropdown &&
+      !dropdown.contains(event.target as Node) &&
+      button &&
+      !button.contains(event.target as Node)
+    ) {
+      setUserMenuOpen(false);
+    }
+  };
+  document.addEventListener('mousedown', handleUserMenuClickOutside);
+  return () => document.removeEventListener('mousedown', handleUserMenuClickOutside);
+}, [userMenuOpen]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -168,7 +186,7 @@ export default function Layout({ children }: LayoutProps) {
                   <input
                     type="text"
                     placeholder="Search quotations..."
-                    className="w-64 lg:w-80 h-10 pl-10 pr-4 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent bg-gray-50 focus:bg-white transition-colors"
+                    className="w-64 lg:w-80 h-10 pl-10 text-gray-400 pr-4 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent bg-gray-50 focus:bg-white transition-colors"
                   />
                 </div>
               </div>
@@ -184,8 +202,8 @@ export default function Layout({ children }: LayoutProps) {
               {/* New Quote Button - Hidden on mobile */}
               <div className="hidden sm:block">
                 <a
-                  href="/quotation/new"
-                  className="flex items-center gap-2 h-10 px-4 bg-[#6C733D] hover:bg-[#5a5f33] text-white rounded-lg text-sm font-medium transition-colors"
+                  href="/user/dashboard/quotation/new"
+                  className="flex items-center cursor-pointer gap-2 h-10 px-4 bg-[#6C733D] hover:bg-[#5a5f33] text-white rounded-lg text-sm font-medium transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   <span className="hidden lg:inline">New Quote</span>
@@ -193,7 +211,7 @@ export default function Layout({ children }: LayoutProps) {
               </div>
 
               {/* Notifications */}
-              <div className="relative">
+              {/* <div className="relative">
                 <button className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors relative">
                   <Bell className="w-5 h-5 text-gray-600" />
                   {notificationCount > 0 && (
@@ -202,13 +220,14 @@ export default function Layout({ children }: LayoutProps) {
                     </span>
                   )}
                 </button>
-              </div>
+              </div> */}
 
               {/* User menu */}
               <div className="relative">
                 <button
+                  id="user-menu-button"
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="flex items-center gap-2 h-10 px-2 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="flex cursor-pointer items-center gap-2 h-10 px-2 rounded-lg hover:bg-gray-100 transition-colors"
                 >
                   <div className="w-8 h-8 bg-gradient-to-br from-[#6C733D] to-[#9DA65D] rounded-full flex items-center justify-center">
                     <User className="w-4 h-4 text-white" />
@@ -222,7 +241,7 @@ export default function Layout({ children }: LayoutProps) {
 
                 {/* User dropdown */}
                 {userMenuOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
+                  <div id='user-menu-dropdown' className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
                     {/* User info header */}
                     <div className="px-4 py-3 border-b border-gray-100">
                       <p className="text-sm font-medium text-[#252426]">{user?.name || "User"}</p>

@@ -169,13 +169,7 @@ export default function QuotationForm() {
         body: formData,
       });
       const data = await res.json();
-      setFlightImagePreview(data.url);
-      // setFlightImage(file);
-      // const reader = new FileReader();
-      // reader.onload = () => {
-      //   setFlightImagePreview(reader.result as string);
-      // };
-      // reader.readAsDataURL(file);
+      setFlightImagePreview(data.url); 
     }
   };
 
@@ -184,8 +178,7 @@ export default function QuotationForm() {
     setFlightImagePreview('');
     setTravelSummary(prev => ({ ...prev, flightImageUrl: '' }));
   };
-
-  // Auto-calculate costing
+ 
   React.useEffect(() => {
     const totalPerPerson = costing.landCostPerPerson + travelSummary.flightCostPerPerson;
     const totalGroup = totalPerPerson * travelSummary.groupSize;
@@ -223,8 +216,7 @@ export default function QuotationForm() {
     place: travelSummary.place,
     vehicleUsed: travelSummary.vehicleUsed,
     localVehicleUsed: travelSummary.localVehicleUsed,
-    flightCost: travelSummary.flightCostPerPerson,
-    // flightImageUrl: travelSummary.flightImageUrl,
+    flightCost: travelSummary.flightCostPerPerson, 
     flightImageUrl: flightImagePreview,
     landCostPerHead: costing.landCostPerPerson,
     totalPerHead: costing.totalCostPerPerson,
@@ -250,8 +242,7 @@ export default function QuotationForm() {
       const response = await axios.post('/api/user/new-quotation', payload);
       console.log(response.data);
       if (response.data.status === 201) {
-        alert('Quotation created successfully!');
-        // Optionally redirect or reset the form
+        alert('Quotation created successfully!'); 
       } else {
         alert('Failed to create quotation. Please try again.');
       }
