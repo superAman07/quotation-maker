@@ -6,7 +6,28 @@ import {
     View,
     Image,
     StyleSheet,
+    Font,
 } from '@react-pdf/renderer';
+import path from 'path';
+
+Font.register({
+  family: 'NotoSans',
+  src: '/fonts/NotoSans-Regular.ttf',
+  fontWeight: 'normal',
+  fontStyle: 'normal',
+});
+Font.register({
+  family: 'NotoSans',
+  src: '/fonts/NotoSans-Bold.ttf',
+  fontWeight: 'bold',
+  fontStyle: 'normal',
+});
+Font.register({
+  family: 'NotoSans',
+  src: '/fonts/NotoSans-Italic.ttf',
+  fontWeight: 'normal',
+  fontStyle: 'italic',
+});
 
 // Professional color scheme matching the images
 const colors = {
@@ -27,7 +48,7 @@ const styles = StyleSheet.create({
     page: {
         padding: 0,
         fontSize: 11,
-        fontFamily: 'Helvetica',
+        fontFamily: 'NotoSans',
         backgroundColor: colors.white,
         color: colors.text,
     },
@@ -103,7 +124,7 @@ const styles = StyleSheet.create({
     },
 
     detailLabel: {
-        fontSize: 10,
+        fontSize: 12,
         color: colors.darkGray,
         fontWeight: 'bold',
     },
@@ -157,7 +178,7 @@ const styles = StyleSheet.create({
         color: colors.primary,
         paddingTop: 10,
         paddingBottom: 10,
-        paddingLeft: 20,
+        paddingLeft: 10,
         fontSize: 14,
         fontWeight: 'bold',
         textAlign: 'left',
@@ -450,9 +471,9 @@ const styles = StyleSheet.create({
         color: colors.primary,
         fontSize: 12,
         fontWeight: 'bold',
-        textAlign: 'left',  
+        textAlign: 'left',
         marginBottom: 10,
-        paddingLeft: 20,    
+        paddingLeft: 20,
         backgroundColor: 'transparent',
     },
 
@@ -545,9 +566,12 @@ export function QuotationPDF({ payload }: any) {
 
                     {/* Flight Details */}
                     {payload.flightImageUrl && (
-                        <View style={{ alignItems: 'flex-start', marginBottom: 20 }}>
+                        <View style={{ alignItems: 'flex-start', marginBottom: 40 }}>
                             <Text style={styles.flightDetailsHeader}>Flight Details</Text>
-                            <Image src={payload.flightImageUrl} style={{ width: "100%", height: 250, objectFit: 'contain', borderRadius: 8 }} />
+                            <Image src={payload.flightImageUrl} style={{ width: "100%", height: 250, objectFit: 'contain', borderRadius: 1 }} />
+                            <Text style={{ fontWeight: 'bold', fontSize: 12, marginTop: 12 ,paddingLeft:10,}}> 
+                                Flight Per Person : &#8377; {payload.flightCost}
+                            </Text>
                         </View>
                     )}
 
@@ -582,14 +606,14 @@ export function QuotationPDF({ payload }: any) {
                         </View>
                         <View style={styles.costRow}>
                             <Text style={styles.costLabel}>• Flight (Delhi-Leh RT approx.):</Text>
-                            <Text style={styles.costValue}>₹{payload.flightCostPerPerson} per person</Text>
+                            <Text style={styles.costValue}>₹{payload.flightCost} per person</Text>
                         </View>
                         <View style={styles.costRow}>
                             <Text style={styles.costLabel}>• Total per person:</Text>
                             <Text style={styles.costValue}>₹{payload.totalCostPerPerson}</Text>
                         </View>
                         <View style={styles.totalCostRow}>
-                            <Text style={styles.totalCostLabel}>• Total for 4:</Text>
+                            <Text style={styles.totalCostLabel}>• Total for {payload.groupSize}:</Text>
                             <Text style={styles.totalCostValue}>₹{payload.totalGroupCost}</Text>
                         </View>
                     </View>

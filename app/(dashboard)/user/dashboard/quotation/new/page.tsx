@@ -720,7 +720,7 @@ export default function QuotationForm() {
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
           <div className="bg-white rounded-lg shadow-lg p-4 max-w-4xl w-full h-[80vh] flex flex-col">
             <Button
-              className="self-end mb-2 text-red-500"
+              className="self-end cursor-pointer mb-2 text-red-500"
               variant="ghost"
               onClick={() => setShowPdfPreview(false)}
             >
