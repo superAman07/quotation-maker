@@ -24,6 +24,7 @@ model Quotation {
   travelDate       DateTime
   groupSize        Int
   mealPlan         String?
+  place            String?
   vehicleUsed      String?
   localVehicleUsed String?
   flightCost       Float?

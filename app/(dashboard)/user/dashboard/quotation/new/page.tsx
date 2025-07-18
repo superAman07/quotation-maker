@@ -24,6 +24,7 @@ interface TravelSummary {
   dateOfTravel: string;
   groupSize: number;
   mealPlan: string;
+  place: string;
   vehicleUsed: string;
   localVehicleUsed: string;
   flightCostPerPerson: number;
@@ -62,6 +63,7 @@ export default function QuotationForm() {
     dateOfTravel: '',
     groupSize: 1,
     mealPlan: '',
+    place: '',
     vehicleUsed: '',
     localVehicleUsed: '',
     flightCostPerPerson: 0,
@@ -218,6 +220,7 @@ export default function QuotationForm() {
     travelDate: travelSummary.dateOfTravel,
     groupSize: travelSummary.groupSize,
     mealPlan: travelSummary.mealPlan,
+    place: travelSummary.place,
     vehicleUsed: travelSummary.vehicleUsed,
     localVehicleUsed: travelSummary.localVehicleUsed,
     flightCost: travelSummary.flightCostPerPerson,
@@ -374,6 +377,16 @@ export default function QuotationForm() {
                       onChange={(e) => setTravelSummary(prev => ({ ...prev, mealPlan: e.target.value }))}
                       className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
                       placeholder="e.g. MAP (Breakfast + Dinner)"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="mealPlan" className="text-gray-700 font-medium">Place</Label>
+                    <Input
+                      id="place"
+                      value={travelSummary.place}
+                      onChange={(e) => setTravelSummary(prev => ({ ...prev, place: e.target.value }))}
+                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                      placeholder="e.g. Ladakh"
                     />
                   </div>
                 </div>

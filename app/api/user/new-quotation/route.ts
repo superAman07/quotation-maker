@@ -30,16 +30,6 @@ export async function POST(req: NextRequest) {
         }
  
         const {
-            // quotationNo,
-            // clientInfo,
-            // travelSummary,
-            // accommodations,
-            // itinerary,
-            // inclusions,
-            // exclusions,
-            // costing,
-            // notes,
-            // status
             quotationNo,
             clientName,
             clientEmail,
@@ -48,6 +38,7 @@ export async function POST(req: NextRequest) {
             travelDate,
             groupSize,
             mealPlan,
+            place,
             vehicleUsed,
             localVehicleUsed,
             flightCost,
@@ -71,38 +62,6 @@ export async function POST(req: NextRequest) {
 
         const quotation = await prisma.quotation.create({
             data: {
-                // quotationNo: quotationNo,
-                // clientName: clientInfo.name,
-                // clientEmail: clientInfo.email,
-                // clientPhone: clientInfo.phone,
-                // clientAddress: clientInfo.address,
-                // travelDate: travelSummary.dateOfTravel,
-                // groupSize: travelSummary.groupSize,
-                // mealPlan: travelSummary.mealPlan,
-                // vehicleUsed: travelSummary.vehicleUsed,
-                // flightCost: travelSummary.flightCostPerPerson,
-                // flightImageUrl: travelSummary.flightImageUrl,
-                // landCostPerHead: costing.landCostPerPerson,
-                // totalPerHead: costing.totalCostPerPerson,
-                // totalGroupCost: costing.totalGroupCost,
-                // notes: notes,
-                // status: finalStatus,
-                // createdBy: { connect: { id: Number((payload as { userId: string }).userId) } },
-                // accommodation: {
-                //     create: (accommodations || []).map((acc: any) => ({
-                //         location: acc.location,
-                //         hotelName: acc.hotelName,
-                //         nights: acc.numberOfNights,
-                //     })),
-                // },
-                // itinerary: {
-                //     create: (itinerary || []).map((item: any) => ({
-                //         dayTitle: item.dayTitle,
-                //         description: item.description,
-                //     })),
-                // },
-                // inclusions,
-                // exclusions,
                 quotationNo,
                 clientName,
                 clientEmail,
@@ -111,6 +70,7 @@ export async function POST(req: NextRequest) {
                 travelDate:new Date(travelDate),
                 groupSize,
                 mealPlan,
+                place,
                 vehicleUsed,
                 localVehicleUsed,
                 flightCost,
