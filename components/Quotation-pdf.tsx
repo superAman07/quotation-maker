@@ -522,7 +522,7 @@ export function QuotationPDF({ payload }: any) {
                     </View>
 
                     <Text style={styles.mainTitle}>
-                        Explore the Mystical Land of {location} | {payload.accommodation[0].nights} Nights / {payload.accommodation[0].nights + 1} Days
+                        Explore the Mystical Land of {location} | {payload.totalNights} Nights / {payload.totalNights + 1} Days
                     </Text>
                 </View>
 

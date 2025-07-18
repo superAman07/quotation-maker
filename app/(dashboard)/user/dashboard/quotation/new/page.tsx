@@ -202,6 +202,12 @@ export default function QuotationForm() {
     const rand = Math.floor(100000 + Math.random() * 900000);
     return `QTN-${date}-${rand}`;
   }
+
+  const totalNights = accommodations.reduce(
+    (sum, acc) => sum + (acc.numberOfNights || 0),
+    0
+  );
+
   const payload = {
     quotationNo: generateQuotationNo(),
     logoUrl: "/logo.png",
@@ -227,6 +233,7 @@ export default function QuotationForm() {
       hotelName: acc.hotelName,
       nights: acc.numberOfNights,
     })),
+    totalNights,
     itinerary: itinerary.map(item => ({
       dayTitle: item.dayTitle,
       description: item.description,
