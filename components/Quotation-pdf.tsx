@@ -57,8 +57,10 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: 'bold',
         color: colors.primary,
-        textAlign: 'center',
+        textAlign: 'left',
         marginBottom: 8,
+        paddingLeft: 20,
+        backgroundColor: 'transparent',
     },
 
     subtitle: {
@@ -134,6 +136,7 @@ const styles = StyleSheet.create({
         fontSize: 11,
         color: colors.text,
         textAlign: 'justify',
+        fontStyle: 'italic',
     },
 
     greetingHighlight: {
@@ -151,17 +154,18 @@ const styles = StyleSheet.create({
     },
 
     flightDetailsHeader: {
-        backgroundColor: colors.primary,
-        color: colors.white,
-        padding: 10,
-        fontSize: 12,
+        color: colors.primary,
+        paddingTop: 10,
+        paddingBottom: 10,
+        paddingLeft: 20,
+        fontSize: 14,
         fontWeight: 'bold',
-        textAlign: 'center',
+        textAlign: 'left',
     },
 
     flightRow: {
         flexDirection: 'row',
-        alignItems: 'center',
+        alignItems: 'flex-start',
         padding: 12,
         borderBottomWidth: 1,
         borderBottomColor: colors.lightGray,
@@ -213,13 +217,16 @@ const styles = StyleSheet.create({
 
     // Itinerary Section
     itineraryHeader: {
-        backgroundColor: colors.primary,
-        color: colors.white,
+        color: colors.primary,
         padding: 10,
         fontSize: 14,
         fontWeight: 'bold',
-        textAlign: 'center',
+        textAlign: 'left',
         marginBottom: 15,
+        paddingTop: 10,
+        paddingBottom: 10,
+        paddingLeft: 20,
+        backgroundColor: 'transparent',
     },
 
     itineraryItem: {
@@ -255,12 +262,14 @@ const styles = StyleSheet.create({
     },
 
     accommodationHeader: {
-        backgroundColor: colors.primary,
-        color: colors.white,
-        padding: 10,
+        color: colors.primary,
+        paddingTop: 10,
+        paddingBottom: 10,
+        paddingLeft: 20,
         fontSize: 12,
         fontWeight: 'bold',
-        textAlign: 'center',
+        textAlign: 'left',
+        backgroundColor: 'transparent',
     },
 
     accommodationRow: {
@@ -293,12 +302,14 @@ const styles = StyleSheet.create({
     },
 
     costHeader: {
-        backgroundColor: colors.primary,
-        color: colors.white,
-        padding: 10,
+        backgroundColor: 'transparent',
+        color: colors.primary,
+        paddingTop: 10,
+        paddingBottom: 10,
+        paddingLeft: 20,
         fontSize: 12,
         fontWeight: 'bold',
-        textAlign: 'center',
+        textAlign: 'left',
     },
 
     costRow: {
@@ -355,21 +366,24 @@ const styles = StyleSheet.create({
     },
 
     inclusionHeader: {
-        backgroundColor: colors.success,
-        color: colors.white,
-        padding: 10,
+        backgroundColor: 'transparent',
+        color: colors.primary,
+        paddingTop: 10,
+        paddingBottom: 10,
+        paddingLeft: 20,
         fontSize: 11,
         fontWeight: 'bold',
-        textAlign: 'center',
+        textAlign: 'left',
     },
 
     exclusionHeader: {
-        backgroundColor: colors.danger,
-        color: colors.white,
-        padding: 10,
+        color: colors.danger,
+        paddingTop: 10,
+        paddingBottom: 10,
+        paddingLeft: 20,
         fontSize: 11,
         fontWeight: 'bold',
-        textAlign: 'center',
+        textAlign: 'left',
     },
 
     inclusionList: {
@@ -405,11 +419,13 @@ const styles = StyleSheet.create({
     },
 
     whyHeader: {
+        color: colors.primary,
         fontSize: 13,
         fontWeight: 'bold',
-        color: colors.white,
+        textAlign: 'left',
         marginBottom: 8,
-        textAlign: 'center',
+        paddingLeft: 20,
+        backgroundColor: 'transparent',
     },
 
     whyText: {
@@ -431,11 +447,13 @@ const styles = StyleSheet.create({
     },
 
     footerTitle: {
+        color: colors.primary,
         fontSize: 12,
         fontWeight: 'bold',
-        color: colors.white,
+        textAlign: 'left',  
         marginBottom: 10,
-        textAlign: 'center',
+        paddingLeft: 20,    
+        backgroundColor: 'transparent',
     },
 
     footerContactGrid: {
@@ -493,7 +511,7 @@ export function QuotationPDF({ payload }: any) {
                 </View>
 
                 {/* Travel Details */}
-                <View style={styles.travelDetailsContainer}> 
+                <View style={styles.travelDetailsContainer}>
                     <View style={styles.travelDetailsRow}>
                         <View style={styles.travelDetailItem}>
                             <Text style={styles.detailLabel}>Date of Travel:&nbsp;</Text>
@@ -503,7 +521,7 @@ export function QuotationPDF({ payload }: any) {
                             <Text style={styles.detailLabel}>Group:&nbsp;</Text>
                             <Text style={styles.detailValue}>{payload.groupSize} pax</Text>
                         </View>
-                    </View> 
+                    </View>
                     <View style={styles.travelDetailsRow}>
                         <View style={styles.travelDetailItem}>
                             <Text style={styles.detailLabel}>Meal Plan:&nbsp;</Text>
@@ -519,7 +537,7 @@ export function QuotationPDF({ payload }: any) {
                 <View style={styles.contentContainer}>
                     {/* Greeting */}
                     <View style={styles.greetingContainer}>
-                        <Text style={styles.greetingText}>Greeting From 
+                        <Text style={styles.greetingText}>Greeting From
                             <Text style={styles.greetingHighlight}> Travomine</Text>.
                             At Travomine Leisure Pvt. Ltd., we don't just plan trips — we craft experiences. Every detail is curated to ensure your {location} adventure is nothing short of magical. From soaring mountain passes to tranquil blue lakes, prepare to be mesmerized by the raw beauty and timeless culture of this Himalayan paradise. Let's begin your unforgettable journey!
                         </Text>
@@ -527,8 +545,9 @@ export function QuotationPDF({ payload }: any) {
 
                     {/* Flight Details */}
                     {payload.flightImageUrl && (
-                        <View style={{ alignItems: 'center', marginBottom: 20 }}>
-                            <Image src={payload.flightImageUrl} style={{ width: 400, height: 180, objectFit: 'contain', borderRadius: 8 }} />
+                        <View style={{ alignItems: 'flex-start', marginBottom: 20 }}>
+                            <Text style={styles.flightDetailsHeader}>Flight Details</Text>
+                            <Image src={payload.flightImageUrl} style={{ width: "100%", height: 250, objectFit: 'contain', borderRadius: 8 }} />
                         </View>
                     )}
 
