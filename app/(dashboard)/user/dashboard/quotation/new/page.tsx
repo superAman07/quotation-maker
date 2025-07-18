@@ -453,7 +453,7 @@ export default function QuotationForm() {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                        className="absolute cursor-pointer top-2 right-2 text-red-500 hover:text-red-700"
                         onClick={() => removeAccommodation(accommodation.id)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -463,6 +463,7 @@ export default function QuotationForm() {
                       <div>
                         <Label className="text-gray-700 font-medium">Location</Label>
                         <Input
+                          placeholder='e.g. Leh, Ladakh'
                           value={accommodation.location}
                           onChange={(e) => updateAccommodation(accommodation.id, 'location', e.target.value)}
                           className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
@@ -471,6 +472,7 @@ export default function QuotationForm() {
                       <div>
                         <Label className="text-gray-700 font-medium">Hotel Name or Similar</Label>
                         <Input
+                          placeholder='e.g. Hotel Grand Dragon'
                           value={accommodation.hotelName}
                           onChange={(e) => updateAccommodation(accommodation.id, 'hotelName', e.target.value)}
                           className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
@@ -492,7 +494,7 @@ export default function QuotationForm() {
                 <Button
                   type="button"
                   variant="outline"
-                  className="w-full border-dashed border-green-400 text-green-600 hover:bg-green-50 hover:text-green-700"
+                  className="w-full cursor-pointer border-dashed border-green-400 text-green-600 hover:bg-green-50 hover:text-green-700"
                   onClick={addAccommodation}
                 >
                   <Plus className="h-4 w-4 mr-2" />
