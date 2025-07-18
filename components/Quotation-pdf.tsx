@@ -147,8 +147,7 @@ const styles = StyleSheet.create({
     // Greeting Section
     greetingContainer: {
         backgroundColor: colors.background,
-        padding: 15,
-        borderRadius: 5,
+        padding: 15, 
         marginBottom: 20,
     },
 
@@ -272,8 +271,7 @@ const styles = StyleSheet.create({
     accommodationContainer: {
         backgroundColor: colors.white,
         borderWidth: 1,
-        borderColor: colors.mediumGray,
-        borderRadius: 5,
+        borderColor: colors.mediumGray, 
         marginBottom: 20,
     },
 
@@ -281,7 +279,7 @@ const styles = StyleSheet.create({
         color: colors.primary,
         paddingTop: 10,
         paddingBottom: 10,
-        paddingLeft: 20,
+        paddingLeft: 15,
         fontSize: 12,
         fontWeight: 'bold',
         textAlign: 'left',
@@ -290,7 +288,8 @@ const styles = StyleSheet.create({
 
     accommodationRow: {
         flexDirection: 'row',
-        padding: 10,
+        paddingLeft: 15,
+        paddingBottom: 10,
         borderBottomWidth: 1,
         borderBottomColor: colors.lightGray,
     },
@@ -312,8 +311,7 @@ const styles = StyleSheet.create({
     costContainer: {
         backgroundColor: colors.white,
         borderWidth: 1,
-        borderColor: colors.mediumGray,
-        borderRadius: 5,
+        borderColor: colors.mediumGray, 
         marginBottom: 20,
     },
 
@@ -322,7 +320,7 @@ const styles = StyleSheet.create({
         color: colors.primary,
         paddingTop: 10,
         paddingBottom: 10,
-        paddingLeft: 20,
+        paddingLeft: 15,
         fontSize: 12,
         fontWeight: 'bold',
         textAlign: 'left',
@@ -378,7 +376,6 @@ const styles = StyleSheet.create({
         backgroundColor: colors.white,
         borderWidth: 1,
         borderColor: colors.mediumGray,
-        borderRadius: 5,
     },
 
     inclusionHeader: {
@@ -522,7 +519,7 @@ export function QuotationPDF({ payload }: any) {
                     </View>
 
                     <Text style={styles.mainTitle}>
-                        Explore the Mystical Land of {location} | {payload.totalNights} Nights / {payload.totalNights + 1} Days
+                        Explore the Mystical Land of {payload.place} | {payload.totalNights} Nights / {payload.totalNights + 1} Days
                     </Text>
                 </View>
 
@@ -574,7 +571,7 @@ export function QuotationPDF({ payload }: any) {
                     {payload.itinerary && Array.isArray(payload.itinerary) && payload.itinerary.length > 0 && (
                         <View style={styles.section}>
                             <Text style={styles.itineraryHeader}>
-                                Your {location} Odyssey — Day by Day
+                                Your {payload.place} Odyssey — Day by Day
                             </Text>
                             {payload.itinerary.map((item: any, i: number) => (
                                 <View style={styles.itineraryItem} key={i}>
@@ -609,7 +606,7 @@ export function QuotationPDF({ payload }: any) {
                         </View>
                         <View style={styles.costRow}>
                             <Text style={styles.costLabel}>• Total per person:</Text>
-                            <Text style={styles.costValue}>₹{payload.totalCostPerPerson}</Text>
+                            <Text style={styles.costValue}>₹{payload.totalCostPerPerson || "0"}</Text>
                         </View>
                         <View style={styles.totalCostRow}>
                             <Text style={styles.totalCostLabel}>• Total for {payload.groupSize}:</Text>
