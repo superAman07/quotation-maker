@@ -503,6 +503,7 @@ const styles = StyleSheet.create({
     },
 });
 
+
 export function QuotationPDF({ payload }: any) {
     const location = payload.accommodation && payload.accommodation.length > 0
         ? payload.accommodation[0].location
