@@ -38,9 +38,7 @@ type Destination = {
   description?: string
   imageUrl?: string
 }
-
-// Add these imports at the top
-// import { SidebarTrigger } from "@/components/ui/sidebar"
+ 
 import { Separator } from "@/components/ui/separator"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
 
@@ -126,12 +124,11 @@ export default function DestinationsPage() {
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-        {/* <SidebarTrigger className="-ml-1" /> */}
         <Separator orientation="vertical" className="mr-2 h-4" />
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbPage>Destinations</BreadcrumbPage>
+              <BreadcrumbPage className="text-gray-700">Destinations</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -140,24 +137,24 @@ export default function DestinationsPage() {
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Destinations</h1>
-            <p className="text-muted-foreground">Manage travel destinations</p>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-700">Destinations</h1>
+            <p className="text-muted-foreground text-gray-700">Manage travel destinations</p>
           </div>
 
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="text-gray-700">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Destination
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="bg-white text-gray-700">
               <DialogHeader>
-                <DialogTitle>Create New Destination</DialogTitle>
-                <DialogDescription>Add a new travel destination to your catalog.</DialogDescription>
+                <DialogTitle className="text-gray-700">Create New Destination</DialogTitle>
+                <DialogDescription className="text-gray-700">Add a new travel destination to your catalog.</DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
+                <div className="grid gap-2 ">
                   <Label htmlFor="name">Name *</Label>
                   <Input
                     id="name"
@@ -217,8 +214,8 @@ export default function DestinationsPage() {
           </Dialog>
         </div>
 
-        <div className="border rounded-lg">
-          <Table>
+        <div className="border-b-black rounded-lg">
+          <Table className="text-gray-700">
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
@@ -244,7 +241,7 @@ export default function DestinationsPage() {
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent>
+                        <AlertDialogContent className="bg-white text-gray-700">
                           <AlertDialogHeader>
                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                             <AlertDialogDescription>
@@ -268,7 +265,7 @@ export default function DestinationsPage() {
 
         {/* Edit Dialog */}
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <DialogContent>
+          <DialogContent className="bg-white text-gray-700">
             <DialogHeader>
               <DialogTitle>Edit Destination</DialogTitle>
               <DialogDescription>Update destination information.</DialogDescription>

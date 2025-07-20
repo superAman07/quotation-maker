@@ -33,55 +33,55 @@ import {
 const navigationItems = [
   {
     title: "Dashboard",
-    href: "/admin",
+    href: "/admin/dashboard",
     icon: Home,
   },
   {
     title: "Destinations",
     icon: MapPin,
     items: [
-      { title: "Destinations", href: "/admin/destinations", icon: MapPin },
-      { title: "Venues", href: "/admin/venues", icon: Building2 },
+      { title: "Destinations", href: "/admin/dashboard/destinations", icon: MapPin },
+      { title: "Venues", href: "/admin/dashboard/venues", icon: Building2 },
     ],
   },
   {
     title: "Accommodations",
     icon: Hotel,
     items: [
-      { title: "Hotels", href: "/admin/hotels", icon: Hotel },
-      { title: "Rate Management", href: "/admin/hotel-rates", icon: DollarSign },
+      { title: "Hotels", href: "/admin/dashboard/hotels", icon: Hotel },
+      { title: "Rate Management", href: "/admin/dashboard/hotel-rates", icon: DollarSign },
     ],
   },
   {
     title: "Transportation",
     icon: Plane,
     items: [
-      { title: "Flight Routes", href: "/admin/flight-routes", icon: Plane },
-      { title: "Vehicles", href: "/admin/vehicles", icon: Car },
+      { title: "Flight Routes", href: "/admin/dashboard/flight-routes", icon: Plane },
+      { title: "Vehicles", href: "/admin/dashboard/vehicles", icon: Car },
     ],
   },
   {
     title: "Services",
     icon: Utensils,
     items: [
-      { title: "Meal Plans", href: "/admin/meal-plans", icon: Utensils },
-      { title: "Packages", href: "/admin/packages", icon: Package },
+      { title: "Meal Plans", href: "/admin/dashboard/meal-plans", icon: Utensils },
+      { title: "Packages", href: "/admin/dashboard/packages", icon: Package },
     ],
   },
   {
     title: "Templates",
     icon: FileText,
     items: [
-      { title: "Inclusion Templates", href: "/admin/inclusion-templates", icon: FileText },
-      { title: "Exclusion Templates", href: "/admin/exclusion-templates", icon: FileText },
+      { title: "Inclusion Templates", href: "/admin/dashboard/inclusion-templates", icon: FileText },
+      { title: "Exclusion Templates", href: "/admin/dashboard/exclusion-templates", icon: FileText },
     ],
   },
   {
     title: "Settings",
     icon: Percent,
     items: [
-      { title: "Pricing Rules", href: "/admin/pricing-rules", icon: Percent },
-      { title: "Users & Roles", href: "/admin/users", icon: Users },
+      { title: "Pricing Rules", href: "/admin/dashboard/pricing-rules", icon: Percent },
+      { title: "Users & Roles", href: "/admin/dashboard/users", icon: Users },
     ],
   },
 ]
@@ -98,7 +98,7 @@ export function AdminNavbar() {
         <div className="flex justify-between h-16">
           {/* Logo */}
           <div className="flex items-center">
-            <Link href="/admin" className="flex items-center space-x-2">
+            <Link href="/admin/dashboard/dashboard" className="flex items-center space-x-2">
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                 <Route className="size-4" />
               </div>
