@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -38,40 +38,15 @@ type Destination = {
   description?: string
   imageUrl?: string
 }
- 
+
 import { Separator } from "@/components/ui/separator"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
+import axios from "axios"
 
 // Mock data - replace with actual API calls
-const mockDestinations: Destination[] = [
-  {
-    id: 1,
-    name: "Goa",
-    state: "Goa",
-    country: "India",
-    description: "Beautiful beaches and Portuguese heritage",
-    imageUrl: "/placeholder.svg?height=100&width=100",
-  },
-  {
-    id: 2,
-    name: "Kerala",
-    state: "Kerala",
-    country: "India",
-    description: "God's own country with backwaters and spices",
-    imageUrl: "/placeholder.svg?height=100&width=100",
-  },
-  {
-    id: 3,
-    name: "Rajasthan",
-    state: "Rajasthan",
-    country: "India",
-    description: "Land of kings with magnificent palaces",
-    imageUrl: "/placeholder.svg?height=100&width=100",
-  },
-]
 
 export default function DestinationsPage() {
-  const [destinations, setDestinations] = useState<Destination[]>(mockDestinations)
+  const [destinations, setDestinations] = useState<Destination[]>([])
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editingDestination, setEditingDestination] = useState<Destination | null>(null)
@@ -82,42 +57,90 @@ export default function DestinationsPage() {
     description: "",
     imageUrl: "",
   })
+  const [loading, setLoading] = useState(true);
 
-  const handleCreate = () => {
-    const newDestination: Destination = {
-      id: Math.max(...destinations.map((d) => d.id)) + 1,
-      ...formData,
-    }
-    setDestinations([...destinations, newDestination])
-    setFormData({ name: "", state: "", country: "", description: "", imageUrl: "" })
-    setIsCreateOpen(false)
+  useEffect(() => {
+    const fetchDestinations = async () => {
+      try {
+        const res = await axios.get("/api/admin/destinations");
+        setDestinations(res.data.destinations);
+      } catch {
+        setDestinations([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDestinations();
+  }, []);
+
+  const handleCreate = async () => {
+    const res = await axios.post("/api/admin/destinations", formData)
+    if (res.status === 201) {
+      setDestinations([...destinations, res.data]);
+      setFormData({ name: "", state: "", country: "", description: "", imageUrl: "" });
+      setIsCreateOpen(false);
+    } 
   }
 
-  const handleEdit = (destination: Destination) => {
-    setEditingDestination(destination)
+  const handleEdit = async (destination: Destination) => {
+    setEditingDestination(destination);
     setFormData({
       name: destination.name,
       state: destination.state || "",
       country: destination.country || "",
       description: destination.description || "",
       imageUrl: destination.imageUrl || "",
-    })
-    setIsEditOpen(true)
+    });
+    setIsEditOpen(true);
+
+    // const res = await axios.get(`/api/admin/destinations/${destination.id}`)
+    // if (res.status !== 201) {
+    //   console.error("Failed to fetch destination for editing")
+    //   return
+    // }
+    // const newDestination = res.data;
+    // setDestinations(prev => [...prev, newDestination]);
+    // setFormData({ name: "", state: "", country: "", description: "", imageUrl: "" });
+    // setIsCreateOpen(false);
+    // setEditingDestination(destination)
+    // setFormData({
+    //   name: destination.name,
+    //   state: destination.state || "",
+    //   country: destination.country || "",
+    //   description: destination.description || "",
+    //   imageUrl: destination.imageUrl || "",
+    // })
+    // setIsEditOpen(true)
   }
 
-  const handleUpdate = () => {
-    if (!editingDestination) return
+  const handleUpdate = async () => {
+    const res = await axios.put(`/api/admin/destinations/${editingDestination?.id}`, formData)
+    const updated = await res.data;
+    if (res.status !== 200) {
+      console.error("Failed to update destination");
+      return;
+    }
+    setDestinations(prev => prev.map(d => d.id === updated.id ? updated : d));
+    setIsEditOpen(false);
+    setEditingDestination(null);
+    setFormData({ name: "", state: "", country: "", description: "", imageUrl: "" });
+    // if (!editingDestination) return
 
-    setDestinations(
-      destinations.map((d) => (d.id === editingDestination.id ? { ...editingDestination, ...formData } : d)),
-    )
-    setIsEditOpen(false)
-    setEditingDestination(null)
-    setFormData({ name: "", state: "", country: "", description: "", imageUrl: "" })
+    // setDestinations(
+    //   destinations.map((d) => (d.id === editingDestination.id ? { ...editingDestination, ...formData } : d)),
+    // )
+    // setIsEditOpen(false)
+    // setEditingDestination(null)
+    // setFormData({ name: "", state: "", country: "", description: "", imageUrl: "" })
   }
 
-  const handleDelete = (id: number) => {
-    setDestinations(destinations.filter((d) => d.id !== id))
+  const handleDelete = async (id: number) => {
+    const res = await axios.delete(`/api/admin/destinations/${id}`)
+    if (res.status !== 200) {
+      console.error("Failed to delete destination");
+      return;
+    }
+    setDestinations(prev => prev.filter(d => d.id !== id));
   }
 
   // Replace the return statement with:
@@ -215,6 +238,9 @@ export default function DestinationsPage() {
         </div>
 
         <div className="border-b-black rounded-lg">
+          {loading ? (
+  <div className="text-center py-10 text-gray-500">Loading destinations...</div>
+) : (
           <Table className="text-gray-700">
             <TableHeader>
               <TableRow>
@@ -261,6 +287,7 @@ export default function DestinationsPage() {
               ))}
             </TableBody>
           </Table>
+          )}
         </div>
 
         {/* Edit Dialog */}
