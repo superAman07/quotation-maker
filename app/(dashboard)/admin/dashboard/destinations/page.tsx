@@ -26,10 +26,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Edit, Plus, Trash2 } from "lucide-react"
-// import type { Destination } from "@/lib/types"
-
-// Define the Destination type
+import { Edit, Plus, Trash2 } from "lucide-react" 
 type Destination = {
   id: number
   name: string
@@ -42,8 +39,7 @@ type Destination = {
 import { Separator } from "@/components/ui/separator"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
 import axios from "axios"
-
-// Mock data - replace with actual API calls
+ 
 
 export default function DestinationsPage() {
   const [destinations, setDestinations] = useState<Destination[]>([])
@@ -92,25 +88,6 @@ export default function DestinationsPage() {
       imageUrl: destination.imageUrl || "",
     });
     setIsEditOpen(true);
-
-    // const res = await axios.get(`/api/admin/destinations/${destination.id}`)
-    // if (res.status !== 201) {
-    //   console.error("Failed to fetch destination for editing")
-    //   return
-    // }
-    // const newDestination = res.data;
-    // setDestinations(prev => [...prev, newDestination]);
-    // setFormData({ name: "", state: "", country: "", description: "", imageUrl: "" });
-    // setIsCreateOpen(false);
-    // setEditingDestination(destination)
-    // setFormData({
-    //   name: destination.name,
-    //   state: destination.state || "",
-    //   country: destination.country || "",
-    //   description: destination.description || "",
-    //   imageUrl: destination.imageUrl || "",
-    // })
-    // setIsEditOpen(true)
   }
 
   const handleUpdate = async () => {
@@ -124,14 +101,6 @@ export default function DestinationsPage() {
     setIsEditOpen(false);
     setEditingDestination(null);
     setFormData({ name: "", state: "", country: "", description: "", imageUrl: "" });
-    // if (!editingDestination) return
-
-    // setDestinations(
-    //   destinations.map((d) => (d.id === editingDestination.id ? { ...editingDestination, ...formData } : d)),
-    // )
-    // setIsEditOpen(false)
-    // setEditingDestination(null)
-    // setFormData({ name: "", state: "", country: "", description: "", imageUrl: "" })
   }
 
   const handleDelete = async (id: number) => {
@@ -142,8 +111,7 @@ export default function DestinationsPage() {
     }
     setDestinations(prev => prev.filter(d => d.id !== id));
   }
-
-  // Replace the return statement with:
+ 
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
