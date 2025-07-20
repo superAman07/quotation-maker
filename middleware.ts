@@ -5,7 +5,9 @@ import { parseToken, verifyToken } from '@/lib/cookies';
 const PUBLIC_PATHS = ['/user/auth/login',
   '/user/auth/signup',
   '/api/auth/login',
-  '/api/auth/register'];
+  '/api/auth/register',
+  '/admin/auth/login',     
+  '/admin/auth/signup'];
 
 export async function middleware(req: NextRequest) {
   if (PUBLIC_PATHS.some(path => req.nextUrl.pathname.startsWith(path))) {
