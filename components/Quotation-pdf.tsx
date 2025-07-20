@@ -147,7 +147,7 @@ const styles = StyleSheet.create({
     // Greeting Section
     greetingContainer: {
         backgroundColor: colors.background,
-        padding: 15, 
+        padding: 15,
         marginBottom: 20,
     },
 
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     accommodationContainer: {
         backgroundColor: colors.white,
         borderWidth: 1,
-        borderColor: colors.mediumGray, 
+        borderColor: colors.mediumGray,
         marginBottom: 20,
     },
 
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
     costContainer: {
         backgroundColor: colors.white,
         borderWidth: 1,
-        borderColor: colors.mediumGray, 
+        borderColor: colors.mediumGray,
         marginBottom: 20,
     },
 
@@ -503,10 +503,21 @@ const styles = StyleSheet.create({
     },
 });
 
+
 export function QuotationPDF({ payload }: any) {
     const location = payload.accommodation && payload.accommodation.length > 0
         ? payload.accommodation[0].location
         : "Ladakh";
+
+    function formatDate(dateStr: string) {
+        if (!dateStr) return "";
+        const date = new Date(dateStr);
+        return date.toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short",
+            year: "numeric"
+        });
+    }
 
     return (
         <Document>
@@ -529,7 +540,7 @@ export function QuotationPDF({ payload }: any) {
                     <View style={styles.travelDetailsRow}>
                         <View style={styles.travelDetailItem}>
                             <Text style={styles.detailLabel}>Date of Travel:&nbsp;</Text>
-                            <Text style={styles.detailValue}>{payload.travelDate}</Text>
+                            <Text style={styles.detailValue}>{formatDate(payload.travelDate)}</Text>
                         </View>
                         <View style={styles.travelDetailItem}>
                             <Text style={styles.detailLabel}>Group:&nbsp;</Text>

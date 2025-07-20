@@ -40,16 +40,46 @@ model Quotation {
   notes       String?
   totalNights Int     @default(0)
 
-  accommodation Accommodation[]
-  itinerary     ItineraryItem[]
-  inclusions    Inclusion[]
-  exclusions    Exclusion[]
+  // —— NEW foreign‑keys to admin tables ——
+  packageId Int? // optional package reference
+  package   Package? @relation(fields: [packageId], references: [id])
+
+  destinationId Int? // maps your `place`
+  destination   Destination? @relation(fields: [destinationId], references: [id])
+
+  flightRouteId Int?
+  flightRoute   FlightRoute? @relation(fields: [flightRouteId], references: [id])
+
+  intercityVehicleId Int?
+  intercityVehicle   VehicleType? @relation("IntercityVehicle", fields: [intercityVehicleId], references: [id])
+
+  localVehicleId Int?
+  localVehicle   VehicleType? @relation("LocalVehicle", fields: [localVehicleId], references: [id])
+
+  mealPlanId  Int?
+  mealPlanRef MealPlan? @relation(fields: [mealPlanId], references: [id])
 
   createdBy   User            @relation(fields: [createdById], references: [id])
   createdById Int
   status      QuotationStatus @default(DRAFT)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
+
+  accommodation Accommodation[]
+  itinerary     ItineraryItem[]
+  inclusions    Inclusion[]
+  exclusions    Exclusion[]
+
+  // accommodation Accommodation[]
+  // itinerary     ItineraryItem[]
+  // inclusions    Inclusion[]
+  // exclusions    Exclusion[]
+
+  // createdBy   User            @relation(fields: [createdById], references: [id])
+  // createdById Int
+  // status      QuotationStatus @default(DRAFT)
+  // createdAt   DateTime        @default(now())
+  // updatedAt   DateTime        @updatedAt
 }
 
 model Accommodation {
@@ -59,6 +89,12 @@ model Accommodation {
   nights      Int
   quotation   Quotation @relation(fields: [quotationId], references: [id])
   quotationId String
+
+  venueId Int?
+  venue   Venue? @relation(fields: [venueId], references: [id])
+
+  hotelId Int?
+  hotel   Hotel? @relation(fields: [hotelId], references: [id])
 }
 
 model ItineraryItem {
@@ -74,6 +110,9 @@ model Inclusion {
   item        String
   quotation   Quotation @relation(fields: [quotationId], references: [id])
   quotationId String
+
+  templateId Int?
+  template   InclusionTemplate? @relation(fields: [templateId], references: [id])
 }
 
 model Exclusion {
@@ -81,6 +120,9 @@ model Exclusion {
   item        String
   quotation   Quotation @relation(fields: [quotationId], references: [id])
   quotationId String
+
+  templateId Int?
+  template   ExclusionTemplate? @relation(fields: [templateId], references: [id])
 }
 
 enum Role {
@@ -102,4 +144,153 @@ enum ServiceType {
   TOUR
   INSURANCE
   OTHER
+}
+
+// Models for travel services
+
+model Destination {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  state       String?
+  country     String?
+  description String?
+  imageUrl    String?
+
+  // relations
+  venues     Venue[]
+  packages   Package[]
+  quotations Quotation[]
+}
+
+model Venue {
+  id          Int     @id @default(autoincrement())
+  name        String
+  address     String?
+  coordinates String?
+  description String?
+  imageUrl    String?
+
+  destination   Destination @relation(fields: [destinationId], references: [id])
+  destinationId Int
+
+  accommodations Accommodation[]
+  Hotel          Hotel[]
+}
+
+model Hotel {
+  id         Int     @id @default(autoincrement())
+  name       String
+  starRating Int?
+  amenities  String?
+  imageUrl   String?
+
+  venue   Venue @relation(fields: [venueId], references: [id])
+  venueId Int
+
+  rateCards     HotelRateCard[]
+  // legacy Accommodation.hotelName remains in Accommodation
+  Accommodation Accommodation[]
+}
+
+model HotelRateCard {
+  id       Int    @id @default(autoincrement())
+  hotel    Hotel  @relation(fields: [hotelId], references: [id])
+  hotelId  Int
+  roomType String
+  season   String
+  rate     Float
+}
+
+model FlightRoute {
+  id          Int     @id @default(autoincrement())
+  origin      String
+  destination String
+  baseFare    Float
+  airline     String?
+  imageUrl    String?
+
+  quotations Quotation[]
+}
+
+enum VehicleCategory {
+  INTERCITY
+  LOCAL
+}
+
+model VehicleType {
+  id         Int             @id @default(autoincrement())
+  type       String
+  category   VehicleCategory @default(INTERCITY)
+  ratePerDay Float?
+  ratePerKm  Float?
+
+  quotationsIntercity Quotation[] @relation("IntercityVehicle")
+  quotationsLocal     Quotation[] @relation("LocalVehicle")
+}
+
+model MealPlan {
+  id            Int     @id @default(autoincrement())
+  code          String  @unique // e.g. CP, MAP, AI
+  description   String?
+  ratePerPerson Float
+
+  quotations Quotation[]
+}
+
+model InclusionTemplate {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String?
+  inclusions  Inclusion[]
+}
+
+model ExclusionTemplate {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String?
+  exclusions  Exclusion[]
+}
+
+model Package {
+  id                 Int     @id @default(autoincrement())
+  name               String
+  description        String?
+  durationDays       Int
+  basePricePerPerson Float
+  totalNights        Int
+
+  packageItineraries PackageItinerary[]
+  quotations         Quotation[]
+  Destination        Destination?       @relation(fields: [destinationId], references: [id])
+  destinationId      Int?
+}
+
+model PackageItinerary {
+  id          Int     @id @default(autoincrement())
+  package     Package @relation(fields: [packageId], references: [id])
+  packageId   Int
+  dayNumber   Int
+  title       String
+  description String
+}
+
+model MarkupRule {
+  id          Int         @id @default(autoincrement())
+  serviceType ServiceType
+  percentage  Float
+}
+
+model Discount {
+  id          Int      @id @default(autoincrement())
+  code        String   @unique
+  description String?
+  percentage  Float
+  validFrom   DateTime
+  validTo     DateTime
+}
+
+model Tax {
+  id          Int         @id @default(autoincrement())
+  serviceType ServiceType
+  percentage  Float
 }

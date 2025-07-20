@@ -1,9 +1,11 @@
 import { cookies } from 'next/headers'
 import { jwtVerify } from 'jose'
 import { redirect } from 'next/navigation'
+import { AdminNavbar } from '@/components/admin-navbar'
 
 export default async function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
-  const token = cookies().get('auth_token')?.value
+  const cookieStore = await cookies();
+  const token = cookieStore.get('auth_token')?.value;
   if (!token) redirect('/admin/auth/login')
 
   try {
@@ -14,5 +16,10 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
     redirect('/admin/auth/login')
   }
 
-  return <>{children}</>
+  return <>
+    <div className="min-h-screen bg-gray-50">
+      <AdminNavbar />
+      <main className="pt-16">{children}</main>
+    </div>
+  </>
 }

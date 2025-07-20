@@ -12,14 +12,19 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight
-} from 'lucide-react'; 
+} from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { PDFViewer } from '@react-pdf/renderer';
+import { QuotationPDF } from '@/components/Quotation-pdf';
 
 export default function QuotationsList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
- 
+
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const [selectedQuotation, setSelectedQuotation] = useState<any>(null);
 
   const [quotations, setQuotations] = useState<any>([]);
   const [loading, setLoading] = useState(true);
@@ -33,17 +38,17 @@ export default function QuotationsList() {
       });
   }, []);
 
-  // const quotations = [
-  //   {
-  //     id: 'Q001',
-  //     client: 'John Smith',
-  //     destination: 'Paris, France',
-  //     date: '2024-01-15',
-  //     status: 'Draft',
-  //     total: 2500.00,
-  //     travelers: 2
-  //   },
-  // ];
+  const handleDownloadClick = async (id: string) => {
+    setShowPdfPreview(true);
+    setLoading(true);
+    const res = await fetch(`/api/user/quotations/${id}`);
+    const data = await res.json();
+    setSelectedQuotation({
+      ...data,
+      logoUrl: data.logoUrl && data.logoUrl.trim() !== '' ? data.logoUrl : '/logo.png',
+    });
+    setLoading(false);
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -64,14 +69,6 @@ export default function QuotationsList() {
     status: string;
     totalGroupCost: number;
     groupSize: number;
-
-    // id: string;
-    // client: string;
-    // destination: string;
-    // date: string;
-    // status: string;
-    // total: number;
-    // travelers: number;
   }
 
   interface DateRange {
@@ -262,9 +259,9 @@ export default function QuotationsList() {
                         {/* <Link href={`/user/dashboard/quotations/${quote.id}/edit`} className="text-[#6C733D] hover:text-[#5a5f33] p-1" title="Edit">
                           <Edit className="w-4 h-4" />
                         </Link> */}
-                        <Link href={`/api/quotation/${quote.id}/pdf`} target="_blank" className="text-[#6C733D] hover:text-[#5a5f33] p-1" title="Download PDF">
+                        <button onClick={() => handleDownloadClick(quote.id)} className="text-[#6C733D] hover:text-[#5a5f33] p-1" title="Download PDF">
                           <Download className="w-4 h-4" />
-                        </Link>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -292,6 +289,26 @@ export default function QuotationsList() {
           </div>
         </div>
       </div>
+      {showPdfPreview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-lg p-4 max-w-4xl w-full h-[80vh] flex flex-col">
+            <Button
+              className="self-end cursor-pointer mb-2 text-red-500"
+              variant="ghost"
+              onClick={() => setShowPdfPreview(false)}
+            >
+              Close
+            </Button>
+            {loading ? (
+              <div className="flex-1 flex items-center justify-center">Loading PDF...</div>
+            ) : (
+              <PDFViewer width="100%" height="100%">
+                <QuotationPDF payload={selectedQuotation} />
+              </PDFViewer>
+            )}
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }

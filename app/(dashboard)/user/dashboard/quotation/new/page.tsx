@@ -716,9 +716,9 @@ export default function QuotationForm() {
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex justify-end gap-3">
-              <Button variant="outline" className="border-green-400 text-green-600 hover:bg-green-50 hover:text-green-700">
+              {/* <Button variant="outline" className="border-green-400 text-green-600 hover:bg-green-50 hover:text-green-700">
                 Save as Draft
-              </Button>
+              </Button> */}
               <Button onClick={() => setShowPdfPreview(true)} variant="ghost" className="border border-gray-300 hover:bg-gray-50 text-gray-700">
                 Preview PDF
               </Button>
