@@ -31,34 +31,6 @@ import { Edit, Plus, Trash2 } from "lucide-react"
 import type { MealPlan } from "@/lib/types"
 import axios from "axios"
 
-// Mock data
-const mockMealPlans: MealPlan[] = [
-  {
-    id: 1,
-    code: "CP",
-    description: "Continental Plan - Room + Breakfast",
-    ratePerPerson: 800,
-  },
-  {
-    id: 2,
-    code: "MAP",
-    description: "Modified American Plan - Room + Breakfast + Dinner",
-    ratePerPerson: 1200,
-  },
-  {
-    id: 3,
-    code: "AP",
-    description: "American Plan - Room + All Meals",
-    ratePerPerson: 1800,
-  },
-  {
-    id: 4,
-    code: "AI",
-    description: "All Inclusive - Room + All Meals + Beverages",
-    ratePerPerson: 2500,
-  },
-]
-
 export default function MealPlansPage() {
   const [mealPlans, setMealPlans] = useState<MealPlan[]>([])
   const [isCreateOpen, setIsCreateOpen] = useState(false)
