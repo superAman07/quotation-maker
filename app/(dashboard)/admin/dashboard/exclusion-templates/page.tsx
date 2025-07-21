@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -28,28 +28,10 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Edit, Plus, Trash2 } from "lucide-react"
 import type { ExclusionTemplate } from "@/lib/types"
-
-// Mock data
-const mockTemplates: ExclusionTemplate[] = [
-  {
-    id: 1,
-    name: "Standard Package Exclusions",
-    description: "Common exclusions for standard travel packages",
-  },
-  {
-    id: 2,
-    name: "International Package Exclusions",
-    description: "Exclusions specific to international travel packages",
-  },
-  {
-    id: 3,
-    name: "Adventure Package Exclusions",
-    description: "Exclusions for adventure and high-risk activities",
-  },
-]
+import axios from "axios"
 
 export default function ExclusionTemplatesPage() {
-  const [templates, setTemplates] = useState<ExclusionTemplate[]>(mockTemplates)
+  const [templates, setTemplates] = useState<ExclusionTemplate[]>([])
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editingTemplate, setEditingTemplate] = useState<ExclusionTemplate | null>(null)
@@ -58,13 +40,20 @@ export default function ExclusionTemplatesPage() {
     description: "",
   })
 
-  const handleCreate = () => {
-    const newTemplate: ExclusionTemplate = {
-      id: Math.max(...templates.map((t) => t.id)) + 1,
-      name: formData.name,
-      description: formData.description || undefined,
+  useEffect(() => {
+    async function fetchTemplates() {
+      const res = await axios.get('/api/admin/exclusion-templates');
+      setTemplates(res.data);
     }
-    setTemplates([...templates, newTemplate])
+    fetchTemplates();
+  }, []);
+
+  const handleCreate = async () => {
+    const res = await axios.post('/api/admin/exclusion-templates', {
+      name: formData.name,
+      description: formData.description,
+    });
+    setTemplates([...templates, res.data])
     setFormData({ name: "", description: "" })
     setIsCreateOpen(false)
   }
@@ -78,32 +67,27 @@ export default function ExclusionTemplatesPage() {
     setIsEditOpen(true)
   }
 
-  const handleUpdate = () => {
-    if (!editingTemplate) return
+  const handleUpdate = async () => {
+    if (!editingTemplate) return;
+    const res = await axios.put(`/api/admin/exclusion-templates/${editingTemplate.id}`, {
+      name: formData.name,
+      description: formData.description,
+    });
+    const updated = res.data;
+    setTemplates(templates.map((t) => t.id === updated.id ? updated : t));
+    setIsEditOpen(false);
+    setEditingTemplate(null);
+    setFormData({ name: "", description: "" });
+  };
 
-    setTemplates(
-      templates.map((t) =>
-        t.id === editingTemplate.id
-          ? {
-              ...t,
-              name: formData.name,
-              description: formData.description || undefined,
-            }
-          : t,
-      ),
-    )
-    setIsEditOpen(false)
-    setEditingTemplate(null)
-    setFormData({ name: "", description: "" })
-  }
-
-  const handleDelete = (id: number) => {
-    setTemplates(templates.filter((t) => t.id !== id))
-  }
+  const handleDelete = async (id: number) => {
+    await axios.delete(`/api/admin/exclusion-templates/${id}`);
+    setTemplates(templates.filter((t) => t.id !== id));
+  };
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center bg-white text-gray-700">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Exclusion Templates</h1>
           <p className="text-muted-foreground">Manage reusable exclusion templates for packages</p>
@@ -116,7 +100,7 @@ export default function ExclusionTemplatesPage() {
               Add Template
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="bg-white text-gray-700">
             <DialogHeader>
               <DialogTitle>Create New Exclusion Template</DialogTitle>
               <DialogDescription>Add a new reusable exclusion template.</DialogDescription>
@@ -153,7 +137,7 @@ export default function ExclusionTemplatesPage() {
         </Dialog>
       </div>
 
-      <div className="border rounded-lg">
+      <div className="border rounded-lg bg-white text-gray-700">
         <Table>
           <TableHeader>
             <TableRow>
@@ -178,7 +162,7 @@ export default function ExclusionTemplatesPage() {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent>
+                      <AlertDialogContent className="bg-white text-gray-700">
                         <AlertDialogHeader>
                           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                           <AlertDialogDescription>
@@ -202,7 +186,7 @@ export default function ExclusionTemplatesPage() {
 
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent>
+        <DialogContent className="bg-white text-gray-700">
           <DialogHeader>
             <DialogTitle>Edit Exclusion Template</DialogTitle>
             <DialogDescription>Update exclusion template information.</DialogDescription>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Edit, Plus, Trash2 } from "lucide-react"
 import type { FlightRoute } from "@/lib/types"
+import axios from "axios"
 
 // Mock data
 const mockFlightRoutes: FlightRoute[] = [
@@ -54,7 +55,7 @@ const mockFlightRoutes: FlightRoute[] = [
 ]
 
 export default function FlightRoutesPage() {
-  const [flightRoutes, setFlightRoutes] = useState<FlightRoute[]>(mockFlightRoutes)
+  const [flightRoutes, setFlightRoutes] = useState<FlightRoute[]>([])
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editingRoute, setEditingRoute] = useState<FlightRoute | null>(null)
@@ -66,16 +67,20 @@ export default function FlightRoutesPage() {
     imageUrl: "",
   })
 
-  const handleCreate = () => {
-    const newRoute: FlightRoute = {
-      id: Math.max(...flightRoutes.map((r) => r.id)) + 1,
-      origin: formData.origin,
-      destination: formData.destination,
-      baseFare: Number.parseFloat(formData.baseFare),
-      airline: formData.airline || undefined,
-      imageUrl: formData.imageUrl || undefined,
+  useEffect(() => {
+    async function fetchData() {
+      const flightRoutes = await axios.get('/api/admin/flight-routes')
+      setFlightRoutes(flightRoutes.data.routes);
     }
-    setFlightRoutes([...flightRoutes, newRoute])
+    fetchData();
+  }, [])
+
+  const handleCreate = async () => {
+    const res = await axios.post('/api/admin/flight-routes', {
+      ...formData,
+      baseFare: parseFloat(formData.baseFare),
+    });
+    setFlightRoutes([...flightRoutes, res.data])
     setFormData({ origin: "", destination: "", baseFare: "", airline: "", imageUrl: "" })
     setIsCreateOpen(false)
   }
@@ -92,35 +97,28 @@ export default function FlightRoutesPage() {
     setIsEditOpen(true)
   }
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (!editingRoute) return
 
-    setFlightRoutes(
-      flightRoutes.map((r) =>
-        r.id === editingRoute.id
-          ? {
-              ...r,
-              origin: formData.origin,
-              destination: formData.destination,
-              baseFare: Number.parseFloat(formData.baseFare),
-              airline: formData.airline || undefined,
-              imageUrl: formData.imageUrl || undefined,
-            }
-          : r,
-      ),
-    )
-    setIsEditOpen(false)
-    setEditingRoute(null)
-    setFormData({ origin: "", destination: "", baseFare: "", airline: "", imageUrl: "" })
+    const res = await axios.put(`/api/admin/flight-routes/${editingRoute.id}`, {
+      ...formData,
+      baseFare: parseFloat(formData.baseFare),
+    });
+    const updated = res.data.flightRoute;
+    setFlightRoutes(flightRoutes.map(r => r.id === updated.id ? updated : r));
+    setIsEditOpen(false);
+    setEditingRoute(null);
+    setFormData({ origin: "", destination: "", baseFare: "", airline: "", imageUrl: "" });
   }
 
-  const handleDelete = (id: number) => {
-    setFlightRoutes(flightRoutes.filter((r) => r.id !== id))
-  }
+  const handleDelete = async (id: number) => {
+    await axios.delete(`/api/admin/flight-routes/${id}`);
+    setFlightRoutes(flightRoutes.filter(r => r.id !== id));
+  };
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex justify-between items-center">
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 bg-white text-gray-700">
+      <div className="flex justify-between items-center ">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Flight Routes</h1>
           <p className="text-muted-foreground">Manage flight routes and fares</p>
@@ -133,7 +131,7 @@ export default function FlightRoutesPage() {
               Add Flight Route
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="bg-white text-gray-700">
             <DialogHeader>
               <DialogTitle>Create New Flight Route</DialogTitle>
               <DialogDescription>Add a new flight route with fare information.</DialogDescription>
@@ -219,7 +217,9 @@ export default function FlightRoutesPage() {
                   {route.origin} → {route.destination}
                 </TableCell>
                 <TableCell>{route.airline || "N/A"}</TableCell>
-                <TableCell>₹{route.baseFare.toLocaleString()}</TableCell>
+                <TableCell>{typeof route.baseFare === "number"
+                  ? `₹${route.baseFare.toLocaleString()}`
+                  : "N/A"}</TableCell>
                 <TableCell className="text-right">
                   <div className="flex justify-end gap-2">
                     <Button variant="outline" size="sm" onClick={() => handleEdit(route)}>
@@ -231,7 +231,7 @@ export default function FlightRoutesPage() {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent>
+                      <AlertDialogContent className="bg-white text-gray-700">
                         <AlertDialogHeader>
                           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                           <AlertDialogDescription>
@@ -255,7 +255,7 @@ export default function FlightRoutesPage() {
 
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent>
+        <DialogContent className="bg-white text-gray-700">
           <DialogHeader>
             <DialogTitle>Edit Flight Route</DialogTitle>
             <DialogDescription>Update flight route information.</DialogDescription>

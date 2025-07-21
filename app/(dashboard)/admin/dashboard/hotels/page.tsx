@@ -43,33 +43,6 @@ const mockVenues: Venue[] = [
   { id: 3, name: "Jaipur City Center", destinationId: 3 },
 ]
 
-const mockHotels: Hotel[] = [
-  {
-    id: 1,
-    name: "Taj Fort Aguada Resort & Spa",
-    starRating: 5,
-    amenities: "Pool, Spa, Beach Access, WiFi, Restaurant",
-    venueId: 1,
-    venue: mockVenues[0],
-  },
-  {
-    id: 2,
-    name: "Backwater Ripples Resort",
-    starRating: 4,
-    amenities: "Backwater View, Restaurant, WiFi, Ayurveda Center",
-    venueId: 2,
-    venue: mockVenues[1],
-  },
-  {
-    id: 3,
-    name: "Rambagh Palace",
-    starRating: 5,
-    amenities: "Palace Heritage, Pool, Spa, Multiple Restaurants",
-    venueId: 3,
-    venue: mockVenues[2],
-  },
-]
-
 export default function HotelsPage() {
   const [hotels, setHotels] = useState<Hotel[]>([])
   const [venues, setVenues] = useState<Venue[]>([])

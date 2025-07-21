@@ -29,12 +29,10 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Edit, Plus, Trash2, Route } from "lucide-react"
 import type { Package } from "@/lib/types"
-import Link from "next/link"
-// import { SidebarTrigger } from "@/components/sidebar/sidebar-trigger"
+import Link from "next/link" 
 import { Separator } from "@/components/ui/separator"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
-
-// Mock data
+ 
 const mockPackages: Package[] = [
   {
     id: 1,
@@ -63,7 +61,7 @@ const mockPackages: Package[] = [
 ]
 
 export default function PackagesPage() {
-  const [packages, setPackages] = useState<Package[]>(mockPackages)
+  const [packages, setPackages] = useState<Package[]>([])
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editingPackage, setEditingPackage] = useState<Package | null>(null)
