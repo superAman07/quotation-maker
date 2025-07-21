@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -29,6 +29,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Edit, Plus, Trash2 } from "lucide-react"
 import type { VehicleType, VehicleCategory } from "@/lib/types"
+import axios from "axios"
 
 // Mock data
 const mockVehicles: VehicleType[] = [
@@ -61,7 +62,7 @@ const mockVehicles: VehicleType[] = [
 ]
 
 export default function VehiclesPage() {
-  const [vehicles, setVehicles] = useState<VehicleType[]>(mockVehicles)
+  const [vehicles, setVehicles] = useState<VehicleType[]>([])
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editingVehicle, setEditingVehicle] = useState<VehicleType | null>(null)
@@ -71,19 +72,26 @@ export default function VehiclesPage() {
     ratePerDay: "",
     ratePerKm: "",
   })
+  
+  useEffect(() => {
+    async function fetchVehicles() {
+      const res = await axios.get('/api/admin/vehicle-types');
+      setVehicles(res.data);  
+    }
+    fetchVehicles();
+  }, []);
 
-  const handleCreate = () => {
-    const newVehicle: VehicleType = {
-      id: Math.max(...vehicles.map((v) => v.id)) + 1,
+  const handleCreate = async () => {
+    const res = await axios.post('/api/admin/vehicle-types', {
       type: formData.type,
-      category: formData.category as VehicleCategory,
+      category: formData.category,
       ratePerDay: formData.ratePerDay ? Number.parseFloat(formData.ratePerDay) : undefined,
       ratePerKm: formData.ratePerKm ? Number.parseFloat(formData.ratePerKm) : undefined,
-    }
-    setVehicles([...vehicles, newVehicle])
-    setFormData({ type: "", category: "", ratePerDay: "", ratePerKm: "" })
-    setIsCreateOpen(false)
-  }
+    });
+    setVehicles([...vehicles, res.data]);  
+    setFormData({ type: "", category: "", ratePerDay: "", ratePerKm: "" });
+    setIsCreateOpen(false);
+  };
 
   const handleEdit = (vehicle: VehicleType) => {
     setEditingVehicle(vehicle)
@@ -96,33 +104,28 @@ export default function VehiclesPage() {
     setIsEditOpen(true)
   }
 
-  const handleUpdate = () => {
-    if (!editingVehicle) return
+  const handleUpdate = async () => {
+    if (!editingVehicle) return;
+    const res = await axios.put(`/api/admin/vehicle-types/${editingVehicle.id}`, {
+      type: formData.type,
+      category: formData.category,
+      ratePerDay: formData.ratePerDay ? Number.parseFloat(formData.ratePerDay) : undefined,
+      ratePerKm: formData.ratePerKm ? Number.parseFloat(formData.ratePerKm) : undefined,
+    });
+    const updated = res.data; 
+    setVehicles(vehicles.map((v) => v.id === updated.id ? updated : v));
+    setIsEditOpen(false);
+    setEditingVehicle(null);
+    setFormData({ type: "", category: "", ratePerDay: "", ratePerKm: "" });
+  };
 
-    setVehicles(
-      vehicles.map((v) =>
-        v.id === editingVehicle.id
-          ? {
-              ...v,
-              type: formData.type,
-              category: formData.category as VehicleCategory,
-              ratePerDay: formData.ratePerDay ? Number.parseFloat(formData.ratePerDay) : undefined,
-              ratePerKm: formData.ratePerKm ? Number.parseFloat(formData.ratePerKm) : undefined,
-            }
-          : v,
-      ),
-    )
-    setIsEditOpen(false)
-    setEditingVehicle(null)
-    setFormData({ type: "", category: "", ratePerDay: "", ratePerKm: "" })
-  }
-
-  const handleDelete = (id: number) => {
-    setVehicles(vehicles.filter((v) => v.id !== id))
-  }
+  const handleDelete = async (id: number) => {
+    await axios.delete(`/api/admin/vehicle-types/${id}`);
+    setVehicles(vehicles.filter((v) => v.id !== id));
+  };
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 bg-white text-gray-700">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Vehicles</h1>
@@ -136,7 +139,7 @@ export default function VehiclesPage() {
               Add Vehicle
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="bg-white text-gray-700">
             <DialogHeader>
               <DialogTitle>Create New Vehicle Type</DialogTitle>
               <DialogDescription>Add a new vehicle type with pricing information.</DialogDescription>
@@ -160,7 +163,7 @@ export default function VehiclesPage() {
                   <SelectTrigger>
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-white text-gray-700">
                     <SelectItem value="INTERCITY">Intercity</SelectItem>
                     <SelectItem value="LOCAL">Local</SelectItem>
                   </SelectContent>
@@ -232,7 +235,7 @@ export default function VehiclesPage() {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent>
+                      <AlertDialogContent className="bg-white text-gray-700">
                         <AlertDialogHeader>
                           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                           <AlertDialogDescription>
@@ -256,7 +259,7 @@ export default function VehiclesPage() {
 
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent>
+        <DialogContent className="bg-white text-gray-700">
           <DialogHeader>
             <DialogTitle>Edit Vehicle Type</DialogTitle>
             <DialogDescription>Update vehicle type information.</DialogDescription>
@@ -280,7 +283,7 @@ export default function VehiclesPage() {
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-white text-gray-700">
                   <SelectItem value="INTERCITY">Intercity</SelectItem>
                   <SelectItem value="LOCAL">Local</SelectItem>
                 </SelectContent>
