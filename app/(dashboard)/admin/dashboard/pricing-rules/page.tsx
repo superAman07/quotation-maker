@@ -69,7 +69,7 @@ export default function PricingRulesPage() {
   const serviceTypes = ["HOTEL", "FLIGHT", "VEHICLE", "PACKAGE", "MEAL"]
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 bg-white text-gray-700">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Pricing Rules</h1>
