@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -28,42 +28,11 @@ import {
 import { ArrowLeft, Edit, Plus, Trash2 } from "lucide-react"
 import type { HotelRateCard } from "@/lib/types"
 import Link from "next/link"
-
-// Mock data
-const mockRateCards: HotelRateCard[] = [
-  {
-    id: 1,
-    hotelId: 1,
-    roomType: "Deluxe Room",
-    season: "Peak Season",
-    rate: 15000,
-  },
-  {
-    id: 2,
-    hotelId: 1,
-    roomType: "Deluxe Room",
-    season: "Off Season",
-    rate: 8000,
-  },
-  {
-    id: 3,
-    hotelId: 1,
-    roomType: "Suite",
-    season: "Peak Season",
-    rate: 25000,
-  },
-  {
-    id: 4,
-    hotelId: 1,
-    roomType: "Suite",
-    season: "Off Season",
-    rate: 15000,
-  },
-]
+import axios from "axios"
 
 export default function HotelRatesPage({ params }: { params: { hotelId: string } }) {
   const hotelId = Number.parseInt(params.hotelId)
-  const [rateCards, setRateCards] = useState<HotelRateCard[]>(mockRateCards)
+  const [rateCards, setRateCards] = useState<HotelRateCard[]>([])
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editingRate, setEditingRate] = useState<HotelRateCard | null>(null)
@@ -73,18 +42,19 @@ export default function HotelRatesPage({ params }: { params: { hotelId: string }
     rate: "",
   })
 
-  const handleCreate = () => {
-    const newRateCard: HotelRateCard = {
-      id: Math.max(...rateCards.map((r) => r.id)) + 1,
-      hotelId: hotelId,
-      roomType: formData.roomType,
-      season: formData.season,
-      rate: Number.parseFloat(formData.rate),
+  useEffect(() => {
+    async function fetchRates() {
+      const res = await axios.get(`/api/admin/hotels/${hotelId}/rates`);
+      setRateCards(res.data.rates);
     }
-    setRateCards([...rateCards, newRateCard])
-    setFormData({ roomType: "", season: "", rate: "" })
-    setIsCreateOpen(false)
-  }
+    fetchRates();
+  }, [hotelId]);
+  const handleCreate = async () => {
+    const res = await axios.post(`/api/admin/hotels/${hotelId}/rates`, formData);
+    setRateCards([...rateCards, res.data.rate]); 
+    setFormData({ roomType: "", season: "", rate: "" });
+    setIsCreateOpen(false);
+  };
 
   const handleEdit = (rateCard: HotelRateCard) => {
     setEditingRate(rateCard)
@@ -96,35 +66,26 @@ export default function HotelRatesPage({ params }: { params: { hotelId: string }
     setIsEditOpen(true)
   }
 
-  const handleUpdate = () => {
-    if (!editingRate) return
-
-    setRateCards(
-      rateCards.map((r) =>
-        r.id === editingRate.id
-          ? {
-              ...r,
-              roomType: formData.roomType,
-              season: formData.season,
-              rate: Number.parseFloat(formData.rate),
-            }
-          : r,
-      ),
-    )
-    setIsEditOpen(false)
-    setEditingRate(null)
-    setFormData({ roomType: "", season: "", rate: "" })
+  const handleUpdate = async () => {
+    if (!editingRate) return;
+    const res = await axios.put(`/api/admin/hotels/${hotelId}/rates/${editingRate.id}`, formData);
+    const updated = res.data.rate;
+    setRateCards(rateCards.map(r => r.id === updated.id ? updated : r));
+    setIsEditOpen(false);
+    setEditingRate(null);
+    setFormData({ roomType: "", season: "", rate: "" });
   }
 
-  const handleDelete = (id: number) => {
-    setRateCards(rateCards.filter((r) => r.id !== id))
-  }
+  const handleDelete = async (id: number) => {
+    await axios.delete(`/api/admin/hotels/${hotelId}/rates/${id}`);
+    setRateCards(rateCards.filter(r => r.id !== id));
+  };
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-white text-gray-700">
       <div className="flex items-center gap-4 mb-6">
         <Button asChild variant="outline" size="sm">
-          <Link href="/admin/hotels">
+          <Link href="/admin/dashboard/hotels">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Hotels
           </Link>
@@ -141,11 +102,11 @@ export default function HotelRatesPage({ params }: { params: { hotelId: string }
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button>
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="h-4 w-4 mr-2 text-gray-700" />
               Add Rate Card
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="bg-white text-gray-700">
             <DialogHeader>
               <DialogTitle>Create New Rate Card</DialogTitle>
               <DialogDescription>Add a new room rate for different seasons.</DialogDescription>
@@ -219,7 +180,7 @@ export default function HotelRatesPage({ params }: { params: { hotelId: string }
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent>
+                      <AlertDialogContent className="bg-white text-gray-700">
                         <AlertDialogHeader>
                           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                           <AlertDialogDescription>
@@ -242,7 +203,7 @@ export default function HotelRatesPage({ params }: { params: { hotelId: string }
 
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent>
+        <DialogContent className="bg-white text-gray-700">
           <DialogHeader>
             <DialogTitle>Edit Rate Card</DialogTitle>
             <DialogDescription>Update room rate information.</DialogDescription>

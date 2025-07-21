@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -28,42 +28,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Edit, Plus, Trash2 } from "lucide-react"
-import type { Venue, Destination } from "@/lib/types"
-// import { SidebarTrigger } from "@/components/sidebar-trigger"
+import type { Venue, Destination } from "@/lib/types" 
 import { Separator } from "@/components/ui/separator"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
-
-// Mock data
-const mockDestinations: Destination[] = [
-  { id: 1, name: "Goa", state: "Goa", country: "India" },
-  { id: 2, name: "Kerala", state: "Kerala", country: "India" },
-  { id: 3, name: "Rajasthan", state: "Rajasthan", country: "India" },
-]
-
-const mockVenues: Venue[] = [
-  {
-    id: 1,
-    name: "Baga Beach Resort Area",
-    address: "Baga Beach, North Goa",
-    coordinates: "15.5557° N, 73.7516° E",
-    description: "Popular beach area with resorts and nightlife",
-    destinationId: 1,
-    destination: mockDestinations[0],
-  },
-  {
-    id: 2,
-    name: "Alleppey Backwaters",
-    address: "Alleppey, Kerala",
-    coordinates: "9.4981° N, 76.3388° E",
-    description: "Scenic backwater destination with houseboats",
-    destinationId: 2,
-    destination: mockDestinations[1],
-  },
-]
+import axios from "axios"
 
 export default function VenuesPage() {
-  const [venues, setVenues] = useState<Venue[]>(mockVenues)
-  const [destinations] = useState<Destination[]>(mockDestinations)
+  const [venues, setVenues] = useState<Venue[]>([])
+  const [destinations,setDestinations] = useState<Destination[]>([])
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editingVenue, setEditingVenue] = useState<Venue | null>(null)
@@ -76,22 +48,23 @@ export default function VenuesPage() {
     destinationId: "",
   })
 
-  const handleCreate = () => {
-    const selectedDestination = destinations.find((d) => d.id === Number.parseInt(formData.destinationId))
-    const newVenue: Venue = {
-      id: Math.max(...venues.map((v) => v.id)) + 1,
-      name: formData.name,
-      address: formData.address || undefined,
-      coordinates: formData.coordinates || undefined,
-      description: formData.description || undefined,
-      imageUrl: formData.imageUrl || undefined,
-      destinationId: Number.parseInt(formData.destinationId),
-      destination: selectedDestination,
+  useEffect(() => {
+    async function fetchData() {
+      const venuesRes = await axios.get("/api/admin/venues");
+      setVenues(venuesRes.data); // or .data if your API returns array directly
+
+      const destinationsRes = await axios.get("/api/admin/destinations");
+      setDestinations(destinationsRes.data.destinations);
     }
-    setVenues([...venues, newVenue])
-    setFormData({ name: "", address: "", coordinates: "", description: "", imageUrl: "", destinationId: "" })
-    setIsCreateOpen(false)
-  }
+    fetchData();
+  }, []);
+
+  const handleCreate = async () => {
+    const res = await axios.post("/api/admin/venues", formData);
+    setVenues([...venues, res.data.venue]); // or res.data if API returns venue directly
+    setFormData({ name: "", address: "", coordinates: "", description: "", imageUrl: "", destinationId: "" });
+    setIsCreateOpen(false);
+  };
 
   const handleEdit = (venue: Venue) => {
     setEditingVenue(venue)
@@ -106,39 +79,24 @@ export default function VenuesPage() {
     setIsEditOpen(true)
   }
 
-  const handleUpdate = () => {
-    if (!editingVenue) return
+  const handleUpdate = async () => {
+    if (!editingVenue) return;
+    const res = await axios.put(`/api/admin/venues/${editingVenue.id}`, formData);
+    const updated = res.data.venue;  
+    setVenues(venues.map(v => v.id === updated.id ? updated : v));
+    setIsEditOpen(false);
+    setEditingVenue(null);
+    setFormData({ name: "", address: "", coordinates: "", description: "", imageUrl: "", destinationId: "" });
+  };
 
-    const selectedDestination = destinations.find((d) => d.id === Number.parseInt(formData.destinationId))
-    setVenues(
-      venues.map((v) =>
-        v.id === editingVenue.id
-          ? {
-              ...v,
-              name: formData.name,
-              address: formData.address || undefined,
-              coordinates: formData.coordinates || undefined,
-              description: formData.description || undefined,
-              imageUrl: formData.imageUrl || undefined,
-              destinationId: Number.parseInt(formData.destinationId),
-              destination: selectedDestination,
-            }
-          : v,
-      ),
-    )
-    setIsEditOpen(false)
-    setEditingVenue(null)
-    setFormData({ name: "", address: "", coordinates: "", description: "", imageUrl: "", destinationId: "" })
-  }
-
-  const handleDelete = (id: number) => {
-    setVenues(venues.filter((v) => v.id !== id))
-  }
+  const handleDelete = async (id: number) => {
+    await axios.delete(`/api/admin/venues/${id}`);
+    setVenues(venues.filter(v => v.id !== id));
+  };
 
   return (
     <>
-      <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-        {/* <SidebarTrigger className="-ml-1" /> */}
+      <header className="flex h-16 shrink-0 items-center text-gray-700 gap-2 border-b px-4">
         <Separator orientation="vertical" className="mr-2 h-4" />
         <Breadcrumb>
           <BreadcrumbList>
@@ -149,7 +107,7 @@ export default function VenuesPage() {
         </Breadcrumb>
       </header>
 
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+      <div className="flex-1 space-y-4 text-gray-700 p-4 md:p-8 pt-6">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
             <div>
@@ -164,7 +122,7 @@ export default function VenuesPage() {
                   Add Venue
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-2xl">
+              <DialogContent className="max-w-2xl bg-white text-gray-700">
                 <DialogHeader>
                   <DialogTitle>Create New Venue</DialogTitle>
                   <DialogDescription>Add a new venue to a destination.</DialogDescription>
@@ -179,7 +137,7 @@ export default function VenuesPage() {
                       placeholder="Enter venue name"
                     />
                   </div>
-                  <div className="grid gap-2">
+                  <div className="grid gap-2 bg-white text-gray-700">
                     <Label htmlFor="destination">Destination *</Label>
                     <Select
                       value={formData.destinationId}
@@ -188,7 +146,7 @@ export default function VenuesPage() {
                       <SelectTrigger>
                         <SelectValue placeholder="Select destination" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="text-gray-700 bg-white">
                         {destinations.map((destination) => (
                           <SelectItem key={destination.id} value={destination.id.toString()}>
                             {destination.name}
@@ -275,7 +233,7 @@ export default function VenuesPage() {
                               <Trash2 className="h-4 w-4" />
                             </Button>
                           </AlertDialogTrigger>
-                          <AlertDialogContent>
+                          <AlertDialogContent className="bg-white text-gray-700">
                             <AlertDialogHeader>
                               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                               <AlertDialogDescription>
@@ -298,7 +256,7 @@ export default function VenuesPage() {
 
           {/* Edit Dialog */}
           <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl bg-white text-gray-700">
               <DialogHeader>
                 <DialogTitle>Edit Venue</DialogTitle>
                 <DialogDescription>Update venue information.</DialogDescription>

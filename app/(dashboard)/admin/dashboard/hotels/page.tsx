@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -34,6 +34,7 @@ import Link from "next/link"
 // import { SidebarTrigger } from "@/components/sidebar-trigger"
 import { Separator } from "@/components/ui/separator"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
+import axios from "axios"
 
 // Mock data
 const mockVenues: Venue[] = [
@@ -70,8 +71,8 @@ const mockHotels: Hotel[] = [
 ]
 
 export default function HotelsPage() {
-  const [hotels, setHotels] = useState<Hotel[]>(mockHotels)
-  const [venues] = useState<Venue[]>(mockVenues)
+  const [hotels, setHotels] = useState<Hotel[]>([])
+  const [venues, setVenues] = useState<Venue[]>([])
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editingHotel, setEditingHotel] = useState<Hotel | null>(null)
@@ -83,20 +84,24 @@ export default function HotelsPage() {
     venueId: "",
   })
 
-  const handleCreate = () => {
-    const selectedVenue = venues.find((v) => v.id === Number.parseInt(formData.venueId))
-    const newHotel: Hotel = {
-      id: Math.max(...hotels.map((h) => h.id)) + 1,
-      name: formData.name,
-      starRating: formData.starRating ? Number.parseInt(formData.starRating) : undefined,
-      amenities: formData.amenities || undefined,
-      imageUrl: formData.imageUrl || undefined,
-      venueId: Number.parseInt(formData.venueId),
-      venue: selectedVenue,
+  useEffect(() => {
+    async function fetchData() {
+      const venuesRes = await axios.get("/api/admin/venues");
+      console.log("Fetched venues:", venuesRes.data.venues);
+      setVenues(venuesRes.data);
+
+      const hotelsRes = await axios.get("/api/admin/hotels");
+      console.log("Fetched hotels:", hotelsRes.data.hotels);
+      setHotels(hotelsRes.data.hotels);
     }
-    setHotels([...hotels, newHotel])
-    setFormData({ name: "", starRating: "", amenities: "", imageUrl: "", venueId: "" })
-    setIsCreateOpen(false)
+    fetchData();
+  }, []);
+
+  const handleCreate = async () => {
+    const res = await axios.post("/api/admin/hotels", formData);
+    setHotels([...hotels, res.data.hotel]);
+    setFormData({ name: "", starRating: "", amenities: "", imageUrl: "", venueId: "" });
+    setIsCreateOpen(false);
   }
 
   const handleEdit = (hotel: Hotel) => {
@@ -111,33 +116,20 @@ export default function HotelsPage() {
     setIsEditOpen(true)
   }
 
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (!editingHotel) return
-
-    const selectedVenue = venues.find((v) => v.id === Number.parseInt(formData.venueId))
-    setHotels(
-      hotels.map((h) =>
-        h.id === editingHotel.id
-          ? {
-              ...h,
-              name: formData.name,
-              starRating: formData.starRating ? Number.parseInt(formData.starRating) : undefined,
-              amenities: formData.amenities || undefined,
-              imageUrl: formData.imageUrl || undefined,
-              venueId: Number.parseInt(formData.venueId),
-              venue: selectedVenue,
-            }
-          : h,
-      ),
-    )
-    setIsEditOpen(false)
-    setEditingHotel(null)
-    setFormData({ name: "", starRating: "", amenities: "", imageUrl: "", venueId: "" })
+    const res = await axios.put(`/api/admin/hotels/${editingHotel.id}`, formData);
+    const updated = res.data.hotel;
+    setHotels(hotels.map((h) => h.id === updated.id ? updated : h));
+    setIsEditOpen(false);
+    setEditingHotel(null);
+    setFormData({ name: "", starRating: "", amenities: "", imageUrl: "", venueId: "" });
   }
 
-  const handleDelete = (id: number) => {
-    setHotels(hotels.filter((h) => h.id !== id))
-  }
+  const handleDelete = async (id: number) => {
+    await axios.delete(`/api/admin/hotels/${id}`);
+    setHotels(hotels.filter(h => h.id !== id));
+  };
 
   const renderStars = (rating?: number) => {
     if (!rating) return null
@@ -164,7 +156,7 @@ export default function HotelsPage() {
         </Breadcrumb>
       </header>
 
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 text-gray-700">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold">Hotels</h1>
@@ -178,7 +170,7 @@ export default function HotelsPage() {
                 Add Hotel
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl bg-white text-gray-700">
               <DialogHeader>
                 <DialogTitle>Create New Hotel</DialogTitle>
                 <DialogDescription>Add a new hotel to your catalog.</DialogDescription>
@@ -194,7 +186,7 @@ export default function HotelsPage() {
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
+                  <div className="grid gap-2 ">
                     <Label htmlFor="venue">Venue *</Label>
                     <Select
                       value={formData.venueId}
@@ -203,7 +195,7 @@ export default function HotelsPage() {
                       <SelectTrigger>
                         <SelectValue placeholder="Select venue" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white text-gray-700">
                         {venues.map((venue) => (
                           <SelectItem key={venue.id} value={venue.id.toString()}>
                             {venue.name}
@@ -221,7 +213,7 @@ export default function HotelsPage() {
                       <SelectTrigger>
                         <SelectValue placeholder="Select rating" />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white text-gray-700">
                         <SelectItem value="1">1 Star</SelectItem>
                         <SelectItem value="2">2 Stars</SelectItem>
                         <SelectItem value="3">3 Stars</SelectItem>
@@ -299,7 +291,7 @@ export default function HotelsPage() {
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button asChild variant="outline" size="sm">
-                        <Link href={`/admin/hotels/${hotel.id}/rates`}>
+                        <Link href={`/admin/dashboard/hotels/${hotel.id}/rates`}>
                           <DollarSign className="h-4 w-4" />
                         </Link>
                       </Button>
@@ -312,7 +304,7 @@ export default function HotelsPage() {
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent>
+                        <AlertDialogContent className="bg-white text-gray-700">
                           <AlertDialogHeader>
                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                             <AlertDialogDescription>
@@ -335,7 +327,7 @@ export default function HotelsPage() {
 
         {/* Edit Dialog */}
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl bg-white text-gray-700">
             <DialogHeader>
               <DialogTitle>Edit Hotel</DialogTitle>
               <DialogDescription>Update hotel information.</DialogDescription>
@@ -360,7 +352,7 @@ export default function HotelsPage() {
                     <SelectTrigger>
                       <SelectValue placeholder="Select venue" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white text-gray-700">
                       {venues.map((venue) => (
                         <SelectItem key={venue.id} value={venue.id.toString()}>
                           {venue.name}
@@ -378,7 +370,7 @@ export default function HotelsPage() {
                     <SelectTrigger>
                       <SelectValue placeholder="Select rating" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white text-gray-700">
                       <SelectItem value="1">1 Star</SelectItem>
                       <SelectItem value="2">2 Stars</SelectItem>
                       <SelectItem value="3">3 Stars</SelectItem>

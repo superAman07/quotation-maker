@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -26,10 +26,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Edit, Plus, Trash2 } from "lucide-react"
-// import type { Destination } from "@/lib/types"
-
-// Define the Destination type
+import { Edit, Plus, Trash2 } from "lucide-react" 
 type Destination = {
   id: number
   name: string
@@ -39,41 +36,13 @@ type Destination = {
   imageUrl?: string
 }
 
-// Add these imports at the top
-// import { SidebarTrigger } from "@/components/ui/sidebar"
 import { Separator } from "@/components/ui/separator"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
-
-// Mock data - replace with actual API calls
-const mockDestinations: Destination[] = [
-  {
-    id: 1,
-    name: "Goa",
-    state: "Goa",
-    country: "India",
-    description: "Beautiful beaches and Portuguese heritage",
-    imageUrl: "/placeholder.svg?height=100&width=100",
-  },
-  {
-    id: 2,
-    name: "Kerala",
-    state: "Kerala",
-    country: "India",
-    description: "God's own country with backwaters and spices",
-    imageUrl: "/placeholder.svg?height=100&width=100",
-  },
-  {
-    id: 3,
-    name: "Rajasthan",
-    state: "Rajasthan",
-    country: "India",
-    description: "Land of kings with magnificent palaces",
-    imageUrl: "/placeholder.svg?height=100&width=100",
-  },
-]
+import axios from "axios"
+ 
 
 export default function DestinationsPage() {
-  const [destinations, setDestinations] = useState<Destination[]>(mockDestinations)
+  const [destinations, setDestinations] = useState<Destination[]>([])
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editingDestination, setEditingDestination] = useState<Destination | null>(null)
@@ -84,54 +53,73 @@ export default function DestinationsPage() {
     description: "",
     imageUrl: "",
   })
+  const [loading, setLoading] = useState(true);
 
-  const handleCreate = () => {
-    const newDestination: Destination = {
-      id: Math.max(...destinations.map((d) => d.id)) + 1,
-      ...formData,
-    }
-    setDestinations([...destinations, newDestination])
-    setFormData({ name: "", state: "", country: "", description: "", imageUrl: "" })
-    setIsCreateOpen(false)
+  useEffect(() => {
+    const fetchDestinations = async () => {
+      try {
+        const res = await axios.get("/api/admin/destinations");
+        setDestinations(res.data.destinations);
+      } catch {
+        setDestinations([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDestinations();
+  }, []);
+
+  const handleCreate = async () => {
+    const res = await axios.post("/api/admin/destinations", formData)
+    if (res.status === 201) {
+      setDestinations([...destinations, res.data]);
+      setFormData({ name: "", state: "", country: "", description: "", imageUrl: "" });
+      setIsCreateOpen(false);
+    } 
   }
 
-  const handleEdit = (destination: Destination) => {
-    setEditingDestination(destination)
+  const handleEdit = async (destination: Destination) => {
+    setEditingDestination(destination);
     setFormData({
       name: destination.name,
       state: destination.state || "",
       country: destination.country || "",
       description: destination.description || "",
       imageUrl: destination.imageUrl || "",
-    })
-    setIsEditOpen(true)
+    });
+    setIsEditOpen(true);
   }
 
-  const handleUpdate = () => {
-    if (!editingDestination) return
-
-    setDestinations(
-      destinations.map((d) => (d.id === editingDestination.id ? { ...editingDestination, ...formData } : d)),
-    )
-    setIsEditOpen(false)
-    setEditingDestination(null)
-    setFormData({ name: "", state: "", country: "", description: "", imageUrl: "" })
+  const handleUpdate = async () => {
+    const res = await axios.put(`/api/admin/destinations/${editingDestination?.id}`, formData)
+    const updated = await res.data;
+    if (res.status !== 200) {
+      console.error("Failed to update destination");
+      return;
+    }
+    setDestinations(prev => prev.map(d => d.id === updated.id ? updated : d));
+    setIsEditOpen(false);
+    setEditingDestination(null);
+    setFormData({ name: "", state: "", country: "", description: "", imageUrl: "" });
   }
 
-  const handleDelete = (id: number) => {
-    setDestinations(destinations.filter((d) => d.id !== id))
+  const handleDelete = async (id: number) => {
+    const res = await axios.delete(`/api/admin/destinations/${id}`)
+    if (res.status !== 200) {
+      console.error("Failed to delete destination");
+      return;
+    }
+    setDestinations(prev => prev.filter(d => d.id !== id));
   }
-
-  // Replace the return statement with:
+ 
   return (
     <>
       <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-        {/* <SidebarTrigger className="-ml-1" /> */}
         <Separator orientation="vertical" className="mr-2 h-4" />
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem>
-              <BreadcrumbPage>Destinations</BreadcrumbPage>
+              <BreadcrumbPage className="text-gray-700">Destinations</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -140,24 +128,24 @@ export default function DestinationsPage() {
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Destinations</h1>
-            <p className="text-muted-foreground">Manage travel destinations</p>
+            <h1 className="text-3xl font-bold tracking-tight text-gray-700">Destinations</h1>
+            <p className="text-muted-foreground text-gray-700">Manage travel destinations</p>
           </div>
 
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
-              <Button>
+              <Button className="text-gray-700">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Destination
               </Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="bg-white text-gray-700">
               <DialogHeader>
-                <DialogTitle>Create New Destination</DialogTitle>
-                <DialogDescription>Add a new travel destination to your catalog.</DialogDescription>
+                <DialogTitle className="text-gray-700">Create New Destination</DialogTitle>
+                <DialogDescription className="text-gray-700">Add a new travel destination to your catalog.</DialogDescription>
               </DialogHeader>
               <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
+                <div className="grid gap-2 ">
                   <Label htmlFor="name">Name *</Label>
                   <Input
                     id="name"
@@ -217,8 +205,11 @@ export default function DestinationsPage() {
           </Dialog>
         </div>
 
-        <div className="border rounded-lg">
-          <Table>
+        <div className="border-b-black rounded-lg">
+          {loading ? (
+  <div className="text-center py-10 text-gray-500">Loading destinations...</div>
+) : (
+          <Table className="text-gray-700">
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
@@ -244,7 +235,7 @@ export default function DestinationsPage() {
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent>
+                        <AlertDialogContent className="bg-white text-gray-700">
                           <AlertDialogHeader>
                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                             <AlertDialogDescription>
@@ -264,11 +255,12 @@ export default function DestinationsPage() {
               ))}
             </TableBody>
           </Table>
+          )}
         </div>
 
         {/* Edit Dialog */}
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <DialogContent>
+          <DialogContent className="bg-white text-gray-700">
             <DialogHeader>
               <DialogTitle>Edit Destination</DialogTitle>
               <DialogDescription>Update destination information.</DialogDescription>
