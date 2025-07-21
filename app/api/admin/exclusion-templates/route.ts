@@ -6,7 +6,7 @@ import { jwtDecode } from 'jwt-decode';
 type DecodedToken = { name?: string; email?: string; role?: string };
 
 export async function GET() {
-    const templates = await prisma.inclusionTemplate.findMany({
+    const templates = await prisma.exclusionTemplate.findMany({
         orderBy: { name: 'asc' },
     })
     return NextResponse.json(templates)
@@ -29,12 +29,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     const { name, description } = await request.json()
-
     if (!name) {
         return NextResponse.json({ error: 'Template name is required' }, { status: 400 })
     }
 
-    const template = await prisma.inclusionTemplate.create({
+    const template = await prisma.exclusionTemplate.create({
         data: { name, description },
     })
 
