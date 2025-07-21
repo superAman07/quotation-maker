@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -29,6 +29,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Edit, Plus, Trash2 } from "lucide-react"
 import type { MealPlan } from "@/lib/types"
+import axios from "axios"
 
 // Mock data
 const mockMealPlans: MealPlan[] = [
@@ -59,7 +60,7 @@ const mockMealPlans: MealPlan[] = [
 ]
 
 export default function MealPlansPage() {
-  const [mealPlans, setMealPlans] = useState<MealPlan[]>(mockMealPlans)
+  const [mealPlans, setMealPlans] = useState<MealPlan[]>([])
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editingPlan, setEditingPlan] = useState<MealPlan | null>(null)
@@ -69,13 +70,17 @@ export default function MealPlansPage() {
     ratePerPerson: "",
   })
 
-  const handleCreate = () => {
-    const newPlan: MealPlan = {
-      id: Math.max(...mealPlans.map((p) => p.id)) + 1,
-      code: formData.code,
-      description: formData.description || undefined,
-      ratePerPerson: Number.parseFloat(formData.ratePerPerson),
+  useEffect(() => {
+    async function fetchMealPlans() {
+      const res = await axios.get('/api/admin/meal-plans');
+      setMealPlans(res.data);
     }
+    fetchMealPlans();
+  }, []);
+
+  const handleCreate = async () => {
+    const response = await axios.post('/api/admin/meal-plans', formData)
+    const newPlan = response.data
     setMealPlans([...mealPlans, newPlan])
     setFormData({ code: "", description: "", ratePerPerson: "" })
     setIsCreateOpen(false)
@@ -91,33 +96,28 @@ export default function MealPlansPage() {
     setIsEditOpen(true)
   }
 
-  const handleUpdate = () => {
-    if (!editingPlan) return
+  const handleUpdate = async () => {
+    if (!editingPlan) return;
+    const response = await axios.put(`/api/admin/meal-plans/${editingPlan.id}`, {
+      code: formData.code,
+      description: formData.description,
+      ratePerPerson: parseFloat(formData.ratePerPerson),
+    });
+    const updated = response.data.mealPlan; // Use .mealPlan if your API returns { mealPlan: {...} }
+    setMealPlans(mealPlans.map((p) => p.id === updated.id ? updated : p));
+    setIsEditOpen(false);
+    setEditingPlan(null);
+    setFormData({ code: "", description: "", ratePerPerson: "" });
+  };
 
-    setMealPlans(
-      mealPlans.map((p) =>
-        p.id === editingPlan.id
-          ? {
-              ...p,
-              code: formData.code,
-              description: formData.description || undefined,
-              ratePerPerson: Number.parseFloat(formData.ratePerPerson),
-            }
-          : p,
-      ),
-    )
-    setIsEditOpen(false)
-    setEditingPlan(null)
-    setFormData({ code: "", description: "", ratePerPerson: "" })
-  }
-
-  const handleDelete = (id: number) => {
-    setMealPlans(mealPlans.filter((p) => p.id !== id))
-  }
+  const handleDelete = async (id: number) => {
+    await axios.delete(`/api/admin/meal-plans/${id}`);
+    setMealPlans(mealPlans.filter((p) => p.id !== id));
+  };
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center text-gray-700 bg-white">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Meal Plans</h1>
           <p className="text-muted-foreground">Manage meal plan types and rates</p>
@@ -130,7 +130,7 @@ export default function MealPlansPage() {
               Add Meal Plan
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="bg-white text-gray-700">
             <DialogHeader>
               <DialogTitle>Create New Meal Plan</DialogTitle>
               <DialogDescription>Add a new meal plan with pricing information.</DialogDescription>
@@ -177,7 +177,7 @@ export default function MealPlansPage() {
         </Dialog>
       </div>
 
-      <div className="border rounded-lg">
+      <div className="border rounded-lg bg-white text-gray-700">
         <Table>
           <TableHeader>
             <TableRow>
@@ -208,7 +208,7 @@ export default function MealPlansPage() {
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent>
+                      <AlertDialogContent className="bg-white text-gray-700">
                         <AlertDialogHeader>
                           <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                           <AlertDialogDescription>
@@ -231,7 +231,7 @@ export default function MealPlansPage() {
 
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent>
+        <DialogContent className="bg-white text-gray-700">
           <DialogHeader>
             <DialogTitle>Edit Meal Plan</DialogTitle>
             <DialogDescription>Update meal plan information.</DialogDescription>
