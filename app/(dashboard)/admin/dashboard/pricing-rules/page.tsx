@@ -58,11 +58,7 @@ export default function PricingRules() {
   // State for all data - replace mock data with these variables
   const [markupRules, setMarkupRules] = useState<MarkupRule[]>([])
   const [discounts, setDiscounts] = useState<Discount[]>([])
-  const [taxes, setTaxes] = useState<Tax[]>([
-    { id: 1, serviceType: "HOTEL", percentage: 12 },
-    { id: 2, serviceType: "FLIGHT", percentage: 5 },
-    { id: 3, serviceType: "VEHICLE", percentage: 18 },
-  ])
+  const [taxes, setTaxes] = useState<Tax[]>([])
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -108,6 +104,18 @@ export default function PricingRules() {
       setDiscounts(res.data);
     }
     fetchDiscounts();
+  }, []);
+
+  useEffect(() => {
+    async function fetchTaxes() {
+      try {
+        const res = await axios.get('/api/admin/taxes');
+        setTaxes(res.data);
+      } catch (error) {
+        console.error('Failed to fetch taxes:', error);
+      }
+    }
+    fetchTaxes();
   }, []);
 
   // Reset form data
@@ -226,35 +234,33 @@ export default function PricingRules() {
 
   // Tax handlers (similar structure)
   const handleTaxSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     try {
       if (modalMode === "add") {
-        // Simulate API call for now
-        const newTax = {
-          id: Date.now(),
-          ...taxFormData
-        }
-        setTaxes([...taxes, newTax]);
+        const res = await axios.post('/api/admin/taxes', taxFormData);
+        setTaxes([...taxes, res.data]);
       } else {
+        const res = await axios.put(`/api/admin/taxes/${editingItem.id}`, taxFormData);
         setTaxes(taxes.map(tax =>
-          tax.id === editingItem.id ? { ...editingItem, ...taxFormData } : tax
+          tax.id === editingItem.id ? res.data : tax
         ));
       }
-      closeModal()
+      closeModal();
     } catch (error) {
       console.error('Failed to save tax rule:', error);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
-  const handleDeleteTax = (id: number) => {
+  const handleDeleteTax = async (id: number) => {
     if (confirm('Are you sure you want to delete this tax rule?')) {
+      await axios.delete(`/api/admin/taxes/${id}`);
       setTaxes(taxes.filter(tax => tax.id !== id));
     }
-  }
+  };
 
   // Get modal title and icon
   const getModalTitle = () => {
