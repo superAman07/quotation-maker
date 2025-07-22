@@ -54,27 +54,10 @@ interface TaxFormData {
 
 export default function PricingRules() {
   const [activeTab, setActiveTab] = useState<"markup" | "discount" | "tax">("markup")
-  
+
   // State for all data - replace mock data with these variables
   const [markupRules, setMarkupRules] = useState<MarkupRule[]>([])
-  const [discounts, setDiscounts] = useState<Discount[]>([
-    {
-      id: 1,
-      code: "EARLY20",
-      description: "Early bird discount",
-      percentage: 20,
-      validFrom: "2024-01-01",
-      validTo: "2024-03-31",
-    },
-    {
-      id: 2,
-      code: "SUMMER15",
-      description: "Summer special discount",
-      percentage: 15,
-      validFrom: "2024-04-01",
-      validTo: "2024-06-30",
-    },
-  ])
+  const [discounts, setDiscounts] = useState<Discount[]>([])
   const [taxes, setTaxes] = useState<Tax[]>([
     { id: 1, serviceType: "HOTEL", percentage: 12 },
     { id: 2, serviceType: "FLIGHT", percentage: 5 },
@@ -119,6 +102,14 @@ export default function PricingRules() {
     fetchMarkupRules();
   }, []);
 
+  useEffect(() => {
+    async function fetchDiscounts() {
+      const res = await axios.get('/api/admin/discounts');
+      setDiscounts(res.data);
+    }
+    fetchDiscounts();
+  }, []);
+
   // Reset form data
   const resetFormData = () => {
     setMarkupFormData({ serviceType: "", percentage: 0 })
@@ -145,7 +136,7 @@ export default function PricingRules() {
   const openEditModal = (item: any) => {
     setModalMode("edit")
     setEditingItem(item)
-    
+
     if (activeTab === "markup") {
       setMarkupFormData({
         serviceType: item.serviceType,
@@ -165,7 +156,7 @@ export default function PricingRules() {
         percentage: item.percentage
       })
     }
-    
+
     setIsModalOpen(true)
   }
 
@@ -180,7 +171,7 @@ export default function PricingRules() {
         setMarkupRules([...markupRules, res.data]);
       } else {
         const res = await axios.put(`/api/admin/markup-rules/${editingItem.id}`, markupFormData);
-        setMarkupRules(markupRules.map(rule => 
+        setMarkupRules(markupRules.map(rule =>
           rule.id === editingItem.id ? res.data : rule
         ));
       }
@@ -205,35 +196,33 @@ export default function PricingRules() {
 
   // Discount handlers (similar structure)
   const handleDiscountSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     try {
       if (modalMode === "add") {
-        // Simulate API call for now
-        const newDiscount = {
-          id: Date.now(),
-          ...discountFormData
-        }
-        setDiscounts([...discounts, newDiscount]);
+        const res = await axios.post('/api/admin/discounts', discountFormData);
+        setDiscounts([...discounts, res.data]);
       } else {
-        setDiscounts(discounts.map(discount => 
-          discount.id === editingItem.id ? { ...editingItem, ...discountFormData } : discount
+        const res = await axios.put(`/api/admin/discounts/${editingItem.id}`, discountFormData);
+        setDiscounts(discounts.map(discount =>
+          discount.id === editingItem.id ? res.data : discount
         ));
       }
-      closeModal()
+      closeModal();
     } catch (error) {
       console.error('Failed to save discount:', error);
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
-  const handleDeleteDiscount = (id: number) => {
+  const handleDeleteDiscount = async (id: number) => {
     if (confirm('Are you sure you want to delete this discount?')) {
+      await axios.delete(`/api/admin/discounts/${id}`);
       setDiscounts(discounts.filter(discount => discount.id !== id));
     }
-  }
+  };
 
   // Tax handlers (similar structure)
   const handleTaxSubmit = async (e: React.FormEvent) => {
@@ -249,7 +238,7 @@ export default function PricingRules() {
         }
         setTaxes([...taxes, newTax]);
       } else {
-        setTaxes(taxes.map(tax => 
+        setTaxes(taxes.map(tax =>
           tax.id === editingItem.id ? { ...editingItem, ...taxFormData } : tax
         ));
       }
@@ -302,33 +291,30 @@ export default function PricingRules() {
           <div className="flex space-x-1">
             <button
               onClick={() => setActiveTab("markup")}
-              className={`flex-1 flex items-center justify-center px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                activeTab === "markup" 
-                  ? "bg-blue-600 text-white shadow-lg shadow-blue-600/25" 
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-              }`}
+              className={`flex-1 flex items-center justify-center px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${activeTab === "markup"
+                ? "bg-blue-600 text-white shadow-lg shadow-blue-600/25"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                }`}
             >
               <Percent className="h-4 w-4 mr-2" />
               Markup Rules
             </button>
             <button
               onClick={() => setActiveTab("discount")}
-              className={`flex-1 flex items-center justify-center px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                activeTab === "discount" 
-                  ? "bg-green-600 text-white shadow-lg shadow-green-600/25" 
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-              }`}
+              className={`flex-1 flex items-center justify-center px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${activeTab === "discount"
+                ? "bg-green-600 text-white shadow-lg shadow-green-600/25"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                }`}
             >
               <Tag className="h-4 w-4 mr-2" />
               Discount Codes
             </button>
             <button
               onClick={() => setActiveTab("tax")}
-              className={`flex-1 flex items-center justify-center px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${
-                activeTab === "tax" 
-                  ? "bg-purple-600 text-white shadow-lg shadow-purple-600/25" 
-                  : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-              }`}
+              className={`flex-1 flex items-center justify-center px-6 py-3 rounded-xl text-sm font-semibold transition-all duration-200 ${activeTab === "tax"
+                ? "bg-purple-600 text-white shadow-lg shadow-purple-600/25"
+                : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                }`}
             >
               <Settings className="h-4 w-4 mr-2" />
               Tax Rules
@@ -378,16 +364,16 @@ export default function PricingRules() {
                           <TableCell className="font-semibold text-blue-600">{rule.percentage}%</TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-2">
-                              <Button 
-                                variant="outline" 
+                              <Button
+                                variant="outline"
                                 size="sm"
                                 onClick={() => openEditModal(rule)}
                                 className="hover:bg-blue-50 hover:border-blue-300"
                               >
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button 
-                                variant="outline" 
+                              <Button
+                                variant="outline"
                                 size="sm"
                                 onClick={() => handleDeleteMarkupRule(rule.id)}
                                 className="hover:bg-red-50 hover:border-red-300 hover:text-red-600"
@@ -444,16 +430,16 @@ export default function PricingRules() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               onClick={() => openEditModal(discount)}
                               className="hover:bg-green-50 hover:border-green-300"
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               onClick={() => handleDeleteDiscount(discount.id)}
                               className="hover:bg-red-50 hover:border-red-300 hover:text-red-600"
@@ -501,16 +487,16 @@ export default function PricingRules() {
                         <TableCell className="font-semibold text-purple-600">{tax.percentage}%</TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               onClick={() => openEditModal(tax)}
                               className="hover:bg-purple-50 hover:border-purple-300"
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               onClick={() => handleDeleteTax(tax.id)}
                               className="hover:bg-red-50 hover:border-red-300 hover:text-red-600"
@@ -724,15 +710,15 @@ export default function PricingRules() {
             )}
 
             <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
+              <Button
+                type="button"
+                variant="outline"
                 onClick={closeModal}
                 disabled={isSubmitting}
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 type="submit"
                 onClick={(e) => {
                   if (activeTab === "markup") handleMarkupSubmit(e)
@@ -740,11 +726,10 @@ export default function PricingRules() {
                   else if (activeTab === "tax") handleTaxSubmit(e)
                 }}
                 disabled={isSubmitting}
-                className={`${
-                  activeTab === "markup" ? "bg-blue-600 hover:bg-blue-700" :
+                className={`${activeTab === "markup" ? "bg-blue-600 hover:bg-blue-700" :
                   activeTab === "discount" ? "bg-green-600 hover:bg-green-700" :
-                  "bg-purple-600 hover:bg-purple-700"
-                }`}
+                    "bg-purple-600 hover:bg-purple-700"
+                  }`}
               >
                 {isSubmitting ? (
                   <>
