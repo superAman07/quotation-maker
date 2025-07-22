@@ -23,6 +23,9 @@ export async function POST(req: NextRequest) {
         if (!user) {
             return NextResponse.json({ message: "User not found" }, { status: 404 });
         }
+        if (user.status !== "ACTIVE") {
+            return NextResponse.json({ error: "Account is not active" }, { status: 403 });
+        }
         const valid = await verifyPassword(password, user.password);
         if (!valid) {
             return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
