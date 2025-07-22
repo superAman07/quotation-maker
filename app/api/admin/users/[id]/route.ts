@@ -1,13 +1,12 @@
 // /app/api/admin/users/[id]/route.ts
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcrypt'
 import { Role } from '@prisma/client'
+ 
 
-interface Params { params: { id: string } }
-
-export async function GET(_req: Request, { params }: Params) {
-  const id = parseInt(params.id, 10)
+export async function GET(_req: NextRequest, { params }: {params: Promise<{id:string}>}) {
+  const id = parseInt((await params).id, 10)
   const user = await prisma.user.findUnique({
     where: { id },
     select: {
@@ -28,8 +27,8 @@ export async function GET(_req: Request, { params }: Params) {
   return NextResponse.json(user)
 }
 
-export async function PUT(request: Request, { params }: Params) {
-  const id = parseInt(params.id, 10)
+export async function PUT(request: NextRequest, { params }: {params: Promise<{id:string}>}) {
+  const id = parseInt((await params).id, 10)
   const body = await request.json()
 
   const { email, name: newName, role: newRole } = body
@@ -66,8 +65,8 @@ export async function PUT(request: Request, { params }: Params) {
   return NextResponse.json(updated)
 }
 
-export async function DELETE(_req: Request, { params }: Params) {
-  const id = parseInt(params.id, 10)
+export async function DELETE(_req: NextRequest, { params }: {params: Promise<{id:string}>}) {
+  const id = parseInt((await params).id, 10)
   await prisma.user.delete({ where: { id } })
   return NextResponse.json({ success: true })
 }
