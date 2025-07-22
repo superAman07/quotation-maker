@@ -143,6 +143,9 @@ enum ServiceType {
   FLIGHT
   TOUR
   INSURANCE
+  VEHICLE
+  PACKAGE
+  MEAL
   OTHER
 }
 

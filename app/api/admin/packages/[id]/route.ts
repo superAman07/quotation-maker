@@ -3,8 +3,8 @@ import { prisma } from '@/lib/prisma'
 
 interface Params { params: { id: string } }
 
-export async function GET(_req: Request, { params }: Params) {
-    const id = parseInt(params.id, 10)
+export async function GET(_req: Request, { params }: {params: Promise<{id:string}>}) {
+    const id = parseInt((await params).id, 10)
     const pkg = await prisma.package.findUnique({
         where: { id },
         include: { packageItineraries: { orderBy: { dayNumber: 'asc' } } }
@@ -15,8 +15,8 @@ export async function GET(_req: Request, { params }: Params) {
     return NextResponse.json(pkg)
 }
 
-export async function PUT(request: Request, { params }: Params) {
-    const id = parseInt(params.id, 10)
+export async function PUT(request: Request, { params }: {params: Promise<{id:string}>}) {
+    const id = parseInt((await params).id, 10)
     const {
         name,
         description,
@@ -67,10 +67,8 @@ export async function PUT(request: Request, { params }: Params) {
     return NextResponse.json(updated)
 }
 
-export async function DELETE(_req: Request, { params }: Params) {
-    const id = parseInt(params.id, 10)
-    // This will cascade‐delete itineraries if you have `onDelete: Cascade` set in your schema,
-    // otherwise you may need to delete them first.
+export async function DELETE(_req: Request, { params }: {params: Promise<{id:string}>}) {
+    const id = parseInt((await params).id, 10) 
     await prisma.package.delete({ where: { id } })
     return NextResponse.json({ success: true })
 }

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -29,10 +29,11 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Edit, Plus, Trash2, Route } from "lucide-react"
 import type { Package } from "@/lib/types"
-import Link from "next/link" 
+import Link from "next/link"
 import { Separator } from "@/components/ui/separator"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
- 
+import axios from "axios"
+
 const mockPackages: Package[] = [
   {
     id: 1,
@@ -73,19 +74,26 @@ export default function PackagesPage() {
     totalNights: "",
   })
 
-  const handleCreate = () => {
-    const newPackage: Package = {
-      id: Math.max(...packages.map((p) => p.id)) + 1,
+  useEffect(() => {
+    async function fetchPackages() {
+      const res = await axios.get('/api/admin/packages');
+      setPackages(res.data);
+    }
+    fetchPackages();
+  }, []);
+
+  const handleCreate = async () => {
+    const res = await axios.post('/api/admin/packages', {
       name: formData.name,
-      description: formData.description || undefined,
+      description: formData.description,
       durationDays: Number.parseInt(formData.durationDays),
       basePricePerPerson: Number.parseFloat(formData.basePricePerPerson),
       totalNights: Number.parseInt(formData.totalNights),
-    }
-    setPackages([...packages, newPackage])
-    setFormData({ name: "", description: "", durationDays: "", basePricePerPerson: "", totalNights: "" })
-    setIsCreateOpen(false)
-  }
+    });
+    setPackages([...packages, res.data]);
+    setFormData({ name: "", description: "", durationDays: "", basePricePerPerson: "", totalNights: "" });
+    setIsCreateOpen(false);
+  };
 
   const handleEdit = (pkg: Package) => {
     setEditingPackage(pkg)
@@ -99,36 +107,30 @@ export default function PackagesPage() {
     setIsEditOpen(true)
   }
 
-  const handleUpdate = () => {
-    if (!editingPackage) return
+  const handleUpdate = async () => {
+    if (!editingPackage) return;
+    const res = await axios.put(`/api/admin/packages/${editingPackage.id}`, {
+      name: formData.name,
+      description: formData.description,
+      durationDays: Number.parseInt(formData.durationDays),
+      basePricePerPerson: Number.parseFloat(formData.basePricePerPerson),
+      totalNights: Number.parseInt(formData.totalNights),
+    });
+    const updated = res.data;  
+    setPackages(packages.map((p) => p.id === updated.id ? updated : p));
+    setIsEditOpen(false);
+    setEditingPackage(null);
+    setFormData({ name: "", description: "", durationDays: "", basePricePerPerson: "", totalNights: "" });
+  };
 
-    setPackages(
-      packages.map((p) =>
-        p.id === editingPackage.id
-          ? {
-              ...p,
-              name: formData.name,
-              description: formData.description || undefined,
-              durationDays: Number.parseInt(formData.durationDays),
-              basePricePerPerson: Number.parseFloat(formData.basePricePerPerson),
-              totalNights: Number.parseInt(formData.totalNights),
-            }
-          : p,
-      ),
-    )
-    setIsEditOpen(false)
-    setEditingPackage(null)
-    setFormData({ name: "", description: "", durationDays: "", basePricePerPerson: "", totalNights: "" })
-  }
-
-  const handleDelete = (id: number) => {
-    setPackages(packages.filter((p) => p.id !== id))
-  }
+  const handleDelete = async (id: number) => {
+    await axios.delete(`/api/admin/packages/${id}`);
+    setPackages(packages.filter((p) => p.id !== id));
+  };
 
   return (
     <>
-      <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-        {/* <SidebarTrigger className="-ml-1" /> */}
+      <header className="flex h-16 shrink-0 items-center gap-2 border-b px-4 bg-white text-gray-700">
         <Separator orientation="vertical" className="mr-2 h-4" />
         <Breadcrumb>
           <BreadcrumbList>
@@ -139,7 +141,7 @@ export default function PackagesPage() {
         </Breadcrumb>
       </header>
 
-      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+      <div className="flex-1 space-y-4 p-4 md:p-8 pt-6 bg-white text-gray-700">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-3xl font-bold">Travel Packages</h1>
@@ -153,7 +155,7 @@ export default function PackagesPage() {
                 Add Package
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+            <DialogContent className="max-w-2xl bg-white text-gray-700">
               <DialogHeader>
                 <DialogTitle>Create New Package</DialogTitle>
                 <DialogDescription>Add a new travel package to your catalog.</DialogDescription>
@@ -254,7 +256,7 @@ export default function PackagesPage() {
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button asChild variant="outline" size="sm">
-                        <Link href={`/admin/packages/${pkg.id}/itinerary`}>
+                        <Link href={`/admin/dashboard/packages/${pkg.id}/itinerary`}>
                           <Route className="h-4 w-4" />
                         </Link>
                       </Button>
@@ -267,7 +269,7 @@ export default function PackagesPage() {
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </AlertDialogTrigger>
-                        <AlertDialogContent>
+                        <AlertDialogContent className="bg-white text-gray-700">
                           <AlertDialogHeader>
                             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                             <AlertDialogDescription>
@@ -290,7 +292,7 @@ export default function PackagesPage() {
 
         {/* Edit Dialog */}
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl bg-white text-gray-700">
             <DialogHeader>
               <DialogTitle>Edit Package</DialogTitle>
               <DialogDescription>Update package information.</DialogDescription>
