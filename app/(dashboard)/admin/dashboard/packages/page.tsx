@@ -256,7 +256,7 @@ export default function PackagesPage() {
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
                       <Button asChild variant="outline" size="sm">
-                        <Link href={`/admin/packages/${pkg.id}/itinerary`}>
+                        <Link href={`/admin/dashboard/packages/${pkg.id}/itinerary`}>
                           <Route className="h-4 w-4" />
                         </Link>
                       </Button>
