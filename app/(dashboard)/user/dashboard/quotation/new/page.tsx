@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,8 +27,11 @@ interface TravelSummary {
   place: string;
   vehicleUsed: string;
   localVehicleUsed: string;
+  vehicleUsedCustom?: string; 
+  localVehicleUsedCustom?: string;
   flightCostPerPerson: number;
   flightImageUrl: string;
+  mealPlanCustom: string;
 }
 
 interface Accommodation {
@@ -65,10 +68,18 @@ export default function QuotationForm() {
     mealPlan: '',
     place: '',
     vehicleUsed: '',
+    vehicleUsedCustom: '', 
     localVehicleUsed: '',
+    localVehicleUsedCustom: '',
     flightCostPerPerson: 0,
-    flightImageUrl: ''
+    flightImageUrl: '',
+    mealPlanCustom: "",
   });
+  const [mealPlans, setMealPlans] = useState<{ id: number; code: string; description: string }[]>([]);
+  const [loadingMealPlans, setLoadingMealPlans] = useState(true);
+
+  const [vehicles, setVehicles] = useState<{ id: number; name: string; type?: string }[]>([]);
+  const [loadingVehicles, setLoadingVehicles] = useState(true);
 
   const [accommodations, setAccommodations] = useState<Accommodation[]>([
     { id: '1', location: '', hotelName: '', numberOfNights: 1 }
@@ -169,7 +180,7 @@ export default function QuotationForm() {
         body: formData,
       });
       const data = await res.json();
-      setFlightImagePreview(data.url); 
+      setFlightImagePreview(data.url);
     }
   };
 
@@ -178,7 +189,35 @@ export default function QuotationForm() {
     setFlightImagePreview('');
     setTravelSummary(prev => ({ ...prev, flightImageUrl: '' }));
   };
- 
+
+  useEffect(() => {
+    async function fetchMealPlans() {
+      try {
+        const res = await axios.get('/api/admin/meal-plans');
+        setMealPlans(res.data);
+      } catch {
+        setMealPlans([]);
+      } finally {
+        setLoadingMealPlans(false);
+      }
+    }
+    fetchMealPlans();
+  }, []);
+
+  useEffect(() => {
+    async function fetchVehicles() {
+      try {
+        const res = await axios.get('/api/admin/vehicle-types');
+        setVehicles(res.data);
+      } catch {
+        setVehicles([]);
+      } finally {
+        setLoadingVehicles(false);
+      }
+    }
+    fetchVehicles();
+  }, []);
+
   React.useEffect(() => {
     const totalPerPerson = costing.landCostPerPerson + travelSummary.flightCostPerPerson;
     const totalGroup = totalPerPerson * travelSummary.groupSize;
@@ -203,6 +242,10 @@ export default function QuotationForm() {
     0
   );
 
+  const mealPlanToSend = travelSummary.mealPlan === "__custom" ? travelSummary.mealPlanCustom : travelSummary.mealPlan;
+
+  const vehicleUsedToSend = travelSummary.vehicleUsed === "__custom" ? travelSummary.vehicleUsedCustom : travelSummary.vehicleUsed;
+  const localVehicleUsedToSend = travelSummary.localVehicleUsed === "__custom" ? travelSummary.localVehicleUsedCustom : travelSummary.localVehicleUsed;
   const payload = {
     quotationNo: generateQuotationNo(),
     logoUrl: "/logo.png",
@@ -212,11 +255,14 @@ export default function QuotationForm() {
     clientAddress: clientInfo.address,
     travelDate: travelSummary.dateOfTravel,
     groupSize: travelSummary.groupSize,
-    mealPlan: travelSummary.mealPlan,
+    // mealPlan: travelSummary.mealPlan,
+    mealPlan: mealPlanToSend,
     place: travelSummary.place,
-    vehicleUsed: travelSummary.vehicleUsed,
-    localVehicleUsed: travelSummary.localVehicleUsed,
-    flightCost: travelSummary.flightCostPerPerson, 
+    // vehicleUsed: travelSummary.vehicleUsed,
+    vehicleUsed: vehicleUsedToSend,
+    localVehicleUsed: localVehicleUsedToSend,
+    // localVehicleUsed: travelSummary.localVehicleUsed,
+    flightCost: travelSummary.flightCostPerPerson,
     flightImageUrl: flightImagePreview,
     landCostPerHead: costing.landCostPerPerson,
     totalPerHead: costing.totalCostPerPerson,
@@ -242,7 +288,7 @@ export default function QuotationForm() {
       const response = await axios.post('/api/user/new-quotation', payload);
       console.log(response.data);
       if (response.data.status === 201) {
-        alert('Quotation created successfully!'); 
+        alert('Quotation created successfully!');
       } else {
         alert('Failed to create quotation. Please try again.');
       }
@@ -341,13 +387,36 @@ export default function QuotationForm() {
                   </div>
                   <div>
                     <Label className="text-gray-700 font-medium">Local Vehicle Used</Label>
-                    <Input
+                    <select
+                      id="localVehicleUsed"
+                      value={travelSummary.localVehicleUsed}
+                      onChange={e => setTravelSummary(prev => ({ ...prev, localVehicleUsed: e.target.value }))}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                    >
+                      <option value="">Select local vehicle...</option>
+                      {vehicles.map(vehicle => (
+                        <option key={vehicle.id} value={vehicle.name}>
+                          {vehicle.name} {vehicle.type ? `(${vehicle.type})` : ""}
+                        </option>
+                      ))}
+                      <option value="__custom">Other (Add new)</option>
+                    </select>
+                    {travelSummary.localVehicleUsed === "__custom" && (
+                      <Input
+                        value={travelSummary.localVehicleUsedCustom || ""}
+                        onChange={e => setTravelSummary(prev => ({ ...prev, localVehicleUsedCustom: e.target.value }))}
+                        placeholder="Enter custom local vehicle"
+                        className="mt-2"
+                      />
+                    )}
+
+                    {/* <Input
                       type="text"
                       className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
                       value={travelSummary.localVehicleUsed}
                       onChange={e => setTravelSummary({ ...travelSummary, localVehicleUsed: e.target.value })}
                       placeholder="e.g. Innova, Tempo Traveller"
-                    />
+                    /> */}
                   </div>
                   <div>
                     <Label htmlFor="groupSize" className="text-gray-700 font-medium">Group Size (Pax)</Label>
@@ -362,13 +431,35 @@ export default function QuotationForm() {
                   </div>
                   <div>
                     <Label htmlFor="mealPlan" className="text-gray-700 font-medium">Meal Plan</Label>
-                    <Input
+                    <select
+                      id="mealPlan"
+                      value={travelSummary.mealPlan}
+                      onChange={e => setTravelSummary(prev => ({ ...prev, mealPlan: e.target.value }))}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                    >
+                      <option value="">Select meal plan...</option>
+                      {mealPlans.map(plan => (
+                        <option key={plan.id} value={plan.code}>
+                          {plan.code} {plan.description ? `- ${plan.description}` : ""}
+                        </option>
+                      ))}
+                      <option value="__custom">Other (Add new)</option>
+                    </select>
+                    {travelSummary.mealPlan === "__custom" && (
+                      <Input
+                        value={travelSummary.mealPlanCustom || ""}
+                        onChange={e => setTravelSummary(prev => ({ ...prev, mealPlanCustom: e.target.value }))}
+                        placeholder="Enter custom meal plan"
+                        className="mt-2"
+                      />
+                    )}
+                    {/* <Input
                       id="mealPlan"
                       value={travelSummary.mealPlan}
                       onChange={(e) => setTravelSummary(prev => ({ ...prev, mealPlan: e.target.value }))}
                       className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
                       placeholder="e.g. MAP (Breakfast + Dinner)"
-                    />
+                    /> */}
                   </div>
                   <div>
                     <Label htmlFor="mealPlan" className="text-gray-700 font-medium">Place</Label>
@@ -384,13 +475,58 @@ export default function QuotationForm() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="vehicleUsed" className="text-gray-700 font-medium">Vehicle Used</Label>
-                    <Input
+                    <select
+                      id="vehicleUsed"
+                      value={travelSummary.vehicleUsed}
+                      onChange={e => setTravelSummary(prev => ({ ...prev, vehicleUsed: e.target.value }))}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                    >
+                      <option value="">Select vehicle...</option>
+                      {vehicles.map(vehicle => (
+                        <option key={vehicle.id} value={vehicle.name}>
+                          {vehicle.name} {vehicle.type ? `(${vehicle.type})` : ""}
+                        </option>
+                      ))}
+                      <option value="__custom">Other (Add new)</option>
+                    </select>
+                    {travelSummary.vehicleUsed === "__custom" && (
+                      <Input
+                        value={travelSummary.vehicleUsedCustom || ""}
+                        onChange={e => setTravelSummary(prev => ({ ...prev, vehicleUsedCustom: e.target.value }))}
+                        placeholder="Enter custom vehicle"
+                        className="mt-2"
+                      />
+                    )}
+
+                    {/* <select
+                      id="vehicleUsed"
+                      value={travelSummary.vehicleUsed}
+                      onChange={e => setTravelSummary(prev => ({ ...prev, vehicleUsed: e.target.value }))}
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                    >
+                      <option value="">Select vehicle...</option>
+                      {vehicles.map(vehicle => (
+                        <option key={vehicle.id} value={vehicle.name}>
+                          {vehicle.name} {vehicle.type ? `(${vehicle.type})` : ""}
+                        </option> 
+                      ))}
+                      <option value="__custom">Other (Add new)</option>
+                    </select>
+                    {travelSummary.vehicleUsed === "__custom" && (
+                      <Input
+                        value={travelSummary.vehicleUsed || ""}
+                        onChange={e => setTravelSummary(prev => ({ ...prev, vehicleUsedCustom: e.target.value }))}
+                        placeholder="Enter custom vehicle"
+                        className="mt-2"
+                      />
+                    )} */}
+                    {/* <Input
                       id="vehicleUsed"
                       value={travelSummary.vehicleUsed}
                       onChange={(e) => setTravelSummary(prev => ({ ...prev, vehicleUsed: e.target.value }))}
                       className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
                       placeholder="e.g. Air India Flight AI-123"
-                    />
+                    /> */}
                   </div>
                   <div>
                     <Label htmlFor="flightCost" className="text-gray-700 font-medium">Flight Cost per Person</Label>
