@@ -71,12 +71,19 @@ export const UserTable = ({
                 </Badge>
               </TableCell>
               <TableCell>
-                <Badge 
-                  variant={user.isLocked ? 'destructive' : 'default'}
-                  className={user.isLocked ? '' : 'bg-success hover:bg-success/80'}
+                <span
+                  className={
+                    user.status === "ACTIVE"
+                      ? "text-green-600 font-semibold"
+                      : user.status === "LOCKED"
+                        ? "text-red-600 font-semibold"
+                        : user.status === "SUSPENDED"
+                          ? "text-yellow-600 font-semibold"
+                          : "text-gray-500 font-semibold"
+                  }
                 >
-                  {user.isLocked ? 'Locked' : 'Active'}
-                </Badge>
+                  {user.status}
+                </span>
               </TableCell>
               <TableCell className="text-muted-foreground">
                 {format(new Date(user.createdAt), 'MMM dd, yyyy')}

@@ -5,8 +5,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import type { User } from './UserManagement';
+import { Switch } from '@/components/ui/switch'; 
+
+interface User {
+  id: string;
+  email: string;
+  name: string;
+  role: 'Employee' | 'Admin';
+  isLocked: boolean;
+  status?: string;  
+  createdAt: string;
+}
 
 interface UserModalProps {
   isOpen: boolean;
@@ -23,6 +32,7 @@ interface FormData {
   isLocked: boolean;
   password: string;
   confirmPassword: string;
+  status: string;
 }
 
 export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModalProps) => {
@@ -32,6 +42,7 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
     role: 'Employee',
     isLocked: false,
     password: '',
+    status: "ACTIVE",
     confirmPassword: '',
   });
   const [errors, setErrors] = useState<Partial<FormData>>({});
@@ -44,6 +55,7 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
         role: user.role,
         isLocked: user.isLocked,
         password: '',
+        status: user.status || "ACTIVE",
         confirmPassword: '',
       });
     } else {
@@ -53,6 +65,7 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
         role: 'Employee',
         isLocked: false,
         password: '',
+        status: "ACTIVE",
         confirmPassword: '',
       });
     }
@@ -93,26 +106,28 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     const userData = isEditing
       ? {
-          id: user!.id,
-          email: formData.email,
-          name: formData.name,
-          role: formData.role,
-          isLocked: formData.isLocked,
-        }
+        id: user!.id,
+        email: formData.email,
+        name: formData.name,
+        role: formData.role,
+        isLocked: formData.isLocked,
+        status: formData.status,
+      }
       : {
-          email: formData.email,
-          name: formData.name,
-          role: formData.role,
-          isLocked: formData.isLocked,
-          password: formData.password,
-        };
+        email: formData.email,
+        name: formData.name,
+        role: formData.role,
+        isLocked: formData.isLocked,
+        password: formData.password,
+        status: formData.status,
+      };
 
     onSave(userData);
   };
@@ -126,9 +141,9 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
   };
 
   const isFormValid = () => {
-    return formData.email && 
-           (!isEditing ? formData.name : true) &&
-           (!isEditing || formData.password ? formData.password && formData.confirmPassword && formData.password === formData.confirmPassword && formData.password.length >= 6 : true);
+    return formData.email &&
+      (!isEditing ? formData.name : true) &&
+      (!isEditing || formData.password ? formData.password && formData.confirmPassword && formData.password === formData.confirmPassword && formData.password.length >= 6 : true);
   };
 
   return (
@@ -191,6 +206,24 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
             />
             <Label htmlFor="status">Active (unchecked = locked)</Label>
           </div> */}
+
+          <div className="space-y-2">
+            <Label htmlFor="status">Status *</Label>
+            <Select
+              value={formData.status}
+              onValueChange={(value) => handleInputChange('status', value)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent className="bg-white text-gray-700">
+                <SelectItem value="ACTIVE">Active</SelectItem>
+                <SelectItem value="LOCKED">Locked</SelectItem>
+                <SelectItem value="SUSPENDED">Suspended</SelectItem>
+                <SelectItem value="INACTIVE">Inactive</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* Password fields */}
           {(!isEditing || formData.password) && (

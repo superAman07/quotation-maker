@@ -28,6 +28,7 @@ export interface User {
   email: string;
   name: string;
   role: 'Employee' | 'Admin';
+  status?: string;
   isLocked: boolean;
   createdAt: string;
 }
@@ -40,34 +41,6 @@ export const UserManagement = () => {
   const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const { toast } = useToast();
-
-  // Mock data for demo purposes (replace with actual API calls)
-  const mockUsers: User[] = [
-    {
-      id: '1',
-      email: 'john.doe@company.com',
-      name: 'John Doe',
-      role: 'Admin',
-      isLocked: false,
-      createdAt: '2024-01-15T10:30:00Z'
-    },
-    {
-      id: '2',
-      email: 'jane.smith@company.com',
-      name: 'Jane Smith',
-      role: 'Employee',
-      isLocked: false,
-      createdAt: '2024-02-20T14:15:00Z'
-    },
-    {
-      id: '3',
-      email: 'locked.user@company.com',
-      name: 'Locked User',
-      role: 'Employee',
-      isLocked: true,
-      createdAt: '2024-01-05T09:00:00Z'
-    }
-  ];
 
   useEffect(() => {
     fetchUsers();
