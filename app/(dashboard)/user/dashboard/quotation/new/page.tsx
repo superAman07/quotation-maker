@@ -25,9 +25,10 @@ interface TravelSummary {
   groupSize: number;
   mealPlan: string;
   place: string;
+  vehicleUsedType?: string;
   vehicleUsed: string;
   localVehicleUsed: string;
-  vehicleUsedCustom?: string; 
+  vehicleUsedCustom?: string;
   localVehicleUsedCustom?: string;
   flightCostPerPerson: number;
   flightImageUrl: string;
@@ -67,8 +68,9 @@ export default function QuotationForm() {
     groupSize: 1,
     mealPlan: '',
     place: '',
+    vehicleUsedType: '',
     vehicleUsed: '',
-    vehicleUsedCustom: '', 
+    vehicleUsedCustom: '',
     localVehicleUsed: '',
     localVehicleUsedCustom: '',
     flightCostPerPerson: 0,
@@ -79,6 +81,14 @@ export default function QuotationForm() {
   const [loadingMealPlans, setLoadingMealPlans] = useState(true);
 
   const [vehicles, setVehicles] = useState<{ id: number; name: string; type?: string }[]>([]);
+  const [flightRoutes, setFlightRoutes] = useState<{
+    id: number;
+    origin: string;
+    destination: string;
+    baseFare: number;
+    airline: string;
+    imageUrl: string;
+  }[]>([]);
   const [loadingVehicles, setLoadingVehicles] = useState(true);
 
   const [accommodations, setAccommodations] = useState<Accommodation[]>([
@@ -206,16 +216,15 @@ export default function QuotationForm() {
 
   useEffect(() => {
     async function fetchVehicles() {
-      try {
-        const res = await axios.get('/api/admin/vehicle-types');
-        setVehicles(res.data);
-      } catch {
-        setVehicles([]);
-      } finally {
-        setLoadingVehicles(false);
-      }
+      const res = await axios.get('/api/admin/vehicle-types');
+      setVehicles(res.data);
+    }
+    async function fetchFlights() {
+      const res = await axios.get('/api/admin/flight-routes');
+      setFlightRoutes(res.data.routes);
     }
     fetchVehicles();
+    fetchFlights();
   }, []);
 
   React.useEffect(() => {
@@ -385,7 +394,7 @@ export default function QuotationForm() {
                       className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
                     />
                   </div>
-                  <div>
+                  <div className='text-gray-700 font-medium'>
                     <Label className="text-gray-700 font-medium">Local Vehicle Used</Label>
                     <select
                       id="localVehicleUsed"
@@ -406,7 +415,7 @@ export default function QuotationForm() {
                         value={travelSummary.localVehicleUsedCustom || ""}
                         onChange={e => setTravelSummary(prev => ({ ...prev, localVehicleUsedCustom: e.target.value }))}
                         placeholder="Enter custom local vehicle"
-                        className="mt-2"
+                        className="mt-2 focus:ring-green-500 focus:border-green-500 text-gray-900"
                       />
                     )}
 
@@ -453,13 +462,6 @@ export default function QuotationForm() {
                         className="mt-2"
                       />
                     )}
-                    {/* <Input
-                      id="mealPlan"
-                      value={travelSummary.mealPlan}
-                      onChange={(e) => setTravelSummary(prev => ({ ...prev, mealPlan: e.target.value }))}
-                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                      placeholder="e.g. MAP (Breakfast + Dinner)"
-                    /> */}
                   </div>
                   <div>
                     <Label htmlFor="mealPlan" className="text-gray-700 font-medium">Place</Label>
@@ -473,69 +475,45 @@ export default function QuotationForm() {
                   </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="vehicleUsed" className="text-gray-700 font-medium">Vehicle Used</Label>
-                    <select
-                      id="vehicleUsed"
-                      value={travelSummary.vehicleUsed}
-                      onChange={e => setTravelSummary(prev => ({ ...prev, vehicleUsed: e.target.value }))}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
-                    >
-                      <option value="">Select vehicle...</option>
-                      {vehicles.map(vehicle => (
-                        <option key={vehicle.id} value={vehicle.name}>
-                          {vehicle.name} {vehicle.type ? `(${vehicle.type})` : ""}
-                        </option>
-                      ))}
-                      <option value="__custom">Other (Add new)</option>
-                    </select>
-                    {travelSummary.vehicleUsed === "__custom" && (
-                      <Input
-                        value={travelSummary.vehicleUsedCustom || ""}
-                        onChange={e => setTravelSummary(prev => ({ ...prev, vehicleUsedCustom: e.target.value }))}
-                        placeholder="Enter custom vehicle"
-                        className="mt-2"
-                      />
-                    )}
-
-                    {/* <select
-                      id="vehicleUsed"
-                      value={travelSummary.vehicleUsed}
-                      onChange={e => setTravelSummary(prev => ({ ...prev, vehicleUsed: e.target.value }))}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
-                    >
-                      <option value="">Select vehicle...</option>
-                      {vehicles.map(vehicle => (
-                        <option key={vehicle.id} value={vehicle.name}>
-                          {vehicle.name} {vehicle.type ? `(${vehicle.type})` : ""}
-                        </option> 
-                      ))}
-                      <option value="__custom">Other (Add new)</option>
-                    </select>
-                    {travelSummary.vehicleUsed === "__custom" && (
-                      <Input
-                        value={travelSummary.vehicleUsed || ""}
-                        onChange={e => setTravelSummary(prev => ({ ...prev, vehicleUsedCustom: e.target.value }))}
-                        placeholder="Enter custom vehicle"
-                        className="mt-2"
-                      />
-                    )} */}
-                    {/* <Input
-                      id="vehicleUsed"
-                      value={travelSummary.vehicleUsed}
-                      onChange={(e) => setTravelSummary(prev => ({ ...prev, vehicleUsed: e.target.value }))}
-                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                      placeholder="e.g. Air India Flight AI-123"
-                    /> */}
+                  <div className='text-gray-700 font-medium'>
+                    <div>
+                      <Label htmlFor="airline" className="text-gray-700 font-medium">Airline</Label>
+                      <select
+                        id="airline"
+                        value={travelSummary.vehicleUsed}
+                        onChange={e => {
+                          const selectedId = Number(e.target.value);
+                          const selectedRoute = flightRoutes.find(route => route.id === selectedId);
+                          setTravelSummary(prev => ({
+                            ...prev,
+                            vehicleUsed: e.target.value,
+                            flightCostPerPerson: selectedRoute ? selectedRoute.baseFare : 0,
+                          }));
+                        }}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                      >
+                        <option value="">Select airline...</option>
+                        {flightRoutes.map(route => (
+                          <option key={route.id} value={route.id}>
+                            {route.airline} ({route.origin} → {route.destination})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                   <div>
-                    <Label htmlFor="flightCost" className="text-gray-700 font-medium">Flight Cost per Person</Label>
+                    <Label htmlFor="flightCostPerPerson" className="text-gray-700 font-medium">Flight Cost per Person</Label>
                     <Input
-                      id="flightCost"
+                      id="flightCostPerPerson"
                       type="number"
                       min="0"
                       value={travelSummary.flightCostPerPerson}
-                      onChange={(e) => setTravelSummary(prev => ({ ...prev, flightCostPerPerson: parseFloat(e.target.value) || 0 }))}
+                      onChange={e =>
+                        setTravelSummary(prev => ({
+                          ...prev,
+                          flightCostPerPerson: parseFloat(e.target.value) || 0,
+                        }))
+                      }
                       className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
                       placeholder="e.g. 12000"
                     />
