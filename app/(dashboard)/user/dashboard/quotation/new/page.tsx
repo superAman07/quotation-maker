@@ -40,6 +40,7 @@ interface TravelSummary {
 interface Accommodation {
   id: string;
   location: string;
+  locationCustom?: string;
   hotelName: string;
   numberOfNights: number;
   hotelNameCustom?: string;
@@ -340,9 +341,20 @@ export default function QuotationForm() {
     totalGroupCost: costing.totalGroupCost,
     notes,
     status: "SENT",
+    // accommodation: accommodations.map(acc => ({
+    //   location: acc.location,
+    //   hotelName: acc.hotelName,
+    //   nights: acc.numberOfNights,
+    // })),
     accommodation: accommodations.map(acc => ({
-      location: acc.location,
-      hotelName: acc.hotelName,
+      location:
+        acc.location === "__custom"
+          ? acc.locationCustom || ""
+          : acc.location,
+      hotelName:
+        acc.hotelName === "__custom"
+          ? acc.hotelNameCustom || ""
+          : acc.hotelName,
       nights: acc.numberOfNights,
     })),
     totalNights,
@@ -517,7 +529,7 @@ export default function QuotationForm() {
                       />
                     )}
                   </div>
-                  <div> 
+                  <div>
                     <Label htmlFor="place" className="text-gray-700 font-medium">Place</Label>
                     <Combobox
                       value={travelSummary.place}
