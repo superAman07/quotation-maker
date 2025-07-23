@@ -16,6 +16,7 @@ model User {
   quotations Quotation[]
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
+  status     UserStatus  @default(ACTIVE)
 }
 
 model Quotation {
@@ -147,6 +148,13 @@ enum ServiceType {
   PACKAGE
   MEAL
   OTHER
+}
+
+enum UserStatus {
+  ACTIVE
+  LOCKED
+  SUSPENDED
+  INACTIVE
 }
 
 // Models for travel services

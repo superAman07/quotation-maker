@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -25,10 +25,14 @@ interface TravelSummary {
   groupSize: number;
   mealPlan: string;
   place: string;
+  vehicleUsedType?: string;
   vehicleUsed: string;
   localVehicleUsed: string;
+  vehicleUsedCustom?: string;
+  localVehicleUsedCustom?: string;
   flightCostPerPerson: number;
   flightImageUrl: string;
+  mealPlanCustom: string;
 }
 
 interface Accommodation {
@@ -36,6 +40,7 @@ interface Accommodation {
   location: string;
   hotelName: string;
   numberOfNights: number;
+  hotelNameCustom?: string;
 }
 
 interface ItineraryItem {
@@ -64,11 +69,46 @@ export default function QuotationForm() {
     groupSize: 1,
     mealPlan: '',
     place: '',
+    vehicleUsedType: '',
     vehicleUsed: '',
+    vehicleUsedCustom: '',
     localVehicleUsed: '',
+    localVehicleUsedCustom: '',
     flightCostPerPerson: 0,
-    flightImageUrl: ''
+    flightImageUrl: '',
+    mealPlanCustom: "",
   });
+  const [mealPlans, setMealPlans] = useState<{ id: number; code: string; description: string }[]>([]);
+  const [loadingMealPlans, setLoadingMealPlans] = useState(true);
+
+  const [vehicles, setVehicles] = useState<{ id: number; name: string; type?: string }[]>([]);
+  const [flightRoutes, setFlightRoutes] = useState<{
+    id: number;
+    origin: string;
+    destination: string;
+    baseFare: number;
+    airline: string;
+    imageUrl: string;
+  }[]>([]);
+  const [hotels, setHotels] = useState<{
+    id: number;
+    name: string;
+    starRating?: number;
+    amenities?: string;
+    imageUrl?: string;
+    venueId?: number;
+    venue?: {
+      id: number;
+      name: string;
+      address: string;
+      coordinates?: string;
+      description?: string;
+      imageUrl?: string;
+      destinationId?: number;
+    };
+  }[]>([]);
+
+  const [loadingVehicles, setLoadingVehicles] = useState(true);
 
   const [accommodations, setAccommodations] = useState<Accommodation[]>([
     { id: '1', location: '', hotelName: '', numberOfNights: 1 }
@@ -169,7 +209,7 @@ export default function QuotationForm() {
         body: formData,
       });
       const data = await res.json();
-      setFlightImagePreview(data.url); 
+      setFlightImagePreview(data.url);
     }
   };
 
@@ -178,7 +218,46 @@ export default function QuotationForm() {
     setFlightImagePreview('');
     setTravelSummary(prev => ({ ...prev, flightImageUrl: '' }));
   };
- 
+
+  useEffect(() => {
+    async function fetchMealPlans() {
+      try {
+        const res = await axios.get('/api/admin/meal-plans');
+        setMealPlans(res.data);
+      } catch {
+        setMealPlans([]);
+      } finally {
+        setLoadingMealPlans(false);
+      }
+    }
+    fetchMealPlans();
+  }, []);
+
+  useEffect(() => {
+    async function fetchVehicles() {
+      const res = await axios.get('/api/admin/vehicle-types');
+      setVehicles(res.data);
+    }
+    async function fetchFlights() {
+      const res = await axios.get('/api/admin/flight-routes');
+      setFlightRoutes(res.data.routes);
+    }
+    fetchVehicles();
+    fetchFlights();
+  }, []);
+
+  useEffect(() => {
+    async function fetchHotels() {
+      try {
+        const res = await axios.get('/api/admin/hotels');
+        setHotels(res.data.hotels);
+      } catch {
+        setHotels([]);
+      }
+    }
+    fetchHotels();
+  }, []);
+
   React.useEffect(() => {
     const totalPerPerson = costing.landCostPerPerson + travelSummary.flightCostPerPerson;
     const totalGroup = totalPerPerson * travelSummary.groupSize;
@@ -203,6 +282,10 @@ export default function QuotationForm() {
     0
   );
 
+  const mealPlanToSend = travelSummary.mealPlan === "__custom" ? travelSummary.mealPlanCustom : travelSummary.mealPlan;
+
+  const vehicleUsedToSend = travelSummary.vehicleUsed === "__custom" ? travelSummary.vehicleUsedCustom : travelSummary.vehicleUsed;
+  const localVehicleUsedToSend = travelSummary.localVehicleUsed === "__custom" ? travelSummary.localVehicleUsedCustom : travelSummary.localVehicleUsed;
   const payload = {
     quotationNo: generateQuotationNo(),
     logoUrl: "/logo.png",
@@ -212,11 +295,14 @@ export default function QuotationForm() {
     clientAddress: clientInfo.address,
     travelDate: travelSummary.dateOfTravel,
     groupSize: travelSummary.groupSize,
-    mealPlan: travelSummary.mealPlan,
+    // mealPlan: travelSummary.mealPlan,
+    mealPlan: mealPlanToSend,
     place: travelSummary.place,
-    vehicleUsed: travelSummary.vehicleUsed,
-    localVehicleUsed: travelSummary.localVehicleUsed,
-    flightCost: travelSummary.flightCostPerPerson, 
+    // vehicleUsed: travelSummary.vehicleUsed,
+    vehicleUsed: vehicleUsedToSend,
+    localVehicleUsed: localVehicleUsedToSend,
+    // localVehicleUsed: travelSummary.localVehicleUsed,
+    flightCost: travelSummary.flightCostPerPerson,
     flightImageUrl: flightImagePreview,
     landCostPerHead: costing.landCostPerPerson,
     totalPerHead: costing.totalCostPerPerson,
@@ -242,7 +328,7 @@ export default function QuotationForm() {
       const response = await axios.post('/api/user/new-quotation', payload);
       console.log(response.data);
       if (response.data.status === 201) {
-        alert('Quotation created successfully!'); 
+        alert('Quotation created successfully!');
       } else {
         alert('Failed to create quotation. Please try again.');
       }
@@ -339,15 +425,30 @@ export default function QuotationForm() {
                       className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
                     />
                   </div>
-                  <div>
+                  <div className='text-gray-700 font-medium'>
                     <Label className="text-gray-700 font-medium">Local Vehicle Used</Label>
-                    <Input
-                      type="text"
-                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                    <select
+                      id="localVehicleUsed"
                       value={travelSummary.localVehicleUsed}
-                      onChange={e => setTravelSummary({ ...travelSummary, localVehicleUsed: e.target.value })}
-                      placeholder="e.g. Innova, Tempo Traveller"
-                    />
+                      onChange={e => setTravelSummary(prev => ({ ...prev, localVehicleUsed: e.target.value }))}
+                      className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                    >
+                      <option value="">Select local vehicle...</option>
+                      {vehicles.map(vehicle => (
+                        <option key={vehicle.id} value={vehicle.name}>
+                          {vehicle.name} {vehicle.type ? `${vehicle.type}` : ""}
+                        </option>
+                      ))}
+                      <option value="__custom">Other (Add new)</option>
+                    </select>
+                    {travelSummary.localVehicleUsed === "__custom" && (
+                      <Input
+                        value={travelSummary.localVehicleUsedCustom || ""}
+                        onChange={e => setTravelSummary(prev => ({ ...prev, localVehicleUsedCustom: e.target.value }))}
+                        placeholder="Enter custom local vehicle"
+                        className="mt-2 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                      />
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="groupSize" className="text-gray-700 font-medium">Group Size (Pax)</Label>
@@ -362,13 +463,28 @@ export default function QuotationForm() {
                   </div>
                   <div>
                     <Label htmlFor="mealPlan" className="text-gray-700 font-medium">Meal Plan</Label>
-                    <Input
+                    <select
                       id="mealPlan"
                       value={travelSummary.mealPlan}
-                      onChange={(e) => setTravelSummary(prev => ({ ...prev, mealPlan: e.target.value }))}
-                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                      placeholder="e.g. MAP (Breakfast + Dinner)"
-                    />
+                      onChange={e => setTravelSummary(prev => ({ ...prev, mealPlan: e.target.value }))}
+                      className="mt-1 block w-full h-10 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                    >
+                      <option value="">Select meal plan...</option>
+                      {mealPlans.map(plan => (
+                        <option key={plan.id} value={plan.code}>
+                          {plan.code} {plan.description ? `- ${plan.description}` : ""}
+                        </option>
+                      ))}
+                      <option value="__custom">Other (Add new)</option>
+                    </select>
+                    {travelSummary.mealPlan === "__custom" && (
+                      <Input
+                        value={travelSummary.mealPlanCustom || ""}
+                        onChange={e => setTravelSummary(prev => ({ ...prev, mealPlanCustom: e.target.value }))}
+                        placeholder="Enter custom meal plan"
+                        className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                      />
+                    )}
                   </div>
                   <div>
                     <Label htmlFor="mealPlan" className="text-gray-700 font-medium">Place</Label>
@@ -382,24 +498,45 @@ export default function QuotationForm() {
                   </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="vehicleUsed" className="text-gray-700 font-medium">Vehicle Used</Label>
-                    <Input
-                      id="vehicleUsed"
-                      value={travelSummary.vehicleUsed}
-                      onChange={(e) => setTravelSummary(prev => ({ ...prev, vehicleUsed: e.target.value }))}
-                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                      placeholder="e.g. Air India Flight AI-123"
-                    />
+                  <div className='text-gray-700 font-medium'>
+                    <div>
+                      <Label htmlFor="airline" className="text-gray-700 font-medium">Airline</Label>
+                      <select
+                        id="airline"
+                        value={travelSummary.vehicleUsed}
+                        onChange={e => {
+                          const selectedId = Number(e.target.value);
+                          const selectedRoute = flightRoutes.find(route => route.id === selectedId);
+                          setTravelSummary(prev => ({
+                            ...prev,
+                            vehicleUsed: e.target.value,
+                            flightCostPerPerson: selectedRoute ? selectedRoute.baseFare : 0,
+                          }));
+                        }}
+                        className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                      >
+                        <option value="">Select airline...</option>
+                        {flightRoutes.map(route => (
+                          <option key={route.id} value={route.id}>
+                            {route.airline} ({route.origin} → {route.destination})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                   <div>
-                    <Label htmlFor="flightCost" className="text-gray-700 font-medium">Flight Cost per Person</Label>
+                    <Label htmlFor="flightCostPerPerson" className="text-gray-700 font-medium">Flight Cost per Person</Label>
                     <Input
-                      id="flightCost"
+                      id="flightCostPerPerson"
                       type="number"
                       min="0"
                       value={travelSummary.flightCostPerPerson}
-                      onChange={(e) => setTravelSummary(prev => ({ ...prev, flightCostPerPerson: parseFloat(e.target.value) || 0 }))}
+                      onChange={e =>
+                        setTravelSummary(prev => ({
+                          ...prev,
+                          flightCostPerPerson: parseFloat(e.target.value) || 0,
+                        }))
+                      }
                       className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
                       placeholder="e.g. 12000"
                     />
@@ -473,21 +610,65 @@ export default function QuotationForm() {
                     <div className="grid md:grid-cols-3 gap-4">
                       <div>
                         <Label className="text-gray-700 font-medium">Location</Label>
-                        <Input
-                          placeholder='e.g. Leh, Ladakh'
-                          value={accommodation.location}
-                          onChange={(e) => updateAccommodation(accommodation.id, 'location', e.target.value)}
-                          className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                        />
+                        <select
+                          value={accommodation.hotelName}
+                          onChange={e => {
+                            const selectedHotel = hotels.find(h => h.name === e.target.value);
+                            updateAccommodation(accommodation.id, 'hotelName', e.target.value);
+                            if (selectedHotel && selectedHotel.venue) {
+                              updateAccommodation(accommodation.id, 'location', selectedHotel.venue.name || '');
+                            }
+                          }}
+                          className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                        >
+                          <option value="">Select Location...</option>
+                          {hotels.map(hotel => (
+                            <option key={hotel.id} value={hotel.name}>
+                              {hotel.venue?.address ? ` ${hotel.venue.address}` : ""}
+                            </option>
+                          ))}
+                          <option value="__custom">Other (Add new)</option>
+                        </select>
+
+                        {accommodation.hotelName === '__custom' && (
+                          <Input
+                            placeholder='e.g. Leh, Ladakh'
+                            value={accommodation.location}
+                            onChange={(e) => updateAccommodation(accommodation.id, 'location', e.target.value)}
+                            className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                          />
+                        )}
                       </div>
                       <div>
                         <Label className="text-gray-700 font-medium">Hotel Name or Similar</Label>
-                        <Input
+                        <select
+                          value={accommodation.hotelName}
+                          onChange={e => updateAccommodation(accommodation.id, 'hotelName', e.target.value)}
+                          className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                        >
+                          <option value="">Select hotel...</option>
+                          {hotels.map(hotel => (
+                            <option key={hotel.id} value={hotel.name}>
+                              {hotel.name}
+                              {hotel.venue?.name ? ` (${hotel.venue.name})` : ""}
+                            </option>
+                          ))}
+                          <option value="__custom">Other (Add new)</option>
+                        </select>
+                        {accommodation.hotelName === "__custom" && (
+                          <Input
+                            value={accommodation.hotelNameCustom || ""}
+                            onChange={e => updateAccommodation(accommodation.id, 'hotelNameCustom', e.target.value)}
+                            placeholder="Enter custom hotel name"
+                            className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"                          />
+                        )}
+
+                        {/* <Input
                           placeholder='e.g. Hotel Grand Dragon'
                           value={accommodation.hotelName}
                           onChange={(e) => updateAccommodation(accommodation.id, 'hotelName', e.target.value)}
                           className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                        />
+                        /> */}
                       </div>
                       <div>
                         <Label className="text-gray-700 font-medium">Number of Nights</Label>

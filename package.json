@@ -42,6 +42,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "cookie": "^1.0.2",
+    "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.6.0",
     "framer-motion": "^12.23.5",
     "input-otp": "^1.4.2",
@@ -58,12 +59,15 @@
     "react-hook-form": "^7.60.0",
     "react-resizable-panels": "^3.0.3",
     "sonner": "^2.0.6",
+    "swr": "^2.3.4",
     "tailwind-merge": "^3.3.1",
     "vaul": "^1.1.2"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/bcrypt": "^6.0.0",
     "@types/cookie": "^0.6.0",
+    "@types/date-fns": "^2.5.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/jwt-decode": "^2.2.1",
     "@types/node": "^20",
