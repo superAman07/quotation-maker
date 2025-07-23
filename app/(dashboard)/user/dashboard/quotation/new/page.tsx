@@ -12,6 +12,7 @@ import Layout from '@/components/Layout';
 import axios from 'axios';
 import { QuotationPDF } from '@/components/Quotation-pdf';
 import { PDFViewer } from '@react-pdf/renderer';
+import { Combobox } from '@headlessui/react';
 
 interface ClientInfo {
   name: string;
@@ -25,6 +26,7 @@ interface TravelSummary {
   groupSize: number;
   mealPlan: string;
   place: string;
+  placeCustom?: string;
   vehicleUsedType?: string;
   vehicleUsed: string;
   localVehicleUsed: string;
@@ -69,6 +71,7 @@ export default function QuotationForm() {
     groupSize: 1,
     mealPlan: '',
     place: '',
+    placeCustom: '',
     vehicleUsedType: '',
     vehicleUsed: '',
     vehicleUsedCustom: '',
@@ -107,6 +110,22 @@ export default function QuotationForm() {
       destinationId?: number;
     };
   }[]>([]);
+
+  const [destinations, setDestinations] = useState<{
+    id: number;
+    name: string;
+    state?: string;
+    country?: string;
+    description?: string;
+    imageUrl?: string;
+  }[]>([]);
+
+  const [query, setQuery] = useState('');
+  const filteredDestinations = query === ''
+    ? destinations
+    : destinations.filter(dest =>
+      dest.name.toLowerCase().includes(query.toLowerCase())
+    );
 
   const [loadingVehicles, setLoadingVehicles] = useState(true);
 
@@ -256,6 +275,18 @@ export default function QuotationForm() {
       }
     }
     fetchHotels();
+  }, []);
+
+  useEffect(() => {
+    async function fetchDestinations() {
+      try {
+        const res = await axios.get('/api/admin/destinations');
+        setDestinations(res.data.destinations);
+      } catch {
+        setDestinations([]);
+      }
+    }
+    fetchDestinations();
   }, []);
 
   React.useEffect(() => {
@@ -486,15 +517,34 @@ export default function QuotationForm() {
                       />
                     )}
                   </div>
-                  <div>
-                    <Label htmlFor="mealPlan" className="text-gray-700 font-medium">Place</Label>
-                    <Input
-                      id="place"
+                  <div> 
+                    <Label htmlFor="place" className="text-gray-700 font-medium">Place</Label>
+                    <Combobox
                       value={travelSummary.place}
-                      onChange={(e) => setTravelSummary(prev => ({ ...prev, place: e.target.value }))}
-                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                      placeholder="e.g. Ladakh"
-                    />
+                      onChange={value => setTravelSummary(prev => ({ ...prev, place: value ?? "" }))}
+                    >
+                      <div className="relative">
+                        <Combobox.Input
+                          className="mt-1 block w-full h-10 rounded-md pl-1 border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                          displayValue={value => String(value)}
+                          onChange={e => setQuery(e.target.value)}
+                          placeholder="Start typing destination..."
+                        />
+                        <Combobox.Options className="absolute z-10 mt-1 pl-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto focus:ring-green-500 focus:border-green-500 text-gray-900">
+                          {filteredDestinations.length === 0 && query !== '' ? (
+                            <Combobox.Option value={query} className="cursor-pointer px-4 py-2">
+                              Add "{query}"
+                            </Combobox.Option>
+                          ) : (
+                            filteredDestinations.map(dest => (
+                              <Combobox.Option key={dest.id} value={dest.name} className="cursor-pointer px-4 py-2">
+                                {dest.name} {dest.state ? `(${dest.state})` : ''}
+                              </Combobox.Option>
+                            ))
+                          )}
+                        </Combobox.Options>
+                      </div>
+                    </Combobox>
                   </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
@@ -660,7 +710,7 @@ export default function QuotationForm() {
                             value={accommodation.hotelNameCustom || ""}
                             onChange={e => updateAccommodation(accommodation.id, 'hotelNameCustom', e.target.value)}
                             placeholder="Enter custom hotel name"
-                            className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"                          />
+                            className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900" />
                         )}
 
                         {/* <Input

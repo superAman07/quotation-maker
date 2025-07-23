@@ -55,22 +55,6 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("auth_token")?.value;
-    if (!token) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    let decoded: DecodedToken;
-    try {
-        decoded = jwtDecode<DecodedToken>(token);
-    } catch {
-        return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-    }
-    if (decoded.role !== "Admin") {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
     try {
         const destinations = await prisma.destination.findMany({
             orderBy: { name: "asc" },
