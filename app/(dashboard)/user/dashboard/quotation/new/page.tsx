@@ -366,6 +366,7 @@ export default function QuotationForm() {
     exclusions: exclusions.filter(Boolean).map(item => ({ item })),
   };
 
+  console.log("Accommodation Payload: ", payload.accommodation);
   const handleSubmitQuotation = async () => {
     try {
       const response = await axios.post('/api/user/new-quotation', payload);
@@ -672,13 +673,13 @@ export default function QuotationForm() {
                     <div className="grid md:grid-cols-3 gap-4">
                       <div>
                         <Label className="text-gray-700 font-medium">Location</Label>
-                        <select
+                        {/* <select
                           value={accommodation.hotelName}
                           onChange={e => {
                             const selectedHotel = hotels.find(h => h.name === e.target.value);
                             updateAccommodation(accommodation.id, 'hotelName', e.target.value);
                             if (selectedHotel && selectedHotel.venue) {
-                              updateAccommodation(accommodation.id, 'location', selectedHotel.venue.name || '');
+                              updateAccommodation(accommodation.id, 'location', selectedHotel.venue.address || '');
                             }
                           }}
                           className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
@@ -690,29 +691,46 @@ export default function QuotationForm() {
                             </option>
                           ))}
                           <option value="__custom">Other (Add new)</option>
-                        </select>
+                        </select> */}
 
-                        {accommodation.hotelName === '__custom' && (
-                          <Input
-                            placeholder='e.g. Leh, Ladakh'
-                            value={accommodation.location}
-                            onChange={(e) => updateAccommodation(accommodation.id, 'location', e.target.value)}
-                            className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                          />
-                        )}
+                        {/* {accommodation.hotelName === '__custom' && ( */}
+                        <Input
+                          placeholder='e.g. Leh, Ladakh'
+                          value={accommodation.location}
+                          onChange={(e) => updateAccommodation(accommodation.id, 'location', e.target.value)}
+                          className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                        />
+                        {/* )} */}
                       </div>
                       <div>
                         <Label className="text-gray-700 font-medium">Hotel Name or Similar</Label>
                         <select
                           value={accommodation.hotelName}
-                          onChange={e => updateAccommodation(accommodation.id, 'hotelName', e.target.value)}
+                          onChange={e => {
+                            const selectedHotel = hotels.find(h => h.name === e.target.value);
+                            if (e.target.value !== "__custom" && selectedHotel?.venue?.address) { 
+                              setAccommodations(accommodations.map(acc =>
+                                acc.id === accommodation.id
+                                  ? { ...acc, hotelName: e.target.value, location: selectedHotel.venue?.address || "" }
+                                  : acc
+                              ));
+                            } else if (e.target.value === "__custom") { 
+                              setAccommodations(accommodations.map(acc =>
+                                acc.id === accommodation.id
+                                  ? { ...acc, hotelName: e.target.value, location: '' }
+                                  : acc
+                              ));
+                            } else { 
+                              updateAccommodation(accommodation.id, 'hotelName', e.target.value);
+                            } 
+                          }}
                           className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
                         >
                           <option value="">Select hotel...</option>
                           {hotels.map(hotel => (
                             <option key={hotel.id} value={hotel.name}>
                               {hotel.name}
-                              {hotel.venue?.name ? ` (${hotel.venue.name})` : ""}
+                              {/* {hotel.venue?.name} */}
                             </option>
                           ))}
                           <option value="__custom">Other (Add new)</option>
@@ -720,17 +738,12 @@ export default function QuotationForm() {
                         {accommodation.hotelName === "__custom" && (
                           <Input
                             value={accommodation.hotelNameCustom || ""}
-                            onChange={e => updateAccommodation(accommodation.id, 'hotelNameCustom', e.target.value)}
+                            onChange={e => {
+                              updateAccommodation(accommodation.id, 'hotelNameCustom', e.target.value)
+                            }}
                             placeholder="Enter custom hotel name"
                             className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900" />
                         )}
-
-                        {/* <Input
-                          placeholder='e.g. Hotel Grand Dragon'
-                          value={accommodation.hotelName}
-                          onChange={(e) => updateAccommodation(accommodation.id, 'hotelName', e.target.value)}
-                          className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                        /> */}
                       </div>
                       <div>
                         <Label className="text-gray-700 font-medium">Number of Nights</Label>
