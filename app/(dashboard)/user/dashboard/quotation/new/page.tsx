@@ -40,6 +40,7 @@ interface Accommodation {
   location: string;
   hotelName: string;
   numberOfNights: number;
+  hotelNameCustom?: string;
 }
 
 interface ItineraryItem {
@@ -89,6 +90,24 @@ export default function QuotationForm() {
     airline: string;
     imageUrl: string;
   }[]>([]);
+  const [hotels, setHotels] = useState<{
+    id: number;
+    name: string;
+    starRating?: number;
+    amenities?: string;
+    imageUrl?: string;
+    venueId?: number;
+    venue?: {
+      id: number;
+      name: string;
+      address: string;
+      coordinates?: string;
+      description?: string;
+      imageUrl?: string;
+      destinationId?: number;
+    };
+  }[]>([]);
+
   const [loadingVehicles, setLoadingVehicles] = useState(true);
 
   const [accommodations, setAccommodations] = useState<Accommodation[]>([
@@ -225,6 +244,18 @@ export default function QuotationForm() {
     }
     fetchVehicles();
     fetchFlights();
+  }, []);
+
+  useEffect(() => {
+    async function fetchHotels() {
+      try {
+        const res = await axios.get('/api/admin/hotels');
+        setHotels(res.data.hotels);
+      } catch {
+        setHotels([]);
+      }
+    }
+    fetchHotels();
   }, []);
 
   React.useEffect(() => {
@@ -400,12 +431,12 @@ export default function QuotationForm() {
                       id="localVehicleUsed"
                       value={travelSummary.localVehicleUsed}
                       onChange={e => setTravelSummary(prev => ({ ...prev, localVehicleUsed: e.target.value }))}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                      className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
                     >
                       <option value="">Select local vehicle...</option>
                       {vehicles.map(vehicle => (
                         <option key={vehicle.id} value={vehicle.name}>
-                          {vehicle.name} {vehicle.type ? `(${vehicle.type})` : ""}
+                          {vehicle.name} {vehicle.type ? `${vehicle.type}` : ""}
                         </option>
                       ))}
                       <option value="__custom">Other (Add new)</option>
@@ -418,14 +449,6 @@ export default function QuotationForm() {
                         className="mt-2 focus:ring-green-500 focus:border-green-500 text-gray-900"
                       />
                     )}
-
-                    {/* <Input
-                      type="text"
-                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                      value={travelSummary.localVehicleUsed}
-                      onChange={e => setTravelSummary({ ...travelSummary, localVehicleUsed: e.target.value })}
-                      placeholder="e.g. Innova, Tempo Traveller"
-                    /> */}
                   </div>
                   <div>
                     <Label htmlFor="groupSize" className="text-gray-700 font-medium">Group Size (Pax)</Label>
@@ -444,7 +467,7 @@ export default function QuotationForm() {
                       id="mealPlan"
                       value={travelSummary.mealPlan}
                       onChange={e => setTravelSummary(prev => ({ ...prev, mealPlan: e.target.value }))}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                      className="mt-1 block w-full h-10 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
                     >
                       <option value="">Select meal plan...</option>
                       {mealPlans.map(plan => (
@@ -459,7 +482,7 @@ export default function QuotationForm() {
                         value={travelSummary.mealPlanCustom || ""}
                         onChange={e => setTravelSummary(prev => ({ ...prev, mealPlanCustom: e.target.value }))}
                         placeholder="Enter custom meal plan"
-                        className="mt-2"
+                        className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
                       />
                     )}
                   </div>
@@ -490,7 +513,7 @@ export default function QuotationForm() {
                             flightCostPerPerson: selectedRoute ? selectedRoute.baseFare : 0,
                           }));
                         }}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                        className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
                       >
                         <option value="">Select airline...</option>
                         {flightRoutes.map(route => (
@@ -587,21 +610,65 @@ export default function QuotationForm() {
                     <div className="grid md:grid-cols-3 gap-4">
                       <div>
                         <Label className="text-gray-700 font-medium">Location</Label>
-                        <Input
-                          placeholder='e.g. Leh, Ladakh'
-                          value={accommodation.location}
-                          onChange={(e) => updateAccommodation(accommodation.id, 'location', e.target.value)}
-                          className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                        />
+                        <select
+                          value={accommodation.hotelName}
+                          onChange={e => {
+                            const selectedHotel = hotels.find(h => h.name === e.target.value);
+                            updateAccommodation(accommodation.id, 'hotelName', e.target.value);
+                            if (selectedHotel && selectedHotel.venue) {
+                              updateAccommodation(accommodation.id, 'location', selectedHotel.venue.name || '');
+                            }
+                          }}
+                          className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                        >
+                          <option value="">Select Location...</option>
+                          {hotels.map(hotel => (
+                            <option key={hotel.id} value={hotel.name}>
+                              {hotel.venue?.address ? ` ${hotel.venue.address}` : ""}
+                            </option>
+                          ))}
+                          <option value="__custom">Other (Add new)</option>
+                        </select>
+
+                        {accommodation.hotelName === '__custom' && (
+                          <Input
+                            placeholder='e.g. Leh, Ladakh'
+                            value={accommodation.location}
+                            onChange={(e) => updateAccommodation(accommodation.id, 'location', e.target.value)}
+                            className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                          />
+                        )}
                       </div>
                       <div>
                         <Label className="text-gray-700 font-medium">Hotel Name or Similar</Label>
-                        <Input
+                        <select
+                          value={accommodation.hotelName}
+                          onChange={e => updateAccommodation(accommodation.id, 'hotelName', e.target.value)}
+                          className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                        >
+                          <option value="">Select hotel...</option>
+                          {hotels.map(hotel => (
+                            <option key={hotel.id} value={hotel.name}>
+                              {hotel.name}
+                              {hotel.venue?.name ? ` (${hotel.venue.name})` : ""}
+                            </option>
+                          ))}
+                          <option value="__custom">Other (Add new)</option>
+                        </select>
+                        {accommodation.hotelName === "__custom" && (
+                          <Input
+                            value={accommodation.hotelNameCustom || ""}
+                            onChange={e => updateAccommodation(accommodation.id, 'hotelNameCustom', e.target.value)}
+                            placeholder="Enter custom hotel name"
+                            className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"                          />
+                        )}
+
+                        {/* <Input
                           placeholder='e.g. Hotel Grand Dragon'
                           value={accommodation.hotelName}
                           onChange={(e) => updateAccommodation(accommodation.id, 'hotelName', e.target.value)}
                           className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                        />
+                        /> */}
                       </div>
                       <div>
                         <Label className="text-gray-700 font-medium">Number of Nights</Label>
