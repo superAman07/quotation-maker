@@ -128,6 +128,26 @@ export default function QuotationForm() {
       dest.name.toLowerCase().includes(query.toLowerCase())
     );
 
+  const [packages, setPackages] = useState<{
+    id: number;
+    name: string;
+    description: string;
+    durationDays: number;
+    basePricePerPerson: number;
+    totalNights: number;
+    destinationId: number | null;
+    packageItineraries: {
+      id: number;
+      packageId: number;
+      dayNumber: number;
+      title: string;
+      description: string;
+    }[];
+  }[]>([]);
+  const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
+  const selectedPackage = packages.find(p => p.id === selectedPackageId);
+  const packageNights = selectedPackage?.totalNights ?? null;
+
   const [loadingVehicles, setLoadingVehicles] = useState(true);
 
   const [accommodations, setAccommodations] = useState<Accommodation[]>([
@@ -290,6 +310,38 @@ export default function QuotationForm() {
     fetchDestinations();
   }, []);
 
+  useEffect(() => {
+    async function fetchPackages() {
+      try {
+        const res = await axios.get('/api/admin/packages');
+        setPackages(res.data);
+      } catch {
+        setPackages([]);
+      }
+    }
+    fetchPackages();
+  }, []);
+
+  useEffect(() => {
+    if (selectedPackageId) {
+      const pkg = packages.find(p => p.id === selectedPackageId);
+      if (pkg) {
+        setCosting(prev => ({
+          ...prev,
+          landCostPerPerson: pkg.basePricePerPerson
+        }));
+        // Optionally auto-fill itinerary
+        setItinerary(
+          pkg.packageItineraries.map(it => ({
+            id: it.id.toString(),
+            dayTitle: it.title,
+            description: it.description
+          }))
+        );
+      }
+    }
+  }, [selectedPackageId, packages]);
+
   React.useEffect(() => {
     const totalPerPerson = costing.landCostPerPerson + travelSummary.flightCostPerPerson;
     const totalGroup = totalPerPerson * travelSummary.groupSize;
@@ -313,7 +365,10 @@ export default function QuotationForm() {
     (sum, acc) => sum + (acc.numberOfNights || 0),
     0
   );
-
+  const totalAccommodationNights = accommodations.reduce(
+    (sum, acc) => sum + (acc.numberOfNights || 0),
+    0
+  );
   const mealPlanToSend = travelSummary.mealPlan === "__custom" ? travelSummary.mealPlanCustom : travelSummary.mealPlan;
 
   const vehicleUsedToSend = travelSummary.vehicleUsed === "__custom" ? travelSummary.vehicleUsedCustom : travelSummary.vehicleUsed;
@@ -673,34 +728,12 @@ export default function QuotationForm() {
                     <div className="grid md:grid-cols-3 gap-4">
                       <div>
                         <Label className="text-gray-700 font-medium">Location</Label>
-                        {/* <select
-                          value={accommodation.hotelName}
-                          onChange={e => {
-                            const selectedHotel = hotels.find(h => h.name === e.target.value);
-                            updateAccommodation(accommodation.id, 'hotelName', e.target.value);
-                            if (selectedHotel && selectedHotel.venue) {
-                              updateAccommodation(accommodation.id, 'location', selectedHotel.venue.address || '');
-                            }
-                          }}
-                          className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
-                        >
-                          <option value="">Select Location...</option>
-                          {hotels.map(hotel => (
-                            <option key={hotel.id} value={hotel.name}>
-                              {hotel.venue?.address ? ` ${hotel.venue.address}` : ""}
-                            </option>
-                          ))}
-                          <option value="__custom">Other (Add new)</option>
-                        </select> */}
-
-                        {/* {accommodation.hotelName === '__custom' && ( */}
                         <Input
                           placeholder='e.g. Leh, Ladakh'
                           value={accommodation.location}
                           onChange={(e) => updateAccommodation(accommodation.id, 'location', e.target.value)}
                           className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
                         />
-                        {/* )} */}
                       </div>
                       <div>
                         <Label className="text-gray-700 font-medium">Hotel Name or Similar</Label>
@@ -708,21 +741,21 @@ export default function QuotationForm() {
                           value={accommodation.hotelName}
                           onChange={e => {
                             const selectedHotel = hotels.find(h => h.name === e.target.value);
-                            if (e.target.value !== "__custom" && selectedHotel?.venue?.address) { 
+                            if (e.target.value !== "__custom" && selectedHotel?.venue?.address) {
                               setAccommodations(accommodations.map(acc =>
                                 acc.id === accommodation.id
                                   ? { ...acc, hotelName: e.target.value, location: selectedHotel.venue?.address || "" }
                                   : acc
                               ));
-                            } else if (e.target.value === "__custom") { 
+                            } else if (e.target.value === "__custom") {
                               setAccommodations(accommodations.map(acc =>
                                 acc.id === accommodation.id
                                   ? { ...acc, hotelName: e.target.value, location: '' }
                                   : acc
                               ));
-                            } else { 
+                            } else {
                               updateAccommodation(accommodation.id, 'hotelName', e.target.value);
-                            } 
+                            }
                           }}
                           className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
                         >
@@ -758,6 +791,11 @@ export default function QuotationForm() {
                     </div>
                   </div>
                 ))}
+                {selectedPackageId && packageNights !== null && totalAccommodationNights !== packageNights && (
+                  <div className="mt-2 p-2 bg-yellow-100 border border-yellow-400 rounded text-yellow-800 font-medium">
+                    Warning: Total accommodation nights ({totalAccommodationNights}) do not match the package's nights ({packageNights}). Please review!
+                  </div>
+                )}
                 <Button
                   type="button"
                   variant="outline"
@@ -907,6 +945,37 @@ export default function QuotationForm() {
                 <CardTitle className="text-lg font-semibold text-gray-900">Costing Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <Card className="shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-semibold text-gray-900">Select Package</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="package" className="text-gray-700 font-medium">Package</Label>
+                      <select
+                        id="package"
+                        value={selectedPackageId ?? ""}
+                        onChange={e => setSelectedPackageId(Number(e.target.value))}
+                        className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                      >
+                        <option value="">Select package...</option>
+                        {packages.map(pkg => (
+                          <option key={pkg.id} value={pkg.id}>
+                            {pkg.name} ({pkg.durationDays} days)
+                          </option>
+                        ))}
+                      </select>
+                      {selectedPackageId && (
+                        <div className="mt-2 p-2 bg-gray-100 rounded">
+                          <div className="font-semibold">{packages.find(p => p.id === selectedPackageId)?.description}</div>
+                          <div className="text-sm text-gray-600">
+                            Duration: {packages.find(p => p.id === selectedPackageId)?.durationDays} days, Nights: {packages.find(p => p.id === selectedPackageId)?.totalNights}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="landCost" className="text-gray-700 font-medium">Land Cost Per Person</Label>
