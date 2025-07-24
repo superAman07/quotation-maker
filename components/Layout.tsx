@@ -16,7 +16,7 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import Image from 'next/image';
-import Link from 'next/link'; 
+import Link from 'next/link';
 import axios from 'axios';
 
 interface LayoutProps {
@@ -27,7 +27,7 @@ export default function Layout({ children }: LayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [notificationCount] = useState(3);
-  const [isMobile, setIsMobile] = useState(false); 
+  const [isMobile, setIsMobile] = useState(false);
   const [user, setUser] = useState<{ name?: string; email?: string; role?: string } | null>(null)
   useEffect(() => {
     try {
@@ -86,22 +86,22 @@ export default function Layout({ children }: LayoutProps) {
   }
 
   useEffect(() => {
-  const handleUserMenuClickOutside = (event: MouseEvent) => {
-    const dropdown = document.getElementById('user-menu-dropdown');
-    const button = document.getElementById('user-menu-button');
-    if (
-      userMenuOpen &&
-      dropdown &&
-      !dropdown.contains(event.target as Node) &&
-      button &&
-      !button.contains(event.target as Node)
-    ) {
-      setUserMenuOpen(false);
-    }
-  };
-  document.addEventListener('mousedown', handleUserMenuClickOutside);
-  return () => document.removeEventListener('mousedown', handleUserMenuClickOutside);
-}, [userMenuOpen]);
+    const handleUserMenuClickOutside = (event: MouseEvent) => {
+      const dropdown = document.getElementById('user-menu-dropdown');
+      const button = document.getElementById('user-menu-button');
+      if (
+        userMenuOpen &&
+        dropdown &&
+        !dropdown.contains(event.target as Node) &&
+        button &&
+        !button.contains(event.target as Node)
+      ) {
+        setUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleUserMenuClickOutside);
+    return () => document.removeEventListener('mousedown', handleUserMenuClickOutside);
+  }, [userMenuOpen]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -116,24 +116,9 @@ export default function Layout({ children }: LayoutProps) {
       {/* Sidebar */}
       <div
         id="sidebar"
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-white shadow-xl border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${sidebarOpen || !isMobile ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-y-0 left-0 z-40 top-17 w-72 bg-white shadow-xl border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${sidebarOpen || !isMobile ? 'translate-x-0' : '-translate-x-full'
           } lg:translate-x-0`}
       >
-        {/* Sidebar Header */}
-        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200 bg-white">
-          <div className="flex items-center">
-            <Link href={'/user/dashboard'}>
-              <Image src={'/logo.png'} width={200} height={50} alt="Travomine Logo" className="text-xl font-bold text-[#252426]" />
-            </Link>
-          </div>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-500" />
-          </button>
-        </div>
-
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6 space-y-2">
           {navigation.map((item) => (
@@ -165,19 +150,33 @@ export default function Layout({ children }: LayoutProps) {
       </div>
 
       {/* Main content wrapper */}
-      <div className="flex flex-col min-h-screen lg:pl-72">
+      <div className="flex flex-col min-h-screen">
         {/* Top navigation */}
-        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+        <header className="sticky w-full top-0 z-50 bg-white backdrop-blur-sm border-b border-gray-200 shadow-sm">
           <div className="flex items-center justify-between h-16 px-4 sm:px-6 lg:px-8">
             {/* Left side */}
-            <div className="flex items-center gap-4">
-              <button
+            <div className="flex items-center gap-2">
+              {!sidebarOpen && <button
                 id="menu-button"
                 onClick={() => setSidebarOpen(true)}
                 className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors"
               >
                 <Menu className="w-5 h-5 text-gray-600" />
-              </button>
+              </button>}
+              {sidebarOpen && <button
+                onClick={() => setSidebarOpen(false)}
+                className="lg:hidden flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>}
+
+              <div className="flex items-center justify-between h-16 px-0 sm:px-6 border-b border-gray-200 bg-white">
+                <div className="flex items-center">
+                  <Link href={'/user/dashboard'}>
+                    <Image src={'/logo.png'} width={200} height={50} alt="Travomine Logo" className="text-xl font-bold text-[#252426]" />
+                  </Link>
+                </div>
+              </div>
 
               {/* Search - Hidden on mobile, visible on tablet+ */}
               <div className="hidden md:block">
@@ -194,11 +193,6 @@ export default function Layout({ children }: LayoutProps) {
 
             {/* Right side */}
             <div className="flex items-center gap-3">
-              {/* Mobile search button */}
-              <button className="md:hidden flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors">
-                <Search className="w-5 h-5 text-gray-600" />
-              </button>
-
               {/* New Quote Button - Hidden on mobile */}
               <div className="hidden sm:block">
                 <a
@@ -209,19 +203,6 @@ export default function Layout({ children }: LayoutProps) {
                   <span className="hidden lg:inline">New Quote</span>
                 </a>
               </div>
-
-              {/* Notifications */}
-              {/* <div className="relative">
-                <button className="flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors relative">
-                  <Bell className="w-5 h-5 text-gray-600" />
-                  {notificationCount > 0 && (
-                    <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
-                      {notificationCount > 9 ? '9+' : notificationCount}
-                    </span>
-                  )}
-                </button>
-              </div> */}
-
               {/* User menu */}
               <div className="relative">
                 <button
@@ -271,11 +252,6 @@ export default function Layout({ children }: LayoutProps) {
                   </div>
                 )}
               </div>
-
-              {/* Mobile menu button */}
-              <button className="sm:hidden flex items-center justify-center w-10 h-10 rounded-lg hover:bg-gray-100 transition-colors">
-                <MoreHorizontal className="w-5 h-5 text-gray-600" />
-              </button>
             </div>
           </div>
         </header>
@@ -299,7 +275,7 @@ export default function Layout({ children }: LayoutProps) {
         </div>
 
         {/* Page content */}
-        <main className="flex-1 p-4 sm:p-6 lg:p-8">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 lg:pl-74">
           {children}
         </main>
       </div>
