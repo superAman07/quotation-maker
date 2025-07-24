@@ -12,6 +12,7 @@ import Layout from '@/components/Layout';
 import axios from 'axios';
 import { QuotationPDF } from '@/components/Quotation-pdf';
 import { PDFViewer } from '@react-pdf/renderer';
+import { Combobox } from '@headlessui/react';
 
 interface ClientInfo {
   name: string;
@@ -25,6 +26,7 @@ interface TravelSummary {
   groupSize: number;
   mealPlan: string;
   place: string;
+  placeCustom?: string;
   vehicleUsedType?: string;
   vehicleUsed: string;
   localVehicleUsed: string;
@@ -38,6 +40,7 @@ interface TravelSummary {
 interface Accommodation {
   id: string;
   location: string;
+  locationCustom?: string;
   hotelName: string;
   numberOfNights: number;
   hotelNameCustom?: string;
@@ -69,6 +72,7 @@ export default function QuotationForm() {
     groupSize: 1,
     mealPlan: '',
     place: '',
+    placeCustom: '',
     vehicleUsedType: '',
     vehicleUsed: '',
     vehicleUsedCustom: '',
@@ -107,6 +111,42 @@ export default function QuotationForm() {
       destinationId?: number;
     };
   }[]>([]);
+
+  const [destinations, setDestinations] = useState<{
+    id: number;
+    name: string;
+    state?: string;
+    country?: string;
+    description?: string;
+    imageUrl?: string;
+  }[]>([]);
+
+  const [query, setQuery] = useState('');
+  const filteredDestinations = query === ''
+    ? destinations
+    : destinations.filter(dest =>
+      dest.name.toLowerCase().includes(query.toLowerCase())
+    );
+
+  const [packages, setPackages] = useState<{
+    id: number;
+    name: string;
+    description: string;
+    durationDays: number;
+    basePricePerPerson: number;
+    totalNights: number;
+    destinationId: number | null;
+    packageItineraries: {
+      id: number;
+      packageId: number;
+      dayNumber: number;
+      title: string;
+      description: string;
+    }[];
+  }[]>([]);
+  const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
+  const selectedPackage = packages.find(p => p.id === selectedPackageId);
+  const packageNights = selectedPackage?.totalNights ?? null;
 
   const [loadingVehicles, setLoadingVehicles] = useState(true);
 
@@ -258,6 +298,50 @@ export default function QuotationForm() {
     fetchHotels();
   }, []);
 
+  useEffect(() => {
+    async function fetchDestinations() {
+      try {
+        const res = await axios.get('/api/admin/destinations');
+        setDestinations(res.data.destinations);
+      } catch {
+        setDestinations([]);
+      }
+    }
+    fetchDestinations();
+  }, []);
+
+  useEffect(() => {
+    async function fetchPackages() {
+      try {
+        const res = await axios.get('/api/admin/packages');
+        setPackages(res.data);
+      } catch {
+        setPackages([]);
+      }
+    }
+    fetchPackages();
+  }, []);
+
+  useEffect(() => {
+    if (selectedPackageId) {
+      const pkg = packages.find(p => p.id === selectedPackageId);
+      if (pkg) {
+        setCosting(prev => ({
+          ...prev,
+          landCostPerPerson: pkg.basePricePerPerson
+        }));
+        // Optionally auto-fill itinerary
+        setItinerary(
+          pkg.packageItineraries.map(it => ({
+            id: it.id.toString(),
+            dayTitle: it.title,
+            description: it.description
+          }))
+        );
+      }
+    }
+  }, [selectedPackageId, packages]);
+
   React.useEffect(() => {
     const totalPerPerson = costing.landCostPerPerson + travelSummary.flightCostPerPerson;
     const totalGroup = totalPerPerson * travelSummary.groupSize;
@@ -281,7 +365,10 @@ export default function QuotationForm() {
     (sum, acc) => sum + (acc.numberOfNights || 0),
     0
   );
-
+  const totalAccommodationNights = accommodations.reduce(
+    (sum, acc) => sum + (acc.numberOfNights || 0),
+    0
+  );
   const mealPlanToSend = travelSummary.mealPlan === "__custom" ? travelSummary.mealPlanCustom : travelSummary.mealPlan;
 
   const vehicleUsedToSend = travelSummary.vehicleUsed === "__custom" ? travelSummary.vehicleUsedCustom : travelSummary.vehicleUsed;
@@ -309,9 +396,20 @@ export default function QuotationForm() {
     totalGroupCost: costing.totalGroupCost,
     notes,
     status: "SENT",
+    // accommodation: accommodations.map(acc => ({
+    //   location: acc.location,
+    //   hotelName: acc.hotelName,
+    //   nights: acc.numberOfNights,
+    // })),
     accommodation: accommodations.map(acc => ({
-      location: acc.location,
-      hotelName: acc.hotelName,
+      location:
+        acc.location === "__custom"
+          ? acc.locationCustom || ""
+          : acc.location,
+      hotelName:
+        acc.hotelName === "__custom"
+          ? acc.hotelNameCustom || ""
+          : acc.hotelName,
       nights: acc.numberOfNights,
     })),
     totalNights,
@@ -323,6 +421,7 @@ export default function QuotationForm() {
     exclusions: exclusions.filter(Boolean).map(item => ({ item })),
   };
 
+  console.log("Accommodation Payload: ", payload.accommodation);
   const handleSubmitQuotation = async () => {
     try {
       const response = await axios.post('/api/user/new-quotation', payload);
@@ -487,14 +586,33 @@ export default function QuotationForm() {
                     )}
                   </div>
                   <div>
-                    <Label htmlFor="mealPlan" className="text-gray-700 font-medium">Place</Label>
-                    <Input
-                      id="place"
+                    <Label htmlFor="place" className="text-gray-700 font-medium">Place</Label>
+                    <Combobox
                       value={travelSummary.place}
-                      onChange={(e) => setTravelSummary(prev => ({ ...prev, place: e.target.value }))}
-                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                      placeholder="e.g. Ladakh"
-                    />
+                      onChange={value => setTravelSummary(prev => ({ ...prev, place: value ?? "" }))}
+                    >
+                      <div className="relative">
+                        <Combobox.Input
+                          className="mt-1 block w-full h-10 rounded-md pl-1 border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                          displayValue={value => String(value)}
+                          onChange={e => setQuery(e.target.value)}
+                          placeholder="Start typing destination..."
+                        />
+                        <Combobox.Options className="absolute z-10 mt-1 pl-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto focus:ring-green-500 focus:border-green-500 text-gray-900">
+                          {filteredDestinations.length === 0 && query !== '' ? (
+                            <Combobox.Option value={query} className="cursor-pointer px-4 py-2">
+                              Add "{query}"
+                            </Combobox.Option>
+                          ) : (
+                            filteredDestinations.map(dest => (
+                              <Combobox.Option key={dest.id} value={dest.name} className="cursor-pointer px-4 py-2">
+                                {dest.name} {dest.state ? `(${dest.state})` : ''}
+                              </Combobox.Option>
+                            ))
+                          )}
+                        </Combobox.Options>
+                      </div>
+                    </Combobox>
                   </div>
                 </div>
                 <div className="grid md:grid-cols-2 gap-4">
@@ -610,47 +728,42 @@ export default function QuotationForm() {
                     <div className="grid md:grid-cols-3 gap-4">
                       <div>
                         <Label className="text-gray-700 font-medium">Location</Label>
-                        <select
-                          value={accommodation.hotelName}
-                          onChange={e => {
-                            const selectedHotel = hotels.find(h => h.name === e.target.value);
-                            updateAccommodation(accommodation.id, 'hotelName', e.target.value);
-                            if (selectedHotel && selectedHotel.venue) {
-                              updateAccommodation(accommodation.id, 'location', selectedHotel.venue.name || '');
-                            }
-                          }}
-                          className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
-                        >
-                          <option value="">Select Location...</option>
-                          {hotels.map(hotel => (
-                            <option key={hotel.id} value={hotel.name}>
-                              {hotel.venue?.address ? ` ${hotel.venue.address}` : ""}
-                            </option>
-                          ))}
-                          <option value="__custom">Other (Add new)</option>
-                        </select>
-
-                        {accommodation.hotelName === '__custom' && (
-                          <Input
-                            placeholder='e.g. Leh, Ladakh'
-                            value={accommodation.location}
-                            onChange={(e) => updateAccommodation(accommodation.id, 'location', e.target.value)}
-                            className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                          />
-                        )}
+                        <Input
+                          placeholder='e.g. Leh, Ladakh'
+                          value={accommodation.location}
+                          onChange={(e) => updateAccommodation(accommodation.id, 'location', e.target.value)}
+                          className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
+                        />
                       </div>
                       <div>
                         <Label className="text-gray-700 font-medium">Hotel Name or Similar</Label>
                         <select
                           value={accommodation.hotelName}
-                          onChange={e => updateAccommodation(accommodation.id, 'hotelName', e.target.value)}
+                          onChange={e => {
+                            const selectedHotel = hotels.find(h => h.name === e.target.value);
+                            if (e.target.value !== "__custom" && selectedHotel?.venue?.address) {
+                              setAccommodations(accommodations.map(acc =>
+                                acc.id === accommodation.id
+                                  ? { ...acc, hotelName: e.target.value, location: selectedHotel.venue?.address || "" }
+                                  : acc
+                              ));
+                            } else if (e.target.value === "__custom") {
+                              setAccommodations(accommodations.map(acc =>
+                                acc.id === accommodation.id
+                                  ? { ...acc, hotelName: e.target.value, location: '' }
+                                  : acc
+                              ));
+                            } else {
+                              updateAccommodation(accommodation.id, 'hotelName', e.target.value);
+                            }
+                          }}
                           className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
                         >
                           <option value="">Select hotel...</option>
                           {hotels.map(hotel => (
                             <option key={hotel.id} value={hotel.name}>
                               {hotel.name}
-                              {hotel.venue?.name ? ` (${hotel.venue.name})` : ""}
+                              {/* {hotel.venue?.name} */}
                             </option>
                           ))}
                           <option value="__custom">Other (Add new)</option>
@@ -658,17 +771,12 @@ export default function QuotationForm() {
                         {accommodation.hotelName === "__custom" && (
                           <Input
                             value={accommodation.hotelNameCustom || ""}
-                            onChange={e => updateAccommodation(accommodation.id, 'hotelNameCustom', e.target.value)}
+                            onChange={e => {
+                              updateAccommodation(accommodation.id, 'hotelNameCustom', e.target.value)
+                            }}
                             placeholder="Enter custom hotel name"
-                            className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"                          />
+                            className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900" />
                         )}
-
-                        {/* <Input
-                          placeholder='e.g. Hotel Grand Dragon'
-                          value={accommodation.hotelName}
-                          onChange={(e) => updateAccommodation(accommodation.id, 'hotelName', e.target.value)}
-                          className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                        /> */}
                       </div>
                       <div>
                         <Label className="text-gray-700 font-medium">Number of Nights</Label>
@@ -683,6 +791,11 @@ export default function QuotationForm() {
                     </div>
                   </div>
                 ))}
+                {selectedPackageId && packageNights !== null && totalAccommodationNights !== packageNights && (
+                  <div className="mt-2 p-2 bg-yellow-100 border border-yellow-400 rounded text-yellow-800 font-medium">
+                    Warning: Total accommodation nights ({totalAccommodationNights}) do not match the package's nights ({packageNights}). Please review!
+                  </div>
+                )}
                 <Button
                   type="button"
                   variant="outline"
@@ -832,6 +945,37 @@ export default function QuotationForm() {
                 <CardTitle className="text-lg font-semibold text-gray-900">Costing Summary</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
+                <Card className="shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="text-lg font-semibold text-gray-900">Select Package</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label htmlFor="package" className="text-gray-700 font-medium">Package</Label>
+                      <select
+                        id="package"
+                        value={selectedPackageId ?? ""}
+                        onChange={e => setSelectedPackageId(Number(e.target.value))}
+                        className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                      >
+                        <option value="">Select package...</option>
+                        {packages.map(pkg => (
+                          <option key={pkg.id} value={pkg.id}>
+                            {pkg.name} ({pkg.durationDays} days)
+                          </option>
+                        ))}
+                      </select>
+                      {selectedPackageId && (
+                        <div className="mt-2 p-2 bg-gray-100 rounded">
+                          <div className="font-semibold">{packages.find(p => p.id === selectedPackageId)?.description}</div>
+                          <div className="text-sm text-gray-600">
+                            Duration: {packages.find(p => p.id === selectedPackageId)?.durationDays} days, Nights: {packages.find(p => p.id === selectedPackageId)?.totalNights}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label htmlFor="landCost" className="text-gray-700 font-medium">Land Cost Per Person</Label>
