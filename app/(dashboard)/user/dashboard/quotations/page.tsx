@@ -248,7 +248,6 @@ export default function QuotationsList() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#6C733D]">
-                      {/* ${quote.total.toLocaleString()} */}
                       ${typeof quote.totalGroupCost === 'number' ? quote.totalGroupCost.toLocaleString() : '0'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
