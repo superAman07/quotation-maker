@@ -18,29 +18,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
 export default function Dashboard() {
-  // const [stats] = useState({
-  //   drafted: 12,
-  //   sent: 8,
-  //   revenue: 45600,
-  //   totalQuotes: 23
-  // });
   const [stats, setStats] = useState({
     drafted: 0,
     sent: 0,
     revenue: 0
   });
 
-  // const recentQuotes = [
-  //   { id: 'Q001', client: 'John Smith', destination: 'Paris', amount: 2500, status: 'Draft' },
-  //   { id: 'Q002', client: 'Sarah Johnson', destination: 'Tokyo', amount: 3200, status: 'Sent' },
-  //   { id: 'Q003', client: 'Mike Wilson', destination: 'London', amount: 1800, status: 'Approved' },
-  // ];
-
   const [recentQuotes, setRecentQuotes] = useState<
     {
       id: string;
       quotationNo?: string;
       clientName?: string;
+      clientEmail?: string;
       place?: string;
       travelDate?: string;
       groupSize?: number;
@@ -74,6 +63,33 @@ export default function Dashboard() {
     }
   };
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+
+  useEffect(() => {
+    setFilteredQuotations(
+      recentQuotes.filter((quotation) => {
+        // Search filter
+        const matchesSearch =
+          (quotation.quotationNo ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (quotation.clientName ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (quotation.clientEmail ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (quotation.place ?? '').toLowerCase().includes(searchTerm.toLowerCase());
+
+        // Status filter
+        const matchesStatus =
+          statusFilter === 'all' || quotation.status.toLowerCase() === statusFilter.toLowerCase();
+
+        // Date range filter
+        const travelDate = quotation.travelDate ? new Date(quotation.travelDate) : null;
+        const matchesDate =
+          (!dateRange.start || (travelDate && travelDate >= new Date(dateRange.start))) &&
+          (!dateRange.end || (travelDate && travelDate <= new Date(dateRange.end)));
+
+        return matchesSearch && matchesStatus && matchesDate;
+      })
+    );
+  }, [searchTerm, statusFilter, dateRange, recentQuotes]);
 
   useEffect(() => {
     try {
