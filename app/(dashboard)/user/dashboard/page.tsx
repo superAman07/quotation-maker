@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
-import { 
-  FileText, 
-  Send, 
-  DollarSign, 
+import {
+  FileText,
+  Send,
+  DollarSign,
   Plus,
   TrendingUp,
   Users,
@@ -32,27 +32,34 @@ export default function Dashboard() {
   //   { id: 'Q003', client: 'Mike Wilson', destination: 'London', amount: 1800, status: 'Approved' },
   // ];
 
-    const [recentQuotes, setRecentQuotes] = useState<
-    { id: string; client: string; destination: string; amount: number; status: string }[]
+  const [recentQuotes, setRecentQuotes] = useState<
+    {
+      id: string;
+      quotationNo?: string;
+      clientName?: string;
+      place?: string;
+      travelDate?: string;
+      groupSize?: number;
+      totalGroupCost?: number;
+      totalNights?: number;
+      status: string;
+      // Add any other fields you use in the JSX
+    }[]
   >([]);
 
-  const [user,setUser] = useState<{ name?: string; email?: string; role?: string } | null>(null);
-
-  useEffect(()=>{
-    try{
-      axios.get("/api/user/me")
-      .then(res => setUser(res.data.user))
-      .catch(()=>setUser(null));
-    }catch{}
-  },[])
+  const [user, setUser] = useState<{ name?: string; email?: string; role?: string } | null>(null);
 
   useEffect(() => {
-    axios.get("/api/user/dashboard-stats")
-      .then(res => setStats(res.data.stats))
-      .catch(() => setStats({ drafted: 0, sent: 0, revenue: 0 }));
+    try {
+      axios.get("/api/user/me")
+        .then(res => setUser(res.data.user))
+        .catch(() => setUser(null));
+    } catch { }
+  }, [])
 
-    axios.get("/api/user/recent-quotations")
-      .then(res => setRecentQuotes(res.data.quotations))
+  useEffect(() => {
+    axios.get("/api/user/quotations")
+      .then(res => setRecentQuotes(res.data))
       .catch(() => setRecentQuotes([]));
   }, []);
 
@@ -76,7 +83,7 @@ export default function Dashboard() {
               <FileText className="w-8 h-8 text-[#6C733D]" />
             </div>
           </div>
-          
+
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
@@ -86,7 +93,7 @@ export default function Dashboard() {
               <Send className="w-8 h-8 text-[#9DA65D]" />
             </div>
           </div>
-          
+
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
@@ -96,29 +103,29 @@ export default function Dashboard() {
               <DollarSign className="w-8 h-8 text-[#6C733D]" />
             </div>
           </div>
-          
-          {/* <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">This Month</p>
-                <p className="text-2xl font-bold text-[#252426]">{stats.totalQuotes}</p>
+                <p className="text-2xl font-bold text-[#252426]">{recentQuotes.length}</p>
               </div>
               <TrendingUp className="w-8 h-8 text-[#9DA65D]" />
             </div>
-          </div> */}
+          </div>
         </div>
 
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4">
-          <a 
-            href="/user/dashboard/quotation/new" 
+          <a
+            href="/user/dashboard/quotation/new"
             className="bg-[#6C733D] hover:bg-[#5a5f33] text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 justify-center"
           >
             <Plus className="w-5 h-5" />
             New Quotation
           </a>
-          <a 
-            href="/user/dashboard/quotations" 
+          <a
+            href="/user/dashboard/quotations"
             className="border border-[#6C733D] text-[#6C733D] hover:bg-[#6C733D] hover:text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 justify-center"
           >
             <FileText className="w-5 h-5" />
@@ -131,25 +138,31 @@ export default function Dashboard() {
           <h2 className="text-xl font-bold text-[#252426] mb-4 border-b-2 border-[#9DA65D] pb-2">Recent Quotations</h2>
           <div className="space-y-4">
             {recentQuotes.map((quote) => (
-              <div key={quote.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div key={quote.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-gray-50 rounded-lg gap-2">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 bg-[#6C733D] text-white rounded-full flex items-center justify-center font-bold">
-                    {quote.id.slice(-1)}
+                    {quote.quotationNo?.slice(-4)}
                   </div>
                   <div>
-                    <p className="font-medium text-[#252426]">{quote.client}</p>
-                    <p className="text-sm text-gray-600">{quote.destination}</p>
+                    <p className="font-medium text-[#252426]">{quote.clientName}</p>
+                    <p className="text-sm text-gray-600">{quote.place}</p>
+                    <p className="text-xs text-gray-500">
+                      Travel: {quote.travelDate ? new Date(quote.travelDate).toLocaleDateString() : 'N/A'}
+                    </p>
+                    <p className="text-xs text-gray-500">Group: {quote.groupSize}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="font-bold text-[#252426]">${quote.amount.toLocaleString()}</p>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    quote.status === 'Draft' ? 'bg-yellow-100 text-yellow-800' :
-                    quote.status === 'Sent' ? 'bg-blue-100 text-blue-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
+                  <p className="font-bold text-[#252426]">
+                    ${quote.totalGroupCost !== undefined ? quote.totalGroupCost.toLocaleString() : 'N/A'}
+                  </p>
+                  <span className={`text-xs px-2 py-1 rounded-full ${quote.status === 'Draft' ? 'bg-yellow-100 text-yellow-800' :
+                      quote.status === 'Sent' ? 'bg-blue-100 text-blue-800' :
+                        'bg-green-100 text-green-800'
+                    }`}>
                     {quote.status}
                   </span>
+                  <p className="text-xs text-gray-500">Nights: {quote.totalNights}</p>
                 </div>
               </div>
             ))}
