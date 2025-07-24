@@ -14,18 +14,27 @@ import {
 import axios from 'axios';
 
 export default function Dashboard() {
-  const [stats] = useState({
-    drafted: 12,
-    sent: 8,
-    revenue: 45600,
-    totalQuotes: 23
+  // const [stats] = useState({
+  //   drafted: 12,
+  //   sent: 8,
+  //   revenue: 45600,
+  //   totalQuotes: 23
+  // });
+  const [stats, setStats] = useState({
+    drafted: 0,
+    sent: 0,
+    revenue: 0
   });
 
-  const recentQuotes = [
-    { id: 'Q001', client: 'John Smith', destination: 'Paris', amount: 2500, status: 'Draft' },
-    { id: 'Q002', client: 'Sarah Johnson', destination: 'Tokyo', amount: 3200, status: 'Sent' },
-    { id: 'Q003', client: 'Mike Wilson', destination: 'London', amount: 1800, status: 'Approved' },
-  ];
+  // const recentQuotes = [
+  //   { id: 'Q001', client: 'John Smith', destination: 'Paris', amount: 2500, status: 'Draft' },
+  //   { id: 'Q002', client: 'Sarah Johnson', destination: 'Tokyo', amount: 3200, status: 'Sent' },
+  //   { id: 'Q003', client: 'Mike Wilson', destination: 'London', amount: 1800, status: 'Approved' },
+  // ];
+
+    const [recentQuotes, setRecentQuotes] = useState<
+    { id: string; client: string; destination: string; amount: number; status: string }[]
+  >([]);
 
   const [user,setUser] = useState<{ name?: string; email?: string; role?: string } | null>(null);
 
@@ -36,6 +45,16 @@ export default function Dashboard() {
       .catch(()=>setUser(null));
     }catch{}
   },[])
+
+  useEffect(() => {
+    axios.get("/api/user/dashboard-stats")
+      .then(res => setStats(res.data.stats))
+      .catch(() => setStats({ drafted: 0, sent: 0, revenue: 0 }));
+
+    axios.get("/api/user/recent-quotations")
+      .then(res => setRecentQuotes(res.data.quotations))
+      .catch(() => setRecentQuotes([]));
+  }, []);
 
   return (
     <Layout>
@@ -78,7 +97,7 @@ export default function Dashboard() {
             </div>
           </div>
           
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+          {/* <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">This Month</p>
@@ -86,7 +105,7 @@ export default function Dashboard() {
               </div>
               <TrendingUp className="w-8 h-8 text-[#9DA65D]" />
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Action Buttons */}
@@ -99,7 +118,7 @@ export default function Dashboard() {
             New Quotation
           </a>
           <a 
-            href="/quotations" 
+            href="/user/dashboard/quotations" 
             className="border border-[#6C733D] text-[#6C733D] hover:bg-[#6C733D] hover:text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 justify-center"
           >
             <FileText className="w-5 h-5" />
