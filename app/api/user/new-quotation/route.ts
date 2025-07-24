@@ -8,7 +8,6 @@ const JWT_SECRET = process.env.JWT_SECRET!;
 
 export async function POST(req: NextRequest) {
     try {
-        
         const cookie = req.headers.get("cookie");
         if (!cookie) {
             return NextResponse.json({ error: "Not authenticated" }, { status: 401 });

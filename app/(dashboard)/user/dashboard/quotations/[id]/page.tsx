@@ -24,6 +24,9 @@ import {
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { PDFViewer } from '@react-pdf/renderer';
+import { QuotationPDF } from '@/components/Quotation-pdf';
 
 
 interface ServiceItem {
@@ -39,6 +42,9 @@ export default function QuotationDetail() {
 
   const [quotation, setQuotation] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const [selectedQuotation, setSelectedQuotation] = useState<any>(null);
 
   useEffect(() => {
     fetch(`/api/user/quotations/${quotationId}`)
@@ -63,6 +69,18 @@ export default function QuotationDetail() {
       case 'Rejected': return 'bg-red-100 text-red-800';
       default: return 'bg-gray-100 text-gray-800';
     }
+  };
+
+  const handleDownloadClick = async () => {
+    setShowPdfPreview(true);
+    setLoading(true);
+    const res = await fetch(`/api/user/quotations/${quotationId}`);
+    const data = await res.json();
+    setSelectedQuotation({
+      ...data,
+      logoUrl: data.logoUrl && data.logoUrl.trim() !== '' ? data.logoUrl : '/logo.png',
+    });
+    setLoading(false);
   };
 
   if (loading) {
@@ -117,7 +135,7 @@ export default function QuotationDetail() {
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
               <div className="flex items-start gap-4">
-                <Link href={'/user/dashboard/quotations'} className="flex items-center cursor-pointer gap-2 text-blue-600 hover:text-blue-800 transition-colors font-medium">
+                <Link href={'/user/dashboard/quotations'} className="flex items-center cursor-pointer gap-2 text-[#767d43] hover:text-[#5a5f33] transition-colors font-medium">
                   <ArrowLeft className="w-5 h-5" />
                 </Link>
                 <div className="flex-1">
@@ -144,7 +162,7 @@ export default function QuotationDetail() {
                   <Edit className="w-4 h-4" />
                   Edit
                 </Link> */}
-                <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
+                <button onClick={handleDownloadClick} className="px-4 py-2 bg-[#767d43] cursor-pointer text-white rounded-lg hover:bg-[#5a5f33] transition-colors flex items-center justify-center gap-2">
                   <Download className="w-4 h-4" />
                   Download PDF
                 </button>
@@ -158,7 +176,7 @@ export default function QuotationDetail() {
               {/* Client Information */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <User className="w-5 h-5 text-blue-600" />
+                  <User className="w-5 h-5 text-[#767d43]" />
                   Client Information
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -208,7 +226,7 @@ export default function QuotationDetail() {
               {/* Travel Details */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <MapPin className="w-5 h-5 text-blue-600" />
+                  <MapPin className="w-5 h-5 text-[#767d43]" />
                   Travel Details
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -260,7 +278,7 @@ export default function QuotationDetail() {
               {/* Itinerary */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-blue-600" />
+                  <Calendar className="w-5 h-5 text-[#767d43]" />
                   Detailed Itinerary
                 </h2>
                 <div className="space-y-4">
@@ -285,7 +303,7 @@ export default function QuotationDetail() {
               {/* Accommodation */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <Hotel className="w-5 h-5 text-blue-600" />
+                  <Hotel className="w-5 h-5 text-[#767d43]" />
                   Accommodation
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -413,6 +431,26 @@ export default function QuotationDetail() {
           </div>
         </div>
       </div>
+      {showPdfPreview && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-lg p-4 max-w-4xl w-full h-[80vh] flex flex-col">
+            <Button
+              className="self-end cursor-pointer mb-2 text-red-500"
+              variant="ghost"
+              onClick={() => setShowPdfPreview(false)}
+            >
+              Close
+            </Button>
+            {loading ? (
+              <div className="flex-1 flex items-center justify-center">Loading PDF...</div>
+            ) : (
+              <PDFViewer width="100%" height="100%">
+                <QuotationPDF payload={selectedQuotation} />
+              </PDFViewer>
+            )}
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }

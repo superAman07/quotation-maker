@@ -85,7 +85,11 @@ export default function QuotationsList() {
     const matchesStatus =
       statusFilter === 'all' || quote.status.toLowerCase() === statusFilter;
 
-    return matchesSearch;
+    const matchesDate =
+      (!dateRange.start || new Date(quote.travelDate) >= new Date(dateRange.start)) &&
+      (!dateRange.end || new Date(quote.travelDate) <= new Date(dateRange.end));
+
+    return matchesSearch && matchesStatus && matchesDate;
   });
 
   return (
@@ -99,7 +103,7 @@ export default function QuotationsList() {
           </div>
           <a
             href="/quotation/new"
-            className="bg-[#6C733D] hover:bg-[#5a5f33] text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
+            className="bg-[#3e482e] hover:bg-[#5a5f33] text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
           >
             <Plus className="w-4 h-4" />
             New Quotation
@@ -116,7 +120,7 @@ export default function QuotationsList() {
                 <input
                   type="text"
                   placeholder="Search by client, destination, or ID..."
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                  className="w-full pl-10 pr-3 py-2 border border-gray-300 text-gray-700 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -125,7 +129,7 @@ export default function QuotationsList() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
               <select
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                className="w-full px-3 py-2 h-10 border border-gray-300 rounded-lg text-gray-700 focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
               >
@@ -142,7 +146,7 @@ export default function QuotationsList() {
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="date"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                  className="w-full pl-10 pr-3 py-2 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                   value={dateRange.start}
                   onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
                 />
@@ -154,7 +158,7 @@ export default function QuotationsList() {
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="date"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
+                  className="w-full pl-10 pr-3 py-2 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6C733D] focus:border-transparent"
                   value={dateRange.end}
                   onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
                 />
@@ -196,12 +200,8 @@ export default function QuotationsList() {
                   <button className="flex-1 bg-[#6C733D] text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-[#5a5f33] transition-colors flex items-center justify-center gap-1">
                     <Eye className="w-4 h-4" />
                     View
-                  </button>
-                  {/* <button className="flex-1 border border-[#6C733D] text-[#6C733D] py-2 px-3 rounded-lg text-sm font-medium hover:bg-[#6C733D] hover:text-white transition-colors flex items-center justify-center gap-1">
-                    <Edit className="w-4 h-4" />
-                    Edit
-                  </button> */}
-                  <button className="flex-1 border border-gray-300 text-gray-600 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-1">
+                  </button> 
+                  <button className="flex-1 cursor-pointer border border-gray-300 text-gray-600 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-1">
                     <Download className="w-4 h-4" />
                     PDF
                   </button>
@@ -248,18 +248,14 @@ export default function QuotationsList() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#6C733D]">
-                      {/* ${quote.total.toLocaleString()} */}
                       ${typeof quote.totalGroupCost === 'number' ? quote.totalGroupCost.toLocaleString() : '0'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex gap-2">
                         <Link href={`/user/dashboard/quotations/${quote.id}`} className="text-[#6C733D] hover:text-[#5a5f33] p-1" title="View">
                           <Eye className="w-4 h-4" />
-                        </Link>
-                        {/* <Link href={`/user/dashboard/quotations/${quote.id}/edit`} className="text-[#6C733D] hover:text-[#5a5f33] p-1" title="Edit">
-                          <Edit className="w-4 h-4" />
-                        </Link> */}
-                        <button onClick={() => handleDownloadClick(quote.id)} className="text-[#6C733D] hover:text-[#5a5f33] p-1" title="Download PDF">
+                        </Link> 
+                        <button onClick={() => handleDownloadClick(quote.id)} className="text-[#6C733D] hover:text-[#5a5f33] cursor-pointer p-1" title="Download PDF">
                           <Download className="w-4 h-4" />
                         </button>
                       </div>
@@ -277,13 +273,13 @@ export default function QuotationsList() {
             Showing 1 to {filteredQuotations.length} of {filteredQuotations.length} results
           </div>
           <div className="flex items-center gap-2">
-            <button className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+            <button className="px-3 py-2 text-[#3e482e] cursor-pointer border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
               <ChevronLeft className="w-4 h-4" />
             </button>
             <button className="px-3 py-2 bg-[#6C733D] text-white rounded-lg">
               1
             </button>
-            <button className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+            <button className="px-3 py-2 border text-[#3e482e] cursor-pointer border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
               <ChevronRight className="w-4 h-4" />
             </button>
           </div>
