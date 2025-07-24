@@ -16,6 +16,7 @@ import {
 import axios from 'axios';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { get } from 'http';
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -36,7 +37,6 @@ export default function Dashboard() {
       totalGroupCost?: number;
       totalNights?: number;
       status: string;
-      // Add any other fields you use in the JSX
     }[]
   >([]);
 
@@ -63,33 +63,22 @@ export default function Dashboard() {
     }
   };
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [dateRange, setDateRange] = useState({ start: '', end: '' });
 
   useEffect(() => {
     setFilteredQuotations(
       recentQuotes.filter((quotation) => {
-        // Search filter
         const matchesSearch =
           (quotation.quotationNo ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
           (quotation.clientName ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
           (quotation.clientEmail ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
           (quotation.place ?? '').toLowerCase().includes(searchTerm.toLowerCase());
 
-        // Status filter
-        const matchesStatus =
-          statusFilter === 'all' || quotation.status.toLowerCase() === statusFilter.toLowerCase();
-
-        // Date range filter
         const travelDate = quotation.travelDate ? new Date(quotation.travelDate) : null;
-        const matchesDate =
-          (!dateRange.start || (travelDate && travelDate >= new Date(dateRange.start))) &&
-          (!dateRange.end || (travelDate && travelDate <= new Date(dateRange.end)));
 
-        return matchesSearch && matchesStatus && matchesDate;
+        return matchesSearch;
       })
     );
-  }, [searchTerm, statusFilter, dateRange, recentQuotes]);
+  }, [searchTerm, recentQuotes]);
 
   useEffect(() => {
     try {
@@ -108,6 +97,24 @@ export default function Dashboard() {
       .catch(() => setRecentQuotes([]));
   }, []);
 
+  // console.log("Recent Quotes:",recentQuotes);
+
+  useEffect(() => {
+    let sum =0;
+    let sentCount = 0;
+    let draftedCount = 0;
+    recentQuotes.forEach((e)=>{
+      if(e.status.toLowerCase() === 'sent')sentCount++;
+      if(e.status.toLowerCase() === 'draft')draftedCount++;
+      if(e.totalGroupCost) sum += e.totalGroupCost;
+    })
+    setStats({
+      drafted: draftedCount,
+      sent: sentCount,
+      revenue: sum
+    });
+  }, [recentQuotes])
+
   return (
     <Layout>
       <div className="space-y-6">
@@ -123,7 +130,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Quotes Drafted</p>
-                <p className="text-2xl font-bold text-[#252426]">{stats.drafted}</p>
+                <p className="text-2xl font-bold text-[#252426]">{stats?.drafted}</p>
               </div>
               <FileText className="w-8 h-8 text-[#6C733D]" />
             </div>
@@ -133,7 +140,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Quotes Sent</p>
-                <p className="text-2xl font-bold text-[#252426]">{stats.sent}</p>
+                <p className="text-2xl font-bold text-[#252426]">{stats?.sent}</p>
               </div>
               <Send className="w-8 h-8 text-[#9DA65D]" />
             </div>
@@ -143,7 +150,7 @@ export default function Dashboard() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-[#252426]">${stats.revenue.toLocaleString()}</p>
+                <p className="text-2xl font-bold text-[#252426]">${stats?.revenue}</p>
               </div>
               <DollarSign className="w-8 h-8 text-[#6C733D]" />
             </div>
@@ -271,40 +278,6 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
-        {/* <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-          <h2 className="text-xl font-bold text-[#252426] mb-4 border-b-2 border-[#9DA65D] pb-2">Recent Quotations</h2>
-          <div className="space-y-4">
-            {recentQuotes.map((quote) => (
-              <div key={quote.id} className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-gray-50 rounded-lg gap-2">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 bg-[#6C733D] text-white rounded-full flex items-center justify-center font-bold">
-                    {quote.quotationNo?.slice(-4)}
-                  </div>
-                  <div>
-                    <p className="font-medium text-[#252426]">{quote.clientName}</p>
-                    <p className="text-sm text-gray-600">{quote.place}</p>
-                    <p className="text-xs text-gray-500">
-                      Travel: {quote.travelDate ? new Date(quote.travelDate).toLocaleDateString() : 'N/A'}
-                    </p>
-                    <p className="text-xs text-gray-500">Group: {quote.groupSize}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-[#252426]">
-                    ${quote.totalGroupCost !== undefined ? quote.totalGroupCost.toLocaleString() : 'N/A'}
-                  </p>
-                  <span className={`text-xs px-2 py-1 rounded-full ${quote.status === 'Draft' ? 'bg-yellow-100 text-yellow-800' :
-                      quote.status === 'Sent' ? 'bg-blue-100 text-blue-800' :
-                        'bg-green-100 text-green-800'
-                    }`}>
-                    {quote.status}
-                  </span>
-                  <p className="text-xs text-gray-500">Nights: {quote.totalNights}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div> */}
       </div>
     </Layout>
   );
