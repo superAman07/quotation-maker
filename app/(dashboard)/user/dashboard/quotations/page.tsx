@@ -85,7 +85,11 @@ export default function QuotationsList() {
     const matchesStatus =
       statusFilter === 'all' || quote.status.toLowerCase() === statusFilter;
 
-    return matchesSearch;
+    const matchesDate =
+      (!dateRange.start || new Date(quote.travelDate) >= new Date(dateRange.start)) &&
+      (!dateRange.end || new Date(quote.travelDate) <= new Date(dateRange.end));
+
+    return matchesSearch && matchesStatus && matchesDate;
   });
 
   return (
