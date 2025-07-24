@@ -74,9 +74,7 @@ export default function Layout({ children }: LayoutProps) {
   ];
 
   const userNavigation = [
-    { name: 'Your Profile', href: '/user/dashboard/profile' },
-    // { name: 'Account Settings', href: '/settings' },
-    // { name: 'Billing', href: '/billing' },
+    { name: 'Your Profile', href: '/user/dashboard/profile' }, 
     { name: 'Support', href: '/support' },
   ];
 
@@ -126,8 +124,8 @@ export default function Layout({ children }: LayoutProps) {
               key={item.name}
               href={item.href}
               className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group ${item.current
-                ? 'bg-[#6C733D] text-white shadow-lg'
-                : 'text-gray-700 hover:bg-gray-100 hover:text-[#6C733D]'
+                ? 'bg-[#3e482e] text-white shadow-lg'
+                : 'text-gray-700 hover:bg-gray-100 hover:text-[#3e482e]'
                 }`}
             >
               <item.icon className={`w-5 h-5 transition-colors ${item.current ? 'text-white' : 'text-gray-500 group-hover:text-[#6C733D]'
@@ -142,7 +140,7 @@ export default function Layout({ children }: LayoutProps) {
           <div className="bg-gradient-to-r from-[#6C733D]/10 to-[#9DA65D]/10 rounded-xl p-4">
             <h3 className="text-sm font-semibold text-[#252426] mb-1">Need Help?</h3>
             <p className="text-xs text-gray-600 mb-3">Contact our support team for assistance</p>
-            <button className="w-full bg-[#6C733D] text-white text-xs font-medium py-2 px-3 rounded-lg hover:bg-[#5a5f33] transition-colors">
+            <button className="w-full cursor-pointer bg-[#3e482e] text-white text-xs font-medium py-2 px-3 rounded-lg hover:bg-[#5a5f33] transition-colors">
               Get Support
             </button>
           </div>
@@ -197,7 +195,7 @@ export default function Layout({ children }: LayoutProps) {
               <div className="hidden sm:block">
                 <a
                   href="/user/dashboard/quotation/new"
-                  className="flex items-center cursor-pointer gap-2 h-10 px-4 bg-[#6C733D] hover:bg-[#5a5f33] text-white rounded-lg text-sm font-medium transition-colors"
+                  className="flex items-center cursor-pointer gap-2 h-10 px-4 bg-[#3e482e] hover:bg-[#5a5f33] text-white rounded-lg text-sm font-medium transition-colors"
                 >
                   <Plus className="w-4 h-4" />
                   <span className="hidden lg:inline">New Quote</span>
@@ -210,7 +208,7 @@ export default function Layout({ children }: LayoutProps) {
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex cursor-pointer items-center gap-2 h-10 px-2 rounded-lg hover:bg-gray-100 transition-colors"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-[#6C733D] to-[#9DA65D] rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-gradient-to-br from-[#3e482e] to-[#9DA65D] rounded-full flex items-center justify-center">
                     <User className="w-4 h-4 text-white" />
                   </div>
                   <div className="hidden sm:block text-left">
