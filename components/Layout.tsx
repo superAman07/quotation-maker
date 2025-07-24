@@ -116,7 +116,7 @@ export default function Layout({ children }: LayoutProps) {
       {/* Sidebar */}
       <div
         id="sidebar"
-        className={`fixed inset-y-0 left-0 z-40 top-17 w-72 bg-white shadow-xl border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${sidebarOpen || !isMobile ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed inset-y-0 left-0 z-40 top-13 w-72 bg-white shadow-xl border-r border-gray-200 transform transition-transform duration-300 ease-in-out ${sidebarOpen || !isMobile ? 'translate-x-0' : '-translate-x-full'
           } lg:translate-x-0`}
       >
         {/* Navigation */}
@@ -170,7 +170,7 @@ export default function Layout({ children }: LayoutProps) {
                 <X className="w-5 h-5 text-gray-500" />
               </button>}
 
-              <div className="flex items-center justify-between h-16 px-0 sm:px-6 border-b border-gray-200 bg-white">
+              <div className="flex items-center justify-between h-16 px-0 sm:px-6  border-gray-200 bg-white">
                 <div className="flex items-center">
                   <Link href={'/user/dashboard'}>
                     <Image src={'/logo.png'} width={200} height={50} alt="Travomine Logo" className="text-xl font-bold text-[#252426]" />
