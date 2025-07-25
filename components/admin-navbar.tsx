@@ -48,8 +48,7 @@ const navigationItems = [
     title: "Accommodations",
     icon: Hotel,
     items: [
-      { title: "Hotels", href: "/admin/dashboard/hotels", icon: Hotel },
-      { title: "Rate Management", href: "/admin/dashboard/hotel-rates", icon: DollarSign },
+      { title: "Hotels", href: "/admin/dashboard/hotels", icon: Hotel }, 
     ],
   },
   {
