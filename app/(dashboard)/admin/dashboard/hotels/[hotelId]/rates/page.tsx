@@ -30,7 +30,7 @@ import type { HotelRateCard } from "@/lib/types"
 import Link from "next/link"
 import axios from "axios"
 
-export default function({ params }: { params: { hotelId: string } }) {
+export default function Page({ params }: { params: { hotelId: string } }) {
   const hotelId = Number.parseInt(params.hotelId)
   const [rateCards, setRateCards] = useState<HotelRateCard[]>([])
   const [isCreateOpen, setIsCreateOpen] = useState(false)
