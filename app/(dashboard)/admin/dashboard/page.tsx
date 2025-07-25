@@ -1,73 +1,124 @@
+'use client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import axios from "axios"
 import { Building2, Car, Hotel, MapPin, Package, Plane, Users, Utensils } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export default function AdminDashboard() {
-  const stats = [
-    {
-      title: "Destinations",
-      value: "24",
-      description: "Active destinations",
-      icon: MapPin,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
-    },
-    {
-      title: "Venues",
-      value: "156",
-      description: "Total venues",
-      icon: Building2,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
-    },
-    {
-      title: "Hotels",
-      value: "89",
-      description: "Partner hotels",
-      icon: Hotel,
-      color: "text-purple-600",
-      bgColor: "bg-purple-50",
-    },
-    {
-      title: "Packages",
-      value: "42",
-      description: "Travel packages",
-      icon: Package,
-      color: "text-orange-600",
-      bgColor: "bg-orange-50",
-    },
-    {
-      title: "Flight Routes",
-      value: "78",
-      description: "Available routes",
-      icon: Plane,
-      color: "text-indigo-600",
-      bgColor: "bg-indigo-50",
-    },
-    {
-      title: "Vehicles",
-      value: "34",
-      description: "Vehicle types",
-      icon: Car,
-      color: "text-red-600",
-      bgColor: "bg-red-50",
-    },
-    {
-      title: "Meal Plans",
-      value: "12",
-      description: "Available plans",
-      icon: Utensils,
-      color: "text-yellow-600",
-      bgColor: "bg-yellow-50",
-    },
-    {
-      title: "Users",
-      value: "8",
-      description: "Admin users",
-      icon: Users,
-      color: "text-gray-600",
-      bgColor: "bg-gray-50",
-    },
-  ]
+  const [destinations, setDestinations] = useState<any[]>([]);
+  const [venues, setVenues] = useState<any[]>([]);
+  const [hotels, setHotels] = useState<any[]>([]);
+
+  const [stats, setStats] = useState([
+    { title: "Destinations", value: `${destinations?.length}` || "-", description: "Active destinations", icon: MapPin, color: "text-blue-600", bgColor: "bg-blue-50" },
+    { title: "Venues", value: `${venues?.length}` || "-", description: "Total venues", icon: Building2, color: "text-green-600", bgColor: "bg-green-50" },
+    { title: "Hotels", value: `${hotels?.length}` || "-", description: "Partner hotels", icon: Hotel, color: "text-purple-600", bgColor: "bg-purple-50" },
+    { title: "Packages", value: "-", description: "Travel packages", icon: Package, color: "text-orange-600", bgColor: "bg-orange-50" },
+    { title: "Flight Routes", value: "-", description: "Available routes", icon: Plane, color: "text-indigo-600", bgColor: "bg-indigo-50" },
+    { title: "Vehicles", value: "-", description: "Vehicle types", icon: Car, color: "text-red-600", bgColor: "bg-red-50" },
+    { title: "Meal Plans", value: "-", description: "Available plans", icon: Utensils, color: "text-yellow-600", bgColor: "bg-yellow-50" },
+    { title: "Users", value: "-", description: "Admin users", icon: Users, color: "text-gray-600", bgColor: "bg-gray-50" },
+  ])
+
+  useEffect(() => {
+    const fetchDestinations = async () => {
+      const response = await axios.get('/api/admin/destinations')
+      console.log("Fetched destinations:", response.data.destinations)
+      setDestinations(response.data.destinations)
+    }
+    const fetchVenues = async () => {
+      const response = await axios.get('/api/admin/venues')
+      console.log("Fetched venues:", response.data)
+      setVenues(response.data)
+    }
+    fetchDestinations()
+    fetchVenues()
+  }, [])
+  useEffect(() => {
+    setStats((prevStats) =>
+      prevStats.map((stat) =>
+        stat.title === "Destinations"
+          ? { ...stat, value: destinations.length.toString() }
+          : stat
+      )
+    )
+  }, [destinations])
+  useEffect(() => {
+    setStats((prevStats) =>
+      prevStats.map((stat) =>
+        stat.title === "Venues"
+          ? { ...stat, value: venues.length.toString() }
+          : stat
+      )
+    )
+  }, [venues])
+
+  // const stats = [
+  //   {
+  //     title: "Destinations",
+  //     value: "24",
+  //     description: "Active destinations",
+  //     icon: MapPin,
+  //     color: "text-blue-600",
+  //     bgColor: "bg-blue-50",
+  //   },
+  //   {
+  //     title: "Venues",
+  //     value: "156",
+  //     description: "Total venues",
+  //     icon: Building2,
+  //     color: "text-green-600",
+  //     bgColor: "bg-green-50",
+  //   },
+  //   {
+  //     title: "Hotels",
+  //     value: "89",
+  //     description: "Partner hotels",
+  //     icon: Hotel,
+  //     color: "text-purple-600",
+  //     bgColor: "bg-purple-50",
+  //   },
+  //   {
+  //     title: "Packages",
+  //     value: "42",
+  //     description: "Travel packages",
+  //     icon: Package,
+  //     color: "text-orange-600",
+  //     bgColor: "bg-orange-50",
+  //   },
+  //   {
+  //     title: "Flight Routes",
+  //     value: "78",
+  //     description: "Available routes",
+  //     icon: Plane,
+  //     color: "text-indigo-600",
+  //     bgColor: "bg-indigo-50",
+  //   },
+  //   {
+  //     title: "Vehicles",
+  //     value: "34",
+  //     description: "Vehicle types",
+  //     icon: Car,
+  //     color: "text-red-600",
+  //     bgColor: "bg-red-50",
+  //   },
+  //   {
+  //     title: "Meal Plans",
+  //     value: "12",
+  //     description: "Available plans",
+  //     icon: Utensils,
+  //     color: "text-yellow-600",
+  //     bgColor: "bg-yellow-50",
+  //   },
+  //   {
+  //     title: "Users",
+  //     value: "8",
+  //     description: "Admin users",
+  //     icon: Users,
+  //     color: "text-gray-600",
+  //     bgColor: "bg-gray-50",
+  //   },
+  // ]
 
   return (
     <div className="min-h-screen bg-gray-50">
