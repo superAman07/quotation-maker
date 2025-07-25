@@ -640,24 +640,6 @@ export function QuotationPDF({ payload }: any) {
                                         </View>
                                     ))}
                             </View>
-                            {/* <View style={styles.inclusionList}>
-                                {[
-                                    'Warm airport greetings & assistance',
-                                    'Comfortable twin-sharing accommodations',
-                                    '5 hearty breakfasts & 5 dinners (MAP basis)',
-                                    'Travel in a Non-AC Innova Crysta throughout',
-                                    'Protected Area & Inner Line permits handled',
-                                    'All sightseeing & entry permits as per itinerary',
-                                    'Fuel, driver allowances, tolls & parking',
-                                    'Oxygen cylinder support in Leh',
-                                    'Applicable taxes & GST',
-                                ].map((inc, i) => (
-                                    <View style={styles.inclusionItem} key={i}>
-                                        <Text style={styles.checkIcon}>✓</Text>
-                                        <Text>{inc}</Text>
-                                    </View>
-                                ))}
-                            </View> */}
                         </View>
 
                         <View style={styles.inclusionColumn}>
@@ -672,24 +654,6 @@ export function QuotationPDF({ payload }: any) {
                                         </View>
                                     ))}
                             </View>
-
-                            {/* <View style={styles.inclusionList}>
-                                {[
-                                    'Personal expenses & tips',
-                                    'Adventure activities like rafting, paragliding, camel rides',
-                                    'Additional sightseeing or extra vehicle use',
-                                    'Monument/monastery entry & guide fees',
-                                    'Camera fees & travel insurance',
-                                    'Charges from unforeseen events (landslides, strikes, route closures)',
-                                    'Airline/fuel tax hikes before departure',
-                                    'Anything not clearly mentioned in the inclusions',
-                                ].map((exc, i) => (
-                                    <View style={styles.inclusionItem} key={i}>
-                                        <Text style={styles.crossIcon}>✗</Text>
-                                        <Text>{exc}</Text>
-                                    </View>
-                                ))}
-                            </View> */}
                         </View>
                     </View>
 
