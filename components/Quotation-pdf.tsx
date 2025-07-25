@@ -631,6 +631,16 @@ export function QuotationPDF({ payload }: any) {
                         <View style={styles.inclusionColumn}>
                             <Text style={styles.inclusionHeader}>What's Included?</Text>
                             <View style={styles.inclusionList}>
+                                {(payload.inclusions && payload.inclusions.length > 0
+                                    ? payload.inclusions
+                                    : ['No inclusions selected']).map((inc: string, i: number) => (
+                                        <View style={styles.inclusionItem} key={i}>
+                                            <Text style={styles.checkIcon}>✓</Text>
+                                            <Text>{inc}</Text>
+                                        </View>
+                                    ))}
+                            </View>
+                            {/* <View style={styles.inclusionList}>
                                 {[
                                     'Warm airport greetings & assistance',
                                     'Comfortable twin-sharing accommodations',
@@ -647,12 +657,23 @@ export function QuotationPDF({ payload }: any) {
                                         <Text>{inc}</Text>
                                     </View>
                                 ))}
-                            </View>
+                            </View> */}
                         </View>
 
                         <View style={styles.inclusionColumn}>
                             <Text style={styles.exclusionHeader}>What's Not Included?</Text>
                             <View style={styles.inclusionList}>
+                                {(payload.exclusions && payload.exclusions.length > 0
+                                    ? payload.exclusions
+                                    : ['No exclusions selected']).map((exc: string, i: number) => (
+                                        <View style={styles.inclusionItem} key={i}>
+                                            <Text style={styles.crossIcon}>✗</Text>
+                                            <Text>{exc}</Text>
+                                        </View>
+                                    ))}
+                            </View>
+
+                            {/* <View style={styles.inclusionList}>
                                 {[
                                     'Personal expenses & tips',
                                     'Adventure activities like rafting, paragliding, camel rides',
@@ -668,7 +689,7 @@ export function QuotationPDF({ payload }: any) {
                                         <Text>{exc}</Text>
                                     </View>
                                 ))}
-                            </View>
+                            </View> */}
                         </View>
                     </View>
 
