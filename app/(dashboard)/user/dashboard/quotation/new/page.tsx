@@ -329,8 +329,7 @@ export default function QuotationForm() {
         setCosting(prev => ({
           ...prev,
           landCostPerPerson: pkg.basePricePerPerson
-        }));
-        // Optionally auto-fill itinerary
+        })); 
         setItinerary(
           pkg.packageItineraries.map(it => ({
             id: it.id.toString(),
@@ -381,26 +380,18 @@ export default function QuotationForm() {
     clientPhone: clientInfo.phone,
     clientAddress: clientInfo.address,
     travelDate: travelSummary.dateOfTravel,
-    groupSize: travelSummary.groupSize,
-    // mealPlan: travelSummary.mealPlan,
+    groupSize: travelSummary.groupSize, 
     mealPlan: mealPlanToSend,
-    place: travelSummary.place,
-    // vehicleUsed: travelSummary.vehicleUsed,
+    place: travelSummary.place, 
     vehicleUsed: vehicleUsedToSend,
-    localVehicleUsed: localVehicleUsedToSend,
-    // localVehicleUsed: travelSummary.localVehicleUsed,
+    localVehicleUsed: localVehicleUsedToSend, 
     flightCost: travelSummary.flightCostPerPerson,
     flightImageUrl: flightImagePreview,
     landCostPerHead: costing.landCostPerPerson,
     totalPerHead: costing.totalCostPerPerson,
     totalGroupCost: costing.totalGroupCost,
     notes,
-    status: "SENT",
-    // accommodation: accommodations.map(acc => ({
-    //   location: acc.location,
-    //   hotelName: acc.hotelName,
-    //   nights: acc.numberOfNights,
-    // })),
+    status: "SENT", 
     accommodation: accommodations.map(acc => ({
       location:
         acc.location === "__custom"
