@@ -631,20 +631,13 @@ export function QuotationPDF({ payload }: any) {
                         <View style={styles.inclusionColumn}>
                             <Text style={styles.inclusionHeader}>What's Included?</Text>
                             <View style={styles.inclusionList}>
-                                {[
-                                    'Warm airport greetings & assistance',
-                                    'Comfortable twin-sharing accommodations',
-                                    '5 hearty breakfasts & 5 dinners (MAP basis)',
-                                    'Travel in a Non-AC Innova Crysta throughout',
-                                    'Protected Area & Inner Line permits handled',
-                                    'All sightseeing & entry permits as per itinerary',
-                                    'Fuel, driver allowances, tolls & parking',
-                                    'Oxygen cylinder support in Leh',
-                                    'Applicable taxes & GST',
-                                ].map((inc, i) => (
+                                {(payload.inclusions && payload.inclusions.length > 0
+                                    ? payload.inclusions
+                                    : [{ item: 'No inclusions selected' }]
+                                ).map((inc: any, i: number) => (
                                     <View style={styles.inclusionItem} key={i}>
                                         <Text style={styles.checkIcon}>✓</Text>
-                                        <Text>{inc}</Text>
+                                        <Text>{typeof inc === "string" ? inc : inc.item}</Text>
                                     </View>
                                 ))}
                             </View>
@@ -653,19 +646,13 @@ export function QuotationPDF({ payload }: any) {
                         <View style={styles.inclusionColumn}>
                             <Text style={styles.exclusionHeader}>What's Not Included?</Text>
                             <View style={styles.inclusionList}>
-                                {[
-                                    'Personal expenses & tips',
-                                    'Adventure activities like rafting, paragliding, camel rides',
-                                    'Additional sightseeing or extra vehicle use',
-                                    'Monument/monastery entry & guide fees',
-                                    'Camera fees & travel insurance',
-                                    'Charges from unforeseen events (landslides, strikes, route closures)',
-                                    'Airline/fuel tax hikes before departure',
-                                    'Anything not clearly mentioned in the inclusions',
-                                ].map((exc, i) => (
+                                {(payload.exclusions && payload.exclusions.length > 0
+                                    ? payload.exclusions
+                                    : [{ item: 'No exclusions selected' }]
+                                ).map((exc: any, i: number) => (
                                     <View style={styles.inclusionItem} key={i}>
                                         <Text style={styles.crossIcon}>✗</Text>
-                                        <Text>{exc}</Text>
+                                        <Text>{typeof exc === "string" ? exc : exc.item}</Text>
                                     </View>
                                 ))}
                             </View>

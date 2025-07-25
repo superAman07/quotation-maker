@@ -21,6 +21,16 @@ interface ClientInfo {
   address: string;
 }
 
+interface InclusionTemplate {
+  id: number;
+  description: string;
+}
+
+interface ExclusionTemplate {
+  id: number;
+  description: string;
+}
+
 interface TravelSummary {
   dateOfTravel: string;
   groupSize: number;
@@ -160,6 +170,21 @@ export default function QuotationForm() {
 
   const [inclusions, setInclusions] = useState<string[]>(['']);
   const [exclusions, setExclusions] = useState<string[]>(['']);
+
+  const [inclusionTemplates, setInclusionTemplates] = useState<any[]>([]);
+  const [exclusionTemplates, setExclusionTemplates] = useState<any[]>([]);
+
+  const adminInclusions: string[] = inclusionTemplates.flatMap((t: InclusionTemplate) =>
+    t.description
+      ? t.description.split(/\r?\n|,/).map((item: string) => item.trim()).filter(Boolean)
+      : []
+  );
+
+  const adminExclusions: string[] = exclusionTemplates.flatMap((t: ExclusionTemplate) =>
+    t.description
+      ? t.description.split(/\r?\n|,/).map((item: string) => item.trim()).filter(Boolean)
+      : []
+  );
 
   const [costing, setCosting] = useState<Costing>({
     landCostPerPerson: 0,
@@ -323,6 +348,20 @@ export default function QuotationForm() {
   }, []);
 
   useEffect(() => {
+    async function fetchTemplates() {
+      const [incRes, excRes] = await Promise.all([
+        axios.get('/api/admin/inclusion-templates'),
+        axios.get('/api/admin/exclusion-templates'),
+      ]);
+      setInclusionTemplates(incRes.data);
+      setExclusionTemplates(excRes.data);
+      console.log("Inclusion Templates:", incRes.data);
+      console.log("Exclusion Templates:", excRes.data);
+    }
+    fetchTemplates();
+  }, []);
+
+  useEffect(() => {
     if (selectedPackageId) {
       const pkg = packages.find(p => p.id === selectedPackageId);
       if (pkg) {
@@ -330,7 +369,6 @@ export default function QuotationForm() {
           ...prev,
           landCostPerPerson: pkg.basePricePerPerson
         }));
-        // Optionally auto-fill itinerary
         setItinerary(
           pkg.packageItineraries.map(it => ({
             id: it.id.toString(),
@@ -382,13 +420,10 @@ export default function QuotationForm() {
     clientAddress: clientInfo.address,
     travelDate: travelSummary.dateOfTravel,
     groupSize: travelSummary.groupSize,
-    // mealPlan: travelSummary.mealPlan,
     mealPlan: mealPlanToSend,
     place: travelSummary.place,
-    // vehicleUsed: travelSummary.vehicleUsed,
     vehicleUsed: vehicleUsedToSend,
     localVehicleUsed: localVehicleUsedToSend,
-    // localVehicleUsed: travelSummary.localVehicleUsed,
     flightCost: travelSummary.flightCostPerPerson,
     flightImageUrl: flightImagePreview,
     landCostPerHead: costing.landCostPerPerson,
@@ -396,11 +431,6 @@ export default function QuotationForm() {
     totalGroupCost: costing.totalGroupCost,
     notes,
     status: "SENT",
-    // accommodation: accommodations.map(acc => ({
-    //   location: acc.location,
-    //   hotelName: acc.hotelName,
-    //   nights: acc.numberOfNights,
-    // })),
     accommodation: accommodations.map(acc => ({
       location:
         acc.location === "__custom"
@@ -417,6 +447,8 @@ export default function QuotationForm() {
       dayTitle: item.dayTitle,
       description: item.description,
     })),
+    // inclusions: inclusions.filter(Boolean),
+    // exclusions: exclusions.filter(Boolean),
     inclusions: inclusions.filter(Boolean).map(item => ({ item })),
     exclusions: exclusions.filter(Boolean).map(item => ({ item })),
   };
@@ -869,12 +901,22 @@ export default function QuotationForm() {
               <CardContent className="space-y-3">
                 {inclusions.map((inclusion, index) => (
                   <div key={index} className="flex gap-2">
-                    <Input
+                    {/* <Input
                       value={inclusion}
                       onChange={(e) => updateInclusion(index, e.target.value)}
                       placeholder="Enter inclusion item"
                       className="focus:ring-green-500 focus:border-green-500 text-gray-900"
-                    />
+                    /> */}
+                    <select
+                      value={inclusion}
+                      onChange={e => updateInclusion(index, e.target.value)}
+                      className="block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                    >
+                      <option value="">Select inclusion...</option>
+                      {adminInclusions.map((item, idx) => (
+                        <option key={idx} value={item}>{item}</option>
+                      ))}
+                    </select>
                     {inclusions.length > 1 && (
                       <Button
                         type="button"
@@ -908,12 +950,22 @@ export default function QuotationForm() {
               <CardContent className="space-y-3">
                 {exclusions.map((exclusion, index) => (
                   <div key={index} className="flex gap-2">
-                    <Input
+                    {/* <Input
                       value={exclusion}
                       onChange={(e) => updateExclusion(index, e.target.value)}
                       placeholder="Enter exclusion item"
                       className="focus:ring-green-500 focus:border-green-500 text-gray-900"
-                    />
+                    /> */}
+                    <select
+                      value={exclusion}
+                      onChange={e => updateExclusion(index, e.target.value)}
+                      className="block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                    >
+                      <option value="">Select exclusion...</option>
+                      {adminExclusions.map((item, idx) => (
+                        <option key={idx} value={item}>{item}</option>
+                      ))}
+                    </select>
                     {exclusions.length > 1 && (
                       <Button
                         type="button"
