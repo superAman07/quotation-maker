@@ -633,12 +633,13 @@ export function QuotationPDF({ payload }: any) {
                             <View style={styles.inclusionList}>
                                 {(payload.inclusions && payload.inclusions.length > 0
                                     ? payload.inclusions
-                                    : ['No inclusions selected']).map((inc: string, i: number) => (
-                                        <View style={styles.inclusionItem} key={i}>
-                                            <Text style={styles.checkIcon}>✓</Text>
-                                            <Text>{inc}</Text>
-                                        </View>
-                                    ))}
+                                    : [{ item: 'No inclusions selected' }]
+                                ).map((inc: any, i: number) => (
+                                    <View style={styles.inclusionItem} key={i}>
+                                        <Text style={styles.checkIcon}>✓</Text>
+                                        <Text>{typeof inc === "string" ? inc : inc.item}</Text>
+                                    </View>
+                                ))}
                             </View>
                         </View>
 
@@ -647,12 +648,13 @@ export function QuotationPDF({ payload }: any) {
                             <View style={styles.inclusionList}>
                                 {(payload.exclusions && payload.exclusions.length > 0
                                     ? payload.exclusions
-                                    : ['No exclusions selected']).map((exc: string, i: number) => (
-                                        <View style={styles.inclusionItem} key={i}>
-                                            <Text style={styles.crossIcon}>✗</Text>
-                                            <Text>{exc}</Text>
-                                        </View>
-                                    ))}
+                                    : [{ item: 'No exclusions selected' }]
+                                ).map((exc: any, i: number) => (
+                                    <View style={styles.inclusionItem} key={i}>
+                                        <Text style={styles.crossIcon}>✗</Text>
+                                        <Text>{typeof exc === "string" ? exc : exc.item}</Text>
+                                    </View>
+                                ))}
                             </View>
                         </View>
                     </View>

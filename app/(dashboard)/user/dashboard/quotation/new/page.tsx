@@ -446,9 +446,11 @@ export default function QuotationForm() {
     itinerary: itinerary.map(item => ({
       dayTitle: item.dayTitle,
       description: item.description,
-    })), 
-    inclusions: inclusions.filter(Boolean),
-    exclusions: exclusions.filter(Boolean),
+    })),
+    // inclusions: inclusions.filter(Boolean),
+    // exclusions: exclusions.filter(Boolean),
+    inclusions: inclusions.filter(Boolean).map(item => ({ item })),
+    exclusions: exclusions.filter(Boolean).map(item => ({ item })),
   };
 
   console.log("Accommodation Payload: ", payload.accommodation);
