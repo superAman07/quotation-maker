@@ -29,9 +29,11 @@ import { ArrowLeft, Edit, Plus, Trash2 } from "lucide-react"
 import type { HotelRateCard } from "@/lib/types"
 import Link from "next/link"
 import axios from "axios"
+import { useParams } from "next/navigation"
 
-export default function Page({ params }: { params: { hotelId: string } }) {
-  const hotelId = Number.parseInt(params.hotelId)
+export default function Page() {
+  const params = useParams();
+  const hotelId = Number.parseInt(params.hotelId as string)
   const [rateCards, setRateCards] = useState<HotelRateCard[]>([])
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
