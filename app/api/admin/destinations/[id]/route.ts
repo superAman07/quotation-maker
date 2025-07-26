@@ -1,9 +1,7 @@
 import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 
-interface Params { params: { id: string } }
-
-export async function GET(_req: Request, { params }: Params) {
+export async function GET(_req: NextRequest, { params }: {params: {id:string}}) {
     const id = parseInt(params.id, 10)
     const destination = await prisma.destination.findUnique({
         where: { id },
@@ -14,7 +12,7 @@ export async function GET(_req: Request, { params }: Params) {
     return NextResponse.json(destination, { status: 200 })
 }
 
-export async function PUT(request: Request, context: { params: { id: string } }) {
+export async function PUT(request: NextRequest, context: { params: { id: string } }) {
     console.log('PUT request received')
     const id = parseInt(context.params.id, 10)
     console.log(`Updating destination with ID: ${id}`)
