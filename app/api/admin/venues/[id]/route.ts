@@ -4,11 +4,10 @@ import { prisma } from "@/lib/prisma";
 import { cookies } from 'next/headers';
 import { jwtDecode } from 'jwt-decode';
 
-type DecodedToken = { name?: string; email?: string; role?: string };
-interface Params { params: { id: string } }
+type DecodedToken = { name?: string; email?: string; role?: string }; 
 
-export async function GET(_req: Request, { params }: Params) {
-    const id = parseInt(params.id, 10)
+export async function GET(_req: Request, { params }: {params: Promise<{id:string}>}) {
+    const id = parseInt((await params).id, 10)
     const venue = await prisma.venue.findUnique({
         where: { id },
         include: { destination: true },
@@ -19,7 +18,7 @@ export async function GET(_req: Request, { params }: Params) {
     return NextResponse.json(venue)
 }
 
-export async function PUT(request: Request, context: { params: { id: string } }) {
+export async function PUT(request: Request, context: { params: Promise<{ id: string }> }) {
     const cookieStore = await cookies();
     const token = cookieStore.get("auth_token")?.value;
     if (!token) {
@@ -36,8 +35,8 @@ export async function PUT(request: Request, context: { params: { id: string } })
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    console.log("Updating venue with ID:", context.params.id);
-    const id = parseInt(context.params.id, 10)
+    console.log("Updating venue with ID:", (await context.params).id);
+    const id = parseInt((await context.params).id, 10)
 
     const { name, address, coordinates, description, imageUrl, destinationId } = await request.json();
     console.log("Request data:", { name, address, coordinates, description, imageUrl, destinationId });

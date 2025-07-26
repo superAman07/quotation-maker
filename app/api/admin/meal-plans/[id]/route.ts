@@ -1,10 +1,8 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-interface Params { params: { id: string } }
-
-export async function GET(_req: Request, { params }: Params) {
-    const id = parseInt(params.id, 10)
+export async function GET(_req: Request, { params }: {params: Promise<{id: string}>}) {
+    const id = parseInt((await params).id, 10)
     const plan = await prisma.mealPlan.findUnique({ where: { id } })
     if (!plan) {
         return NextResponse.json({ error: 'MealPlan not found' }, { status: 404 })
