@@ -18,9 +18,9 @@ export async function GET(
  
 export async function POST(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const hotelId = parseInt(params.id, 10);
+  const hotelId = parseInt((await params).id, 10);
   if (isNaN(hotelId)) {
     return NextResponse.json({ error: "Invalid hotelId" }, { status: 400 });
   }
