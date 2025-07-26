@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
-export async function GET(_req: NextRequest, { params }: {params: Promise<{id:string}>}) {
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const id = parseInt((await params).id, 10)
     const tax = await prisma.tax.findUnique({ where: { id } })
     if (!tax) {
@@ -10,7 +10,7 @@ export async function GET(_req: NextRequest, { params }: {params: Promise<{id:st
     return NextResponse.json(tax)
 }
 
-export async function PUT(request: NextRequest, { params }: {params: Promise<{id:string}>}) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const id = parseInt((await params).id, 10)
     const { serviceType, percentage } = await request.json()
     const data: any = {}
@@ -38,7 +38,7 @@ export async function PUT(request: NextRequest, { params }: {params: Promise<{id
     return NextResponse.json(updated)
 }
 
-export async function DELETE(_req: NextRequest, { params }: {params: Promise<{id:string}>}) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     const id = parseInt((await params).id, 10)
     await prisma.tax.delete({ where: { id } })
     return NextResponse.json({ success: true })

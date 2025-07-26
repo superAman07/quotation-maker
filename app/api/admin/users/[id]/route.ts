@@ -3,9 +3,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcrypt'
 import { Role, UserStatus } from '@prisma/client'
- 
 
-export async function GET(_req: NextRequest, { params }: {params: Promise<{id:string}>}) {
+
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const id = parseInt((await params).id, 10)
   const user = await prisma.user.findUnique({
     where: { id },
@@ -27,7 +27,7 @@ export async function GET(_req: NextRequest, { params }: {params: Promise<{id:st
   return NextResponse.json(user)
 }
 
-export async function PUT(request: NextRequest, { params }: {params: Promise<{id:string}>}) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const id = parseInt((await params).id, 10)
   const body = await request.json()
 
@@ -73,7 +73,7 @@ export async function PUT(request: NextRequest, { params }: {params: Promise<{id
   return NextResponse.json(updated)
 }
 
-export async function DELETE(_req: NextRequest, { params }: {params: Promise<{id:string}>}) {
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const id = parseInt((await params).id, 10)
   await prisma.user.delete({ where: { id } })
   return NextResponse.json({ success: true })
