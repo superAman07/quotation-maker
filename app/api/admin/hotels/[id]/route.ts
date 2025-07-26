@@ -1,10 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
 
-interface Params { params: { id: string } }
-
-export async function GET(_req: Request, { params }: Params) {
-  const id = parseInt(params.id, 10)
+export async function GET(_req: Request, { params }: {params: Promise<{id:string}>}) {
+  const id = parseInt((await params).id, 10)
   const hotel = await prisma.hotel.findUnique({
     where: { id },
     include: { venue: true },
@@ -15,8 +13,8 @@ export async function GET(_req: Request, { params }: Params) {
   return NextResponse.json(hotel)
 }
 
-export async function PUT(request: Request, { params }: Params) {
-  const id = parseInt(params.id, 10)
+export async function PUT(request: Request, { params }: {params: Promise<{id:string}>}) {
+  const id = parseInt((await params).id, 10)
   let { name, starRating, amenities, imageUrl, venueId } = await request.json()
 
   starRating = parseInt(starRating, 10)
