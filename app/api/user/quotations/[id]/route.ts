@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import jwt from "jsonwebtoken";
 
-export async function GET(req: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request, { params }: { params: Promise<{ id: string }> }) {
     try {
         const cookie = req.headers.get("cookie") || "";
         const tokenMatch = cookie.match(/auth_token=([^;]+)/);
@@ -30,7 +30,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
         }
 
         const quotation = await prisma.quotation.findUnique({
-            where: { id: params.id },
+            where: { id: (await params).id },
             include: {
                 createdBy: true,
                 itinerary: true,
