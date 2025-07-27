@@ -29,269 +29,268 @@ Font.register({
     fontStyle: 'italic',
 });
 
-// Professional color scheme matching the images
+// Clean white color scheme with modern accents
 const colors = {
-    primary: '#4A90E2',
-    accent: '#5BA0F2',
-    text: '#2C3E50',
-    background: '#F8F9FA',
-    white: '#FFFFFF',
-    lightGray: '#E8F4FD',
-    mediumGray: '#D1E7DD',
-    darkGray: '#6C757D',
-    success: '#28A745',
-    danger: '#DC3545',
+    primary: '#1F2937',      // Dark gray for headings
+    secondary: '#6B7280',    // Medium gray for subtext
+    accent: '#10B981',       // Green for success/positive
+    danger: '#EF4444',       // Red for exclusions
+    background: '#FFFFFF',    // Pure white background
+    lightGray: '#F9FAFB',    // Very light gray for sections
+    border: '#E5E7EB',       // Light border color
+    text: '#374151',         // Dark text
+    textLight: '#6B7280',    // Light text
+    success: '#10B981',      // Green for checkmarks
+    warning: '#F59E0B',      // Orange for warnings
 };
 
-// Enhanced styles matching the travel brochure design
+// Modern, clean styles with white background
 const styles = StyleSheet.create({
     page: {
         padding: 0,
-        fontSize: 11,
+        fontSize: 10,
         fontFamily: 'NotoSans',
-        backgroundColor: colors.white,
+        backgroundColor: colors.background,
         color: colors.text,
     },
 
     // Header Section
     headerSection: {
-        backgroundColor: colors.white,
-        paddingTop: 20,
-        paddingLeft: 20,
-        paddingBottom: 10,
-        marginBottom: 0,
+        backgroundColor: colors.background,
+        paddingTop: 30,
+        paddingLeft: 30,
+        paddingRight: 30,
+        paddingBottom: 20,
         borderBottomWidth: 2,
-        borderBottomColor: colors.primary,
+        borderBottomColor: colors.border,
     },
 
     logoContainer: {
         alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 15,
+        marginBottom: 20,
     },
 
     logo: {
-        width: 190,
-        height: 60,
+        width: 180,
+        height: 50,
         objectFit: 'contain',
     },
 
     mainTitle: {
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: 'bold',
         color: colors.primary,
-        textAlign: 'left',
-        paddingLeft: 15,
-        backgroundColor: 'transparent',
+        textAlign: 'center',
+        marginBottom: 5,
     },
 
     subtitle: {
-        fontSize: 14,
-        color: colors.text,
+        fontSize: 12,
+        color: colors.textLight,
         textAlign: 'center',
-        marginBottom: 20,
+        marginBottom: 15,
     },
 
     // Travel Details Section
     travelDetailsContainer: {
         backgroundColor: colors.lightGray,
-        paddingTop: 15,
-        paddingLeft: 35,
-        paddingBottom: 15,
-        marginBottom: 0,
-        alignItems: 'center',
-        borderRadius: 6,
-        width: '100%',
-        alignSelf: 'center',
+        paddingTop: 20,
+        paddingLeft: 30,
+        paddingRight: 30,
+        paddingBottom: 20,
+        marginLeft: 30,
+        marginRight: 30,
+        marginTop: 20,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: colors.border,
     },
 
     travelDetailsRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '100%',
-        marginBottom: 8,
-    },
-
-    travelDetailsGrid: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        flexWrap: 'wrap',
+        marginBottom: 12,
     },
 
     travelDetailItem: {
         flexDirection: 'row',
         width: '48%',
+        alignItems: 'center',
     },
 
     detailLabel: {
-        fontSize: 12,
-        color: colors.darkGray,
+        fontSize: 11,
+        color: colors.textLight,
         fontWeight: 'bold',
+        marginRight: 5,
     },
 
     detailValue: {
-        fontSize: 12,
+        fontSize: 11,
         color: colors.text,
         fontWeight: 'normal',
     },
 
     // Content sections
     contentContainer: {
-        padding: 20,
+        padding: 30,
     },
 
     section: {
-        marginBottom: 20,
+        marginBottom: 25,
     },
 
     // Greeting Section
     greetingContainer: {
-        backgroundColor: colors.background,
-        padding: 15,
-        marginBottom: 20,
+        backgroundColor: colors.lightGray,
+        padding: 20,
+        marginBottom: 25,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: colors.border,
     },
 
     greetingText: {
-        lineHeight: 1.5,
+        lineHeight: 1.6,
         fontSize: 11,
         color: colors.text,
         textAlign: 'justify',
-        fontStyle: 'italic',
     },
 
     greetingHighlight: {
         fontWeight: 'bold',
+        color: colors.accent,
+    },
+
+    // Section Headers
+    sectionHeader: {
+        fontSize: 14,
+        fontWeight: 'bold',
         color: colors.primary,
+        marginBottom: 15,
+        paddingBottom: 8,
+        borderBottomWidth: 2,
+        borderBottomColor: colors.accent,
     },
 
     // Flight Details Section
     flightDetailsContainer: {
-        backgroundColor: colors.white,
+        backgroundColor: colors.background,
         borderWidth: 1,
-        borderColor: colors.mediumGray,
-        borderRadius: 5,
-        marginBottom: 20,
+        borderColor: colors.border,
+        borderRadius: 8,
+        marginBottom: 25,
+        overflow: 'hidden',
     },
 
     flightDetailsHeader: {
         color: colors.primary,
-        paddingTop: 10,
-        paddingBottom: 10,
-        paddingLeft: 10,
-        fontSize: 14,
+        paddingTop: 15,
+        paddingBottom: 15,
+        paddingLeft: 20,
+        fontSize: 13,
         fontWeight: 'bold',
-        textAlign: 'left',
-    },
-
-    flightRow: {
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        padding: 12,
+        backgroundColor: colors.lightGray,
         borderBottomWidth: 1,
-        borderBottomColor: colors.lightGray,
+        borderBottomColor: colors.border,
     },
 
-    airlineLogo: {
-        width: 30,
-        height: 30,
-        marginRight: 10,
+    flightImageContainer: {
+        padding: 20,
+        alignItems: 'center',
     },
 
-    airlineName: {
-        fontSize: 10,
+    flightImage: {
+        width: "100%",
+        height: 200,
+        objectFit: 'contain',
+        borderRadius: 4,
+    },
+
+    flightCostText: {
         fontWeight: 'bold',
-        color: colors.text,
-        flex: 1,
-    },
-
-    flightTime: {
-        fontSize: 10,
-        color: colors.text,
-        textAlign: 'center',
-        flex: 1,
-    },
-
-    flightDuration: {
-        fontSize: 9,
-        color: colors.darkGray,
-        textAlign: 'center',
-        flex: 1,
-    },
-
-    flightPrice: {
         fontSize: 12,
-        fontWeight: 'bold',
-        color: colors.primary,
-        textAlign: 'right',
-        flex: 1,
-    },
-
-    flightPriceTotal: {
-        fontSize: 10,
-        color: colors.white,
-        backgroundColor: colors.danger,
-        padding: 3,
-        borderRadius: 3,
+        marginTop: 15,
+        color: colors.accent,
         textAlign: 'center',
     },
 
     // Itinerary Section
+    itineraryContainer: {
+        backgroundColor: colors.background,
+        borderWidth: 1,
+        borderColor: colors.border,
+        borderRadius: 8,
+        marginBottom: 25,
+        overflow: 'hidden',
+    },
+
     itineraryHeader: {
         color: colors.primary,
-        fontSize: 14,
+        paddingTop: 15,
+        paddingBottom: 15,
+        paddingLeft: 20,
+        fontSize: 13,
         fontWeight: 'bold',
-        textAlign: 'left',
-        paddingTop: 10,
-        paddingBottom: 5,
-        paddingLeft: 12,
-        backgroundColor: 'transparent',
+        backgroundColor: colors.lightGray,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
     },
 
     itineraryItem: {
         marginBottom: 15,
-        paddingLeft: 12,
+        paddingLeft: 20,
+        paddingRight: 20,
+        paddingTop: 15,
         backgroundColor: 'transparent',
     },
 
     dayTitle: {
         fontSize: 12,
         fontWeight: 'bold',
-        color: colors.primary,
+        color: colors.accent,
         marginBottom: 8,
     },
 
     dayDescription: {
         fontSize: 10,
-        lineHeight: 1.4,
+        lineHeight: 1.5,
         color: colors.text,
         textAlign: 'justify',
     },
 
     // Accommodation Section
     accommodationContainer: {
-        backgroundColor: colors.white,
+        backgroundColor: colors.background,
         borderWidth: 1,
-        borderColor: colors.mediumGray,
-        marginBottom: 20,
+        borderColor: colors.border,
+        borderRadius: 8,
+        marginBottom: 25,
+        overflow: 'hidden',
     },
 
     accommodationHeader: {
         color: colors.primary,
-        paddingTop: 10,
-        paddingBottom: 10,
-        paddingLeft: 15,
-        fontSize: 12,
+        paddingTop: 15,
+        paddingBottom: 15,
+        paddingLeft: 20,
+        fontSize: 13,
         fontWeight: 'bold',
-        textAlign: 'left',
-        backgroundColor: 'transparent',
+        backgroundColor: colors.lightGray,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
     },
 
     accommodationRow: {
         flexDirection: 'row',
-        paddingLeft: 15,
-        paddingBottom: 10,
+        paddingLeft: 20,
+        paddingRight: 20,
+        paddingTop: 12,
+        paddingBottom: 12,
         borderBottomWidth: 1,
-        borderBottomColor: colors.lightGray,
+        borderBottomColor: colors.border,
     },
 
     accommodationLocation: {
@@ -309,29 +308,32 @@ const styles = StyleSheet.create({
 
     // Cost Summary
     costContainer: {
-        backgroundColor: colors.white,
+        backgroundColor: colors.background,
         borderWidth: 1,
-        borderColor: colors.mediumGray,
-        marginBottom: 20,
+        borderColor: colors.border,
+        borderRadius: 8,
+        marginBottom: 25,
+        overflow: 'hidden',
     },
 
     costHeader: {
-        backgroundColor: 'transparent',
+        backgroundColor: colors.lightGray,
         color: colors.primary,
-        paddingTop: 10,
-        paddingBottom: 10,
-        paddingLeft: 15,
-        fontSize: 12,
+        paddingTop: 15,
+        paddingBottom: 15,
+        paddingLeft: 20,
+        fontSize: 13,
         fontWeight: 'bold',
-        textAlign: 'left',
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
     },
 
     costRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        padding: 10,
+        padding: 15,
         borderBottomWidth: 1,
-        borderBottomColor: colors.lightGray,
+        borderBottomColor: colors.border,
     },
 
     costLabel: {
@@ -348,19 +350,19 @@ const styles = StyleSheet.create({
     totalCostRow: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        padding: 10,
-        backgroundColor: colors.lightGray,
+        padding: 15,
+        backgroundColor: colors.accent,
     },
 
     totalCostLabel: {
         fontSize: 12,
-        color: colors.text,
+        color: colors.background,
         fontWeight: 'bold',
     },
 
     totalCostValue: {
         fontSize: 12,
-        color: colors.primary,
+        color: colors.background,
         fontWeight: 'bold',
     },
 
@@ -368,91 +370,98 @@ const styles = StyleSheet.create({
     inclusionsContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 20,
+        marginBottom: 25,
+        gap: 15,
     },
 
     inclusionColumn: {
         width: '48%',
-        backgroundColor: colors.white,
+        backgroundColor: colors.background,
         borderWidth: 1,
-        borderColor: colors.mediumGray,
+        borderColor: colors.border,
+        borderRadius: 8,
+        overflow: 'hidden',
     },
 
     inclusionHeader: {
-        backgroundColor: 'transparent',
+        backgroundColor: colors.lightGray,
         color: colors.primary,
-        paddingTop: 10,
-        paddingBottom: 10,
+        paddingTop: 15,
+        paddingBottom: 15,
         paddingLeft: 20,
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 'bold',
-        textAlign: 'left',
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
     },
 
     exclusionHeader: {
+        backgroundColor: colors.lightGray,
         color: colors.danger,
-        paddingTop: 10,
-        paddingBottom: 10,
+        paddingTop: 15,
+        paddingBottom: 15,
         paddingLeft: 20,
-        fontSize: 11,
+        fontSize: 12,
         fontWeight: 'bold',
-        textAlign: 'left',
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
     },
 
     inclusionList: {
-        padding: 10,
+        padding: 15,
     },
 
     inclusionItem: {
         fontSize: 9,
-        marginBottom: 4,
-        lineHeight: 1.3,
+        marginBottom: 6,
+        lineHeight: 1.4,
         color: colors.text,
         flexDirection: 'row',
+        alignItems: 'flex-start',
     },
 
     checkIcon: {
         color: colors.success,
-        marginRight: 5,
+        marginRight: 8,
         fontSize: 10,
+        fontWeight: 'bold',
     },
 
     crossIcon: {
         color: colors.danger,
-        marginRight: 5,
+        marginRight: 8,
         fontSize: 10,
+        fontWeight: 'bold',
     },
 
     // Why Travomine
     whyContainer: {
         backgroundColor: colors.primary,
-        padding: 15,
-        borderRadius: 5,
-        marginBottom: 20,
+        padding: 20,
+        borderRadius: 8,
+        marginBottom: 25,
     },
 
     whyHeader: {
-        color: colors.primary,
+        color: colors.background,
         fontSize: 13,
         fontWeight: 'bold',
-        textAlign: 'left',
-        marginBottom: 8,
-        paddingLeft: 20,
-        backgroundColor: 'transparent',
+        textAlign: 'center',
+        marginBottom: 10,
     },
 
     whyText: {
         fontSize: 11,
-        lineHeight: 1.4,
-        color: colors.white,
+        lineHeight: 1.5,
+        color: colors.background,
         textAlign: 'center',
     },
 
     // Footer
     footer: {
         backgroundColor: colors.primary,
-        padding: 15,
-        marginTop: 20,
+        padding: 20,
+        marginTop: 25,
     },
 
     footerContent: {
@@ -460,49 +469,49 @@ const styles = StyleSheet.create({
     },
 
     footerTitle: {
-        color: colors.primary,
+        color: colors.background,
         fontSize: 12,
         fontWeight: 'bold',
-        textAlign: 'left',
-        marginBottom: 10,
-        paddingLeft: 20,
-        backgroundColor: 'transparent',
+        textAlign: 'center',
+        marginBottom: 15,
     },
 
     footerContactGrid: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         width: '100%',
-        marginBottom: 10,
+        marginBottom: 15,
     },
 
     footerContactItem: {
         fontSize: 10,
-        color: colors.white,
-        marginBottom: 3,
+        color: colors.background,
+        marginBottom: 5,
     },
 
     footerTagline: {
         fontSize: 11,
-        color: colors.white,
+        color: colors.background,
         fontStyle: 'italic',
-        marginTop: 8,
+        marginTop: 10,
         textAlign: 'center',
     },
 
     companyInfo: {
         textAlign: 'center',
         alignItems: 'center',
-        marginTop: 10,
+        marginTop: 15,
+        paddingTop: 15,
+        borderTopWidth: 1,
+        borderTopColor: colors.border,
     },
 
     companyInfoText: {
         fontSize: 10,
-        color: colors.white,
-        marginBottom: 2,
+        color: colors.background,
+        marginBottom: 3,
     },
 });
-
 
 export function QuotationPDF({ payload }: any) {
     const location = payload.accommodation && payload.accommodation.length > 0
@@ -531,7 +540,10 @@ export function QuotationPDF({ payload }: any) {
                     </View>
 
                     <Text style={styles.mainTitle}>
-                        Explore the Mystical Land of {payload.place} | {payload.totalNights} Nights / {payload.totalNights + 1} Days
+                        Explore the Mystical Land of {payload.place}
+                    </Text>
+                    <Text style={styles.subtitle}>
+                        {payload.totalNights} Nights / {payload.totalNights + 1} Days Package
                     </Text>
                 </View>
 
@@ -539,21 +551,21 @@ export function QuotationPDF({ payload }: any) {
                 <View style={styles.travelDetailsContainer}>
                     <View style={styles.travelDetailsRow}>
                         <View style={styles.travelDetailItem}>
-                            <Text style={styles.detailLabel}>Date of Travel:&nbsp;</Text>
+                            <Text style={styles.detailLabel}>Travel Date:</Text>
                             <Text style={styles.detailValue}>{formatDate(payload.travelDate)}</Text>
                         </View>
                         <View style={styles.travelDetailItem}>
-                            <Text style={styles.detailLabel}>Group:&nbsp;</Text>
+                            <Text style={styles.detailLabel}>Group Size:</Text>
                             <Text style={styles.detailValue}>{payload.groupSize} pax</Text>
                         </View>
                     </View>
                     <View style={styles.travelDetailsRow}>
                         <View style={styles.travelDetailItem}>
-                            <Text style={styles.detailLabel}>Meal Plan:&nbsp;</Text>
+                            <Text style={styles.detailLabel}>Meal Plan:</Text>
                             <Text style={styles.detailValue}>{payload.mealPlan}</Text>
                         </View>
                         <View style={styles.travelDetailItem}>
-                            <Text style={styles.detailLabel}>Vehicle Used:&nbsp;</Text>
+                            <Text style={styles.detailLabel}>Vehicle:</Text>
                             <Text style={styles.detailValue}>{payload.localVehicleUsed}</Text>
                         </View>
                     </View>
@@ -562,32 +574,35 @@ export function QuotationPDF({ payload }: any) {
                 <View style={styles.contentContainer}>
                     {/* Greeting */}
                     <View style={styles.greetingContainer}>
-                        <Text style={styles.greetingText}>Greeting From
-                            <Text style={styles.greetingHighlight}> Travomine</Text>.
-                            At Travomine Leisure Pvt. Ltd., we don't just plan trips — we craft experiences. Every detail is curated to ensure your {location} adventure is nothing short of magical. From soaring mountain passes to tranquil blue lakes, prepare to be mesmerized by the raw beauty and timeless culture of this Himalayan paradise. Let's begin your unforgettable journey!
+                        <Text style={styles.greetingText}>
+                            Greeting From <Text style={styles.greetingHighlight}>Travomine</Text>. 
+                            At Travomine Leisure Pvt. Ltd., we don't just plan trips — we craft experiences. 
+                            Every detail is curated to ensure your {location} adventure is nothing short of magical. 
+                            From soaring mountain passes to tranquil blue lakes, prepare to be mesmerized by the raw 
+                            beauty and timeless culture of this Himalayan paradise. Let's begin your unforgettable journey!
                         </Text>
                     </View>
 
                     {/* Flight Details */}
                     {payload.flightImageUrl && (
-                        <View style={{ alignItems: 'flex-start', marginBottom: 40 }}>
+                        <View style={styles.flightDetailsContainer}>
                             <Text style={styles.flightDetailsHeader}>Flight Details</Text>
-                            <Image src={payload.flightImageUrl} style={{ width: "100%", height: 250, objectFit: 'contain', borderRadius: 1 }} />
-                            <Text style={{ fontWeight: 'bold', fontSize: 12, marginTop: 12, paddingLeft: 10, }}>
-                                Flight Per Person : &#8377; {payload.flightCost}
-                            </Text>
+                            <View style={styles.flightImageContainer}>
+                                <Image src={payload.flightImageUrl} style={styles.flightImage} />
+                                <Text style={styles.flightCostText}>
+                                    Flight Cost Per Person: ₹{payload.flightCost}
+                                </Text>
+                            </View>
                         </View>
                     )}
 
                     {/* Itinerary */}
                     {payload.itinerary && Array.isArray(payload.itinerary) && payload.itinerary.length > 0 && (
-                        <View style={styles.section}>
-                            <Text style={styles.itineraryHeader}>
-                                Your {payload.place} Odyssey — Day by Day
-                            </Text>
+                        <View style={styles.itineraryContainer}>
+                            <Text style={styles.itineraryHeader}>Your {payload.place} Odyssey — Day by Day</Text>
                             {payload.itinerary.map((item: any, i: number) => (
                                 <View style={styles.itineraryItem} key={i}>
-                                    <Text style={styles.dayTitle}>{item.dayTitle}</Text>
+                                    <Text style={styles.dayTitle}>Day {i + 1}: {item.dayTitle}</Text>
                                     <Text style={styles.dayDescription}>{item.description}</Text>
                                 </View>
                             ))}
@@ -599,7 +614,9 @@ export function QuotationPDF({ payload }: any) {
                         <Text style={styles.accommodationHeader}>Accommodation Details</Text>
                         {payload.accommodation.map((acc: any, i: number) => (
                             <View style={styles.accommodationRow} key={i}>
-                                <Text style={styles.accommodationLocation}>{acc.location} ({acc.nights} Nights):</Text>
+                                <Text style={styles.accommodationLocation}>
+                                    {acc.location} ({acc.nights} Nights):
+                                </Text>
                                 <Text style={styles.accommodationHotel}>{acc.hotelName}</Text>
                             </View>
                         ))}
@@ -607,13 +624,13 @@ export function QuotationPDF({ payload }: any) {
 
                     {/* Cost Summary */}
                     <View style={styles.costContainer}>
-                        <Text style={styles.costHeader}>Costing:</Text>
+                        <Text style={styles.costHeader}>Cost Breakdown</Text>
                         <View style={styles.costRow}>
                             <Text style={styles.costLabel}>• Land Package:</Text>
                             <Text style={styles.costValue}>₹{payload.landCostPerHead} per person</Text>
                         </View>
                         <View style={styles.costRow}>
-                            <Text style={styles.costLabel}>• Flight (Delhi-Leh RT approx.):</Text>
+                            <Text style={styles.costLabel}>• Flight Cost:</Text>
                             <Text style={styles.costValue}>₹{payload.flightCost} per person</Text>
                         </View>
                         <View style={styles.costRow}>
@@ -621,7 +638,7 @@ export function QuotationPDF({ payload }: any) {
                             <Text style={styles.costValue}>₹{payload.totalPerHead || "0"}</Text>
                         </View>
                         <View style={styles.totalCostRow}>
-                            <Text style={styles.totalCostLabel}>• Total for {payload.groupSize}:</Text>
+                            <Text style={styles.totalCostLabel}>• Total for {payload.groupSize} people:</Text>
                             <Text style={styles.totalCostValue}>₹{payload.totalGroupCost}</Text>
                         </View>
                     </View>
@@ -661,9 +678,11 @@ export function QuotationPDF({ payload }: any) {
 
                     {/* Why Travomine */}
                     <View style={styles.whyContainer}>
-                        <Text style={styles.whyHeader}>Why Travomine?</Text>
+                        <Text style={styles.whyHeader}>Why Choose Travomine?</Text>
                         <Text style={styles.whyText}>
-                            We don't just offer tours — we deliver experiences that touch your soul. With expert local knowledge, trusted partnerships, and heartfelt care, we turn your travel dreams into vivid realities.
+                            We don't just offer tours — we deliver experiences that touch your soul. 
+                            With expert local knowledge, trusted partnerships, and heartfelt care, 
+                            we turn your travel dreams into vivid realities.
                         </Text>
                     </View>
                 </View>
@@ -674,7 +693,7 @@ export function QuotationPDF({ payload }: any) {
                         <Text style={styles.footerTitle}>Ready to embark on your {location} adventure?</Text>
                         <View style={styles.footerContactGrid}>
                             <View>
-                                <Text style={styles.footerContactItem}>Call us: +91-9956735725,8957124089</Text>
+                                <Text style={styles.footerContactItem}>Call us: +91-9956735725, 8957124089</Text>
                                 <Text style={styles.footerContactItem}>Email: info@travomine.com</Text>
                             </View>
                             <View>
