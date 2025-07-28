@@ -65,6 +65,7 @@ const navigationItems = [
     items: [
       { title: "Meal Plans", href: "/admin/dashboard/meal-plans", icon: Utensils },
       { title: "Packages", href: "/admin/dashboard/packages", icon: Package },
+      { title: "Fully Packed Packages", href: "/admin/dashboard/fully-packed-packages", icon: Package },
     ],
   },
   {
