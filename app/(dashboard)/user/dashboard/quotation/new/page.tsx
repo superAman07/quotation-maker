@@ -158,6 +158,43 @@ export default function QuotationForm() {
   const selectedPackage = packages.find(p => p.id === selectedPackageId);
   const packageNights = selectedPackage?.totalNights ?? null;
 
+  const [fullyPackedPackages, setFullyPackedPackages] = useState<{
+    id: number;
+    name: string;
+    description?: string;
+    destination: {
+      id: number;
+      name: string;
+    };
+    mealPlan?: string;
+    vehicleUsed?: string;
+    localVehicleUsed?: string;
+    flightCostPerPerson?: number;
+    landCostPerPerson?: number;
+    totalNights?: number;
+    accommodations: Array<{
+      id: number;
+      location: string;
+      hotelName: string;
+      nights: number;
+    }>;
+    itinerary: Array<{
+      id: number;
+      dayTitle: string;
+      description: string;
+    }>;
+    inclusions: Array<{
+      id: number;
+      item: string;
+    }>;
+    exclusions: Array<{
+      id: number;
+      item: string;
+    }>;
+  }[]>([]);
+  const [selectedFullyPackedPackageId, setSelectedFullyPackedPackageId] = useState<number | null>(null);
+  const selectedFullyPackedPackage = fullyPackedPackages.find(p => p.id === selectedFullyPackedPackageId);
+
   const [loadingVehicles, setLoadingVehicles] = useState(true);
 
   const [accommodations, setAccommodations] = useState<Accommodation[]>([
@@ -278,6 +315,67 @@ export default function QuotationForm() {
     }
   };
 
+  const handleFullyPackedPackageSelect = (packageId: number | null) => {
+    setSelectedFullyPackedPackageId(packageId);
+    
+    if (packageId) {
+      const selectedPackage = fullyPackedPackages.find(p => p.id === packageId);
+      if (selectedPackage) {
+        console.log('Selected package:', selectedPackage);
+        console.log('Available hotels:', hotels);
+        console.log('Hotels for destination:', hotels.filter(h => h.venue?.destinationId === selectedPackage.destination.id));
+        // Auto-fill travel summary
+        setTravelSummary(prev => ({
+          ...prev,
+          mealPlan: selectedPackage.mealPlan || '',
+          vehicleUsed: selectedPackage.vehicleUsed || '',
+          localVehicleUsed: selectedPackage.localVehicleUsed || '',
+          flightCostPerPerson: selectedPackage.flightCostPerPerson || 0,
+          place: selectedPackage.destination.name,
+        }));
+
+        // Auto-fill costing
+        setCosting(prev => ({
+          ...prev,
+          landCostPerPerson: selectedPackage.landCostPerPerson || 0,
+          flightCostPerPerson: selectedPackage.flightCostPerPerson || 0,
+        }));
+
+        // Auto-fill accommodations
+        if (selectedPackage.accommodations.length > 0) {
+          setAccommodations(selectedPackage.accommodations.map(acc => ({
+            id: acc.id.toString(),
+            location: acc.location,
+            hotelName: acc.hotelName,
+            numberOfNights: acc.nights,
+          })));
+        } else {
+          // Reset accommodations if no accommodations in package
+          setAccommodations([{ id: '1', location: '', hotelName: '', numberOfNights: 1 }]);
+        }
+
+        // Auto-fill itinerary
+        if (selectedPackage.itinerary.length > 0) {
+          setItinerary(selectedPackage.itinerary.map(item => ({
+            id: item.id.toString(),
+            dayTitle: item.dayTitle,
+            description: item.description,
+          })));
+        }
+
+        // Auto-fill inclusions
+        if (selectedPackage.inclusions.length > 0) {
+          setInclusions(selectedPackage.inclusions.map(item => item.item));
+        }
+
+        // Auto-fill exclusions
+        if (selectedPackage.exclusions.length > 0) {
+          setExclusions(selectedPackage.exclusions.map(item => item.item));
+        }
+      }
+    }
+  };
+
   const removeFlightImage = () => {
     setFlightImage(null);
     setFlightImagePreview('');
@@ -345,6 +443,18 @@ export default function QuotationForm() {
       }
     }
     fetchPackages();
+  }, []);
+
+  useEffect(() => {
+    async function fetchFullyPackedPackages() {
+      try {
+        const res = await axios.get('/api/user/fully-packed-packages');
+        setFullyPackedPackages(res.data);
+      } catch {
+        setFullyPackedPackages([]);
+      }
+    }
+    fetchFullyPackedPackages();
   }, []);
 
   useEffect(() => {
@@ -535,6 +645,44 @@ export default function QuotationForm() {
                       placeholder="e.g. 123, Main Street, Lucknow"
                     />
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Fully Packed Package Selection */}
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900">Quick Start with Pre-built Package</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="fullyPackedPackage" className="text-gray-700 font-medium">
+                    Select Fully Packed Package (Optional)
+                  </Label>
+                  <select
+                    id="fullyPackedPackage"
+                    value={selectedFullyPackedPackageId ?? ""}
+                    onChange={(e) => handleFullyPackedPackageSelect(Number(e.target.value) || null)}
+                    className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
+                  >
+                    <option value="">Choose a pre-built package to auto-fill the form...</option>
+                    {fullyPackedPackages.map(pkg => (
+                      <option key={pkg.id} value={pkg.id}>
+                        {pkg.name} - {pkg.destination.name} (₹{pkg.landCostPerPerson?.toLocaleString() || '0'})
+                      </option>
+                    ))}
+                  </select>
+                  {selectedFullyPackedPackage && (
+                    <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <p className="text-sm text-green-800">
+                        <strong>Selected:</strong> {selectedFullyPackedPackage.name}
+                      </p>
+                      <p className="text-xs text-green-600 mt-1">
+                        This will auto-fill travel details, accommodation, itinerary, inclusions, and exclusions. 
+                        You can still customize any field after selection.
+                      </p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -792,12 +940,25 @@ export default function QuotationForm() {
                           className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
                         >
                           <option value="">Select hotel...</option>
-                          {hotels.map(hotel => (
-                            <option key={hotel.id} value={hotel.name}>
-                              {hotel.name}
-                              {/* {hotel.venue?.name} */}
-                            </option>
-                          ))}
+                          {hotels
+                            .filter(hotel => {
+                              // If a fully packed package is selected, filter hotels by destination
+                              if (selectedFullyPackedPackage) {
+                                // Filter by destination name (case-insensitive)
+                                const packageDestination = selectedFullyPackedPackage.destination.name.toLowerCase();
+                                const hotelLocation = hotel.venue?.address?.toLowerCase() || '';
+                                return hotelLocation.includes(packageDestination) || 
+                                       hotel.venue?.destinationId === selectedFullyPackedPackage.destination.id;
+                              }
+                              // If no package selected, show all hotels
+                              return true;
+                            })
+                            .map(hotel => (
+                              <option key={hotel.id} value={hotel.name}>
+                                {hotel.name}
+                                {hotel.venue?.name && ` - ${hotel.venue.name}`}
+                              </option>
+                            ))}
                           <option value="__custom">Other (Add new)</option>
                         </select>
                         {accommodation.hotelName === "__custom" && (
