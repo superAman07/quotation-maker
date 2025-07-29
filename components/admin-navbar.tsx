@@ -123,7 +123,6 @@ function useHoverDropdown() {
     setOpenDropdown(null)
   }, [clearExistingTimeout])
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       clearExistingTimeout()
@@ -149,14 +148,13 @@ export function AdminNavbar() {
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen)
     setMobileOpenDropdown(null)
-    forceClose() // Close desktop dropdowns when mobile menu opens
+    forceClose()
   }
 
   const toggleMobileDropdown = (title: string) => {
     setMobileOpenDropdown(mobileOpenDropdown === title ? null : title)
   }
 
-  // Close dropdowns when clicking outside or on navigation
   useEffect(() => {
     const handleClickOutside = () => {
       forceClose()
@@ -182,7 +180,6 @@ export function AdminNavbar() {
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-gray-200 shadow-lg backdrop-blur-md bg-white/95">
         <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
-            {/* Logo */}
             <div className="flex items-center flex-shrink-0">
               <Link href="/admin/dashboard" className="flex items-center space-x-3 group">
                 <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
@@ -197,18 +194,16 @@ export function AdminNavbar() {
               </Link>
             </div>
 
-            {/* Desktop Navigation */}
             <div className="hidden lg:flex items-center space-x-1">
               {navigationItems.map((item) => (
                 <div key={item.title} className="relative">
                   {item.href ? (
                     <Link
                       href={item.href}
-                      className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
-                        isActive(item.href)
+                      className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${isActive(item.href)
                           ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
                           : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
-                      }`}
+                        }`}
                     >
                       <item.icon className="w-4 h-4 mr-2" />
                       {item.title}
@@ -218,27 +213,24 @@ export function AdminNavbar() {
                       className="relative"
                       onMouseEnter={() => handleMouseEnter(item.title)}
                       onMouseLeave={handleMouseLeave}
-                      onClick={(e) => e.stopPropagation()} // Prevent event bubbling
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <Button
                         variant="ghost"
-                        className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${
-                          openDropdown === item.title
+                        className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${openDropdown === item.title
                             ? "text-blue-600 bg-blue-50"
                             : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
-                        }`}
+                          }`}
                         onMouseEnter={() => handleMouseEnter(item.title)}
                       >
                         <item.icon className="w-4 h-4 mr-2" />
                         {item.title}
                         <ChevronDown
-                          className={`w-4 h-4 ml-1 transition-transform duration-200 ${
-                            openDropdown === item.title ? "rotate-180" : ""
-                          }`}
+                          className={`w-4 h-4 ml-1 transition-transform duration-200 ${openDropdown === item.title ? "rotate-180" : ""
+                            }`}
                         />
                       </Button>
 
-                      {/* Custom dropdown content */}
                       {openDropdown === item.title && (
                         <div
                           className="absolute top-full left-0 mt-1 w-56 bg-white/95 backdrop-blur-md border border-gray-200 shadow-xl rounded-xl py-1 z-50"
@@ -250,11 +242,10 @@ export function AdminNavbar() {
                             <div key={subItem.href}>
                               <Link
                                 href={subItem.href}
-                                className={`flex items-center px-3 py-3 mx-1 rounded-lg text-sm transition-all duration-200 ${
-                                  isActive(subItem.href)
+                                className={`flex items-center px-3 py-3 mx-1 rounded-lg text-sm transition-all duration-200 ${isActive(subItem.href)
                                     ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
                                     : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
-                                }`}
+                                  }`}
                                 onClick={forceClose}
                               >
                                 <subItem.icon className="w-4 h-4 mr-3" />
@@ -271,15 +262,14 @@ export function AdminNavbar() {
               ))}
             </div>
 
-            {/* User Menu - Desktop */}
             <div className="hidden md:flex items-center space-x-4">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
-                    className="relative h-10 w-10 rounded-full hover:bg-blue-50 transition-colors"
+                    className="relative p-0 h-8 w-8 cursor-pointer rounded-full hover:bg-blue-50 transition-colors"
                   >
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 text-white flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                    <div className="h-8 w-8 p-0 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 text-white flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
                       <User className="h-5 w-5" />
                     </div>
                   </Button>
@@ -307,7 +297,6 @@ export function AdminNavbar() {
 
             {/* Mobile menu button */}
             <div className="lg:hidden flex items-center space-x-2">
-              {/* Mobile User Menu */}
               <div className="md:hidden">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -338,7 +327,6 @@ export function AdminNavbar() {
                 </DropdownMenu>
               </div>
 
-              {/* Hamburger Menu */}
               <Button
                 variant="ghost"
                 size="sm"
@@ -347,19 +335,16 @@ export function AdminNavbar() {
               >
                 <div className="relative w-6 h-6">
                   <span
-                    className={`absolute top-1 left-0 w-6 h-0.5 bg-gray-700 transition-all duration-300 ${
-                      isMobileMenuOpen ? "rotate-45 translate-y-2" : ""
-                    }`}
+                    className={`absolute top-1 left-0 w-6 h-0.5 bg-gray-700 transition-all duration-300 ${isMobileMenuOpen ? "rotate-45 translate-y-2" : ""
+                      }`}
                   ></span>
                   <span
-                    className={`absolute top-3 left-0 w-6 h-0.5 bg-gray-700 transition-all duration-300 ${
-                      isMobileMenuOpen ? "opacity-0" : ""
-                    }`}
+                    className={`absolute top-3 left-0 w-6 h-0.5 bg-gray-700 transition-all duration-300 ${isMobileMenuOpen ? "opacity-0" : ""
+                      }`}
                   ></span>
                   <span
-                    className={`absolute top-5 left-0 w-6 h-0.5 bg-gray-700 transition-all duration-300 ${
-                      isMobileMenuOpen ? "-rotate-45 -translate-y-2" : ""
-                    }`}
+                    className={`absolute top-5 left-0 w-6 h-0.5 bg-gray-700 transition-all duration-300 ${isMobileMenuOpen ? "-rotate-45 -translate-y-2" : ""
+                      }`}
                   ></span>
                 </div>
               </Button>
@@ -367,11 +352,9 @@ export function AdminNavbar() {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
         <div
-          className={`lg:hidden bg-white/95 backdrop-blur-md border-t border-gray-200 transition-all duration-300 overflow-hidden ${
-            isMobileMenuOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
-          }`}
+          className={`lg:hidden bg-white/95 backdrop-blur-md border-t border-gray-200 transition-all duration-300 overflow-hidden ${isMobileMenuOpen ? "max-h-screen opacity-100" : "max-h-0 opacity-0"
+            }`}
         >
           <div className="px-4 py-4 space-y-2 max-h-96 overflow-y-auto">
             {navigationItems.map((item) => (
@@ -379,11 +362,10 @@ export function AdminNavbar() {
                 {item.href ? (
                   <Link
                     href={item.href}
-                    className={`flex items-center px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${
-                      isActive(item.href)
+                    className={`flex items-center px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${isActive(item.href)
                         ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
                         : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
-                    }`}
+                      }`}
                     onClick={toggleMobileMenu}
                   >
                     <item.icon className="w-5 h-5 mr-3" />
@@ -400,25 +382,22 @@ export function AdminNavbar() {
                         {item.title}
                       </div>
                       <ChevronDown
-                        className={`w-4 h-4 transition-transform duration-200 ${
-                          mobileOpenDropdown === item.title ? "rotate-180" : ""
-                        }`}
+                        className={`w-4 h-4 transition-transform duration-200 ${mobileOpenDropdown === item.title ? "rotate-180" : ""
+                          }`}
                       />
                     </button>
                     <div
-                      className={`space-y-1 overflow-hidden transition-all duration-300 ${
-                        mobileOpenDropdown === item.title ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-                      }`}
+                      className={`space-y-1 overflow-hidden transition-all duration-300 ${mobileOpenDropdown === item.title ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                        }`}
                     >
                       {item.items?.map((subItem) => (
                         <Link
                           key={subItem.href}
                           href={subItem.href}
-                          className={`flex items-center px-8 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
-                            isActive(subItem.href)
+                          className={`flex items-center px-8 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${isActive(subItem.href)
                               ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
                               : "text-gray-600 hover:text-blue-600 hover:bg-blue-50"
-                          }`}
+                            }`}
                           onClick={toggleMobileMenu}
                         >
                           <subItem.icon className="w-4 h-4 mr-3" />
@@ -433,7 +412,7 @@ export function AdminNavbar() {
           </div>
         </div>
       </nav>
- 
+
       {isMobileMenuOpen && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden" onClick={toggleMobileMenu} />
       )}
