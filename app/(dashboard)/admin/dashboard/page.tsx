@@ -52,74 +52,7 @@ export default function AdminDashboard() {
       )
     )
   }, [venues])
-
-  // const stats = [
-  //   {
-  //     title: "Destinations",
-  //     value: "24",
-  //     description: "Active destinations",
-  //     icon: MapPin,
-  //     color: "text-blue-600",
-  //     bgColor: "bg-blue-50",
-  //   },
-  //   {
-  //     title: "Venues",
-  //     value: "156",
-  //     description: "Total venues",
-  //     icon: Building2,
-  //     color: "text-green-600",
-  //     bgColor: "bg-green-50",
-  //   },
-  //   {
-  //     title: "Hotels",
-  //     value: "89",
-  //     description: "Partner hotels",
-  //     icon: Hotel,
-  //     color: "text-purple-600",
-  //     bgColor: "bg-purple-50",
-  //   },
-  //   {
-  //     title: "Packages",
-  //     value: "42",
-  //     description: "Travel packages",
-  //     icon: Package,
-  //     color: "text-orange-600",
-  //     bgColor: "bg-orange-50",
-  //   },
-  //   {
-  //     title: "Flight Routes",
-  //     value: "78",
-  //     description: "Available routes",
-  //     icon: Plane,
-  //     color: "text-indigo-600",
-  //     bgColor: "bg-indigo-50",
-  //   },
-  //   {
-  //     title: "Vehicles",
-  //     value: "34",
-  //     description: "Vehicle types",
-  //     icon: Car,
-  //     color: "text-red-600",
-  //     bgColor: "bg-red-50",
-  //   },
-  //   {
-  //     title: "Meal Plans",
-  //     value: "12",
-  //     description: "Available plans",
-  //     icon: Utensils,
-  //     color: "text-yellow-600",
-  //     bgColor: "bg-yellow-50",
-  //   },
-  //   {
-  //     title: "Users",
-  //     value: "8",
-  //     description: "Admin users",
-  //     icon: Users,
-  //     color: "text-gray-600",
-  //     bgColor: "bg-gray-50",
-  //   },
-  // ]
-
+  
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
