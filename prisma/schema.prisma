@@ -362,7 +362,7 @@ model CountryCurrency {
   country        String @unique
   currencyCode   String
   conversionRate Float  
-  baseCurrency   String 
+  baseCurrency   String
   targetCurrency String 
   updatedAt      DateTime @updatedAt
 }
