@@ -38,7 +38,7 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
     <div className="relative" ref={ref}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-3 bg-white px-4 cursor-pointer py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200"
+        className="flex items-center gap-3 bg-white px-4 w-full cursor-pointer py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200"
       >
         <Globe className="w-5 h-5 text-blue-600" />
         <span className="text-2xl text-gray-500">{selectedCountry.flag}</span>
