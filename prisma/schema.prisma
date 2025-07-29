@@ -42,10 +42,10 @@ model Quotation {
   totalNights Int     @default(0)
 
   // —— NEW foreign‑keys to admin tables ——
-  packageId Int? // optional package reference
+  packageId Int? 
   package   Package? @relation(fields: [packageId], references: [id])
 
-  destinationId Int? // maps your `place`
+  destinationId Int? 
   destination   Destination? @relation(fields: [destinationId], references: [id])
 
   flightRouteId Int?
@@ -69,18 +69,7 @@ model Quotation {
   accommodation Accommodation[]
   itinerary     ItineraryItem[]
   inclusions    Inclusion[]
-  exclusions    Exclusion[]
-
-  // accommodation Accommodation[]
-  // itinerary     ItineraryItem[]
-  // inclusions    Inclusion[]
-  // exclusions    Exclusion[]
-
-  // createdBy   User            @relation(fields: [createdById], references: [id])
-  // createdById Int
-  // status      QuotationStatus @default(DRAFT)
-  // createdAt   DateTime        @default(now())
-  // updatedAt   DateTime        @updatedAt
+  exclusions    Exclusion[] 
 }
 
 model Accommodation {
@@ -366,4 +355,14 @@ model FullyPackedPackageExclusion {
   
   package     FullyPackedPackage @relation(fields: [packageId], references: [id])
   packageId   Int
+}
+
+model CountryCurrency {
+  id             Int    @id @default(autoincrement())
+  country        String @unique
+  currencyCode   String
+  conversionRate Float  
+  baseCurrency   String 
+  targetCurrency String 
+  updatedAt      DateTime @updatedAt
 }

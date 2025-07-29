@@ -1,7 +1,7 @@
 import { cookies } from 'next/headers'
 import { jwtVerify } from 'jose'
-import { redirect } from 'next/navigation'
-import { AdminNavbar } from '@/components/admin-navbar'
+import { redirect } from 'next/navigation' 
+import { AdminNavbar } from '@/components/admin-navbar';
 
 export default async function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
