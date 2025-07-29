@@ -37,7 +37,7 @@ export const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ selectedCo
               type="number"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="w-full px-3 py-2 text-sm text-gray-500 border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 text-sm text-gray-500 border border-gray-200 rounded-lg focus:outline-green-400 focus:ring-2 focus:ring-green-500"
               placeholder="1000"
             />
           </div>
@@ -50,30 +50,30 @@ export const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ selectedCo
               type="number"
               value={rate}
               onChange={(e) => setRate(e.target.value)}
-              className="w-full px-3 py-2 text-sm text-gray-500 border border-gray-200 rounded-lg focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="35.50"
+              className="w-full px-3 py-2 text-sm text-gray-500 border border-gray-200 rounded-lg focus:outline-green-400 focus:ring-2 focus:ring-green-500"
+              placeholder="1.50"
               step="0.01"
             />
           </div>
         </div>
  
-        <div className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 min-w-fit">
+        <div className="flex items-center gap-2 bg-gray-50 rounded-lg mt-4.5 px-3 py-2 min-w-fit">
           <div className="flex items-center gap-1">
-            <span className="text-lg">🇮🇳</span>
+            <span className="text-lg text-gray-500">🇮🇳</span>
             <span className="text-sm font-medium text-gray-800">₹{amount}</span>
           </div>
 
           <ArrowRight className="w-4 h-4 text-gray-400" />
 
           <div className="flex items-center gap-1">
-            <span className="text-lg">{selectedCountry.flag}</span>
+            <span className="text-lg text-gray-500">{selectedCountry.flag}</span>
             <span className="text-sm font-medium text-gray-800">
               {selectedCountry.currency} {convertedAmount}
             </span>
           </div>
         </div>
 
-        <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors whitespace-nowrap">
+        <button className="bg-blue-600 text-white px-4 mt-4.5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors whitespace-nowrap">
           Update
         </button>
       </div>
