@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react';
+import React, { useState, useRef , useEffect } from 'react';
 import { ChevronDown, Globe } from 'lucide-react';
 
 const countries = [
@@ -22,9 +22,20 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
   onCountryChange,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!isOpen) return;
+    function handleClickOutside(event: MouseEvent) {
+      if (ref.current && !ref.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen]);
 
   return (
-    <div className="relative">
+    <div className="relative" ref={ref}>
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-3 bg-white px-4 cursor-pointer py-3 rounded-xl shadow-md hover:shadow-lg transition-all duration-300 border border-gray-200"
@@ -39,7 +50,7 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full mt-2 right-0 bg-white rounded-xl shadow-xl border border-gray-200 min-w-[200px] z-50">
+        <div className="absolute top-full mt-2 right-0 bg-white rounded-xl shadow-xl border border-gray-200 min-w-[180px] z-50">
           {countries.map((country) => (
             <button
               key={country.code}
