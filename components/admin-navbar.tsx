@@ -32,11 +32,6 @@ import {
 
 const navigationItems = [
   {
-    title: "Dashboard",
-    href: "/admin/dashboard",
-    icon: Home,
-  },
-  {
     title: "Destinations",
     icon: MapPin,
     items: [
@@ -197,10 +192,10 @@ export function AdminNavbar() {
             <div className="hidden lg:flex items-center space-x-1">
               {navigationItems.map((item) => (
                 <div key={item.title} className="relative">
-                  {item.href ? (
+                  {!item.items ? (
                     <Link
-                      href={item.href}
-                      className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${isActive(item.href)
+                      href={(item as any).href}
+                      className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${isActive((item as any).href)
                           ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
                           : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
                         }`}
@@ -217,7 +212,7 @@ export function AdminNavbar() {
                     >
                       <Button
                         variant="ghost"
-                        className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${openDropdown === item.title
+                        className={`inline-flex cursor-pointer items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${openDropdown === item.title
                             ? "text-blue-600 bg-blue-50"
                             : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
                           }`}
@@ -359,10 +354,10 @@ export function AdminNavbar() {
           <div className="px-4 py-4 space-y-2 max-h-96 overflow-y-auto">
             {navigationItems.map((item) => (
               <div key={item.title}>
-                {item.href ? (
+                {!item.items ? (
                   <Link
-                    href={item.href}
-                    className={`flex items-center px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${isActive(item.href)
+                    href={(item as any).href}
+                    className={`flex items-center px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${isActive((item as any).href)
                         ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
                         : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
                       }`}
