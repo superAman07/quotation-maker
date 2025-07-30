@@ -56,7 +56,7 @@ const Index = () => {
 
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Travel Services</h2>
-          <ServiceCards />
+          <ServiceCards selectedCountry={selectedCountry} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

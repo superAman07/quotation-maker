@@ -1,6 +1,7 @@
 'use client'
 import React from 'react';
 import { MapPin, Car, Compass, Hotel, Plus } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 const services = [
   {
@@ -40,7 +41,16 @@ const services = [
   },
 ];
 
-export const ServiceCards = () => {
+export const ServiceCards = ({selectedCountry}:any) => {
+  const router = useRouter();
+
+  const serviceRoutes = {
+    'Add City': '/admin/dashboard/destinations',
+    'Transfer': '/admin/dashboard/vehicles',
+    'Activities': '/admin/dashboard/activities',
+    'Accommodation': '/admin/dashboard/hotels',
+    'Add-ons': '/admin/dashboard/add-ons',
+  };
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
       {services.map((service, index) => {
@@ -58,8 +68,14 @@ export const ServiceCards = () => {
             <p className="text-gray-600 mb-4">{service.description}</p>
             
             <button 
-              className="w-full py-3 rounded-xl font-semibold transition-all duration-300 text-white"
+              className="w-full py-3 cursor-pointer group-hover:scale-101 rounded-xl font-semibold transition-all duration-300 text-white"
               style={{ backgroundColor: service.color }}
+              onClick={() => {
+                const route = serviceRoutes[service.title as keyof typeof serviceRoutes];
+                if (route && selectedCountry?.id) {
+                  router.push(`${route}?countryId=${selectedCountry.id}`);
+                }
+              }}
             >
               Manage
             </button>
