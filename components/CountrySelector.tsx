@@ -3,23 +3,22 @@
 import React, { useState, useRef , useEffect } from 'react';
 import { ChevronDown, Globe } from 'lucide-react';
 
-const countries = [
-  { code: 'TH', name: 'Thailand', flag: '🇹🇭', currency: 'THB' },
-  { code: 'SG', name: 'Singapore', flag: '🇸🇬', currency: 'SGD' },
-  { code: 'MY', name: 'Malaysia', flag: '🇲🇾', currency: 'MYR' },
-  { code: 'ID', name: 'Indonesia', flag: '🇮🇩', currency: 'IDR' },
-  { code: 'VN', name: 'Vietnam', flag: '🇻🇳', currency: 'VND' },
-  { code: 'PH', name: 'Philippines', flag: '🇵🇭', currency: 'PHP' },
-];
-
+interface Country {
+  code: string;
+  name: string;
+  flag: string;
+  currency: string;
+}
 interface CountrySelectorProps {
   selectedCountry: typeof countries[0];
   onCountryChange: (country: typeof countries[0]) => void;
+  countries: Country[];
 }
 
 export const CountrySelector: React.FC<CountrySelectorProps> = ({
   selectedCountry,
   onCountryChange,
+  countries
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null)
@@ -50,7 +49,7 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
       </button>
 
       {isOpen && (
-        <div className="absolute top-full mt-2 right-0 bg-white rounded-xl shadow-xl border border-gray-200 min-w-[180px] z-50">
+        <div className="absolute top-full mt-2 right-0 bg-white rounded-xl shadow-xl border border-gray-200 min-w-[220px] z-50">
           {countries.map((country) => (
             <button
               key={country.code}
@@ -60,9 +59,9 @@ export const CountrySelector: React.FC<CountrySelectorProps> = ({
               }}
               className="w-full flex items-center cursor-pointer gap-3 px-4 py-3 hover:bg-blue-50 transition-colors first:rounded-t-xl last:rounded-b-xl"
             >
-              <span className="text-2xl text-gray-500">{country.flag}</span>
-              <div className="text-left">
-                <p className="font-medium text-gray-800">{country.name}</p>
+              <span className="text-md text-gray-500 text-center">{country.flag}</span>
+              <div className="flex-[1_1_auto]">
+                <p className="text-md text-gray-800">{country.name}</p>
                 <p className="text-sm text-gray-600">{country.currency}</p>
               </div>
             </button>

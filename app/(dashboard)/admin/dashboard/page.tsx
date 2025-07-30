@@ -4,37 +4,64 @@ import { CurrencyConverter } from '@/components/CurrencyConverter';
 import { QuickActions } from '@/components/QuickActions';
 import { RecentActivity } from '@/components/RecentActivity';
 import { ServiceCards } from '@/components/ServiceCards';
-import React, { useState } from 'react';     
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 
-const countries = [
-  { code: 'TH', name: 'Thailand', flag: '🇹🇭', currency: 'THB' },
-  { code: 'SG', name: 'Singapore', flag: '🇸🇬', currency: 'SGD' },
-  { code: 'MY', name: 'Malaysia', flag: '🇲🇾', currency: 'MYR' },
-  { code: 'ID', name: 'Indonesia', flag: '🇮🇩', currency: 'IDR' },
-  { code: 'VN', name: 'Vietnam', flag: '🇻🇳', currency: 'VND' },
-  { code: 'PH', name: 'Philippines', flag: '🇵🇭', currency: 'PHP' },
-];
+// const countries = [
+//   { code: 'TH', name: 'Thailand', flag: '🇹🇭', currency: 'THB' },
+//   { code: 'SG', name: 'Singapore', flag: '🇸🇬', currency: 'SGD' },
+//   { code: 'MY', name: 'Malaysia', flag: '🇲🇾', currency: 'MYR' },
+//   { code: 'ID', name: 'Indonesia', flag: '🇮🇩', currency: 'IDR' },
+//   { code: 'VN', name: 'Vietnam', flag: '🇻🇳', currency: 'VND' },
+//   { code: 'PH', name: 'Philippines', flag: '🇵🇭', currency: 'PHP' },
+// ];
+
+interface Country {
+  code: string;
+  name: string;
+  flag: string;
+  currency: string;
+}
 
 const Index = () => {
-  const [selectedCountry, setSelectedCountry] = useState(countries[0]);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        const res = await axios.get('/api/admin/country');
+        setCountries(res.data.data || []); 
+        if (!selectedCountry && res.data.data && res.data.data.length > 0) {
+          setSelectedCountry(res.data.data[0]);
+        }
+      } catch (err) { 
+        setCountries([]);
+      }
+    };
+    fetchCountries();
+  }, [])
+
+  if (!selectedCountry) return <div>Loading...</div>;
 
   return (
-    <div className="min-h-screen  bg-gray-50"> 
+    <div className="min-h-screen  bg-gray-50">
       <div className="pt-20 p-4 sm:p-6 lg:p-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <div className="text-4xl text-gray-500">{selectedCountry.flag}</div>
+            <div className="text-4xl text-gray-500">{selectedCountry?.flag}</div>
             <div>
               <h1 className="text-3xl font-bold text-gray-800">
-                {selectedCountry.name} Dashboard
+                {selectedCountry?.name} Dashboard
               </h1>
-              <p className="text-gray-600">Manage travel services for {selectedCountry.name}</p>
+              <p className="text-gray-600">Manage travel services for {selectedCountry?.name}</p>
             </div>
           </div>
-          
+
           <CountrySelector
             selectedCountry={selectedCountry}
             onCountryChange={setSelectedCountry}
+            countries={countries}
           />
         </div>
 
