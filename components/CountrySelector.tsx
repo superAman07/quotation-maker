@@ -10,8 +10,8 @@ interface Country {
   currency: string;
 }
 interface CountrySelectorProps {
-  selectedCountry: typeof countries[0];
-  onCountryChange: (country: typeof countries[0]) => void;
+  selectedCountry: Country;
+  onCountryChange: (country: Country) => void;
   countries: Country[];
 }
 
