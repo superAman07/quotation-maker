@@ -27,10 +27,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Edit, Plus, Trash2, MapPin, Globe, ImageIcon } from "lucide-react"
-import { Separator } from "@/components/ui/separator"
-import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
 import axios from "axios"
 import { useSearchParams } from "next/navigation"
+import { toast } from "@/hooks/use-toast"
 
 type Destination = {
   id: number
@@ -40,7 +39,6 @@ type Destination = {
   imageUrl?: string
 }
 
-// Custom Toast Component (as requested by user)
 const Toast = ({
   message,
   type,
@@ -77,12 +75,13 @@ export default function DestinationsPage() {
     imageUrl: "",
   })
   const [loading, setLoading] = useState(true)
-  const [toast, setToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null)
+  const [createLoading, setCreateLoading] = useState(false);
+  const [localToast, setLocalToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
   const searchParams = useSearchParams()
   const countryId = searchParams.get("countryId")
 
   const showToast = (message: string, type: "success" | "error" | "info") => {
-    setToast({ message, type })
+    setLocalToast({ message, type })
   }
 
   useEffect(() => {
@@ -91,8 +90,12 @@ export default function DestinationsPage() {
         const res = await axios.get(`/api/admin/destinations?countryId=${countryId}`)
         setDestinations(res.data.destinations)
       } catch {
+        toast({
+          title: "Error!",
+          description: "Failed to load destinations",
+          variant: "destructive",
+        })
         setDestinations([])
-        showToast("Failed to load destinations", "error")
       } finally {
         setLoading(false)
       }
@@ -101,19 +104,30 @@ export default function DestinationsPage() {
   }, [countryId])
 
   const handleCreate = async () => {
+    setCreateLoading(true);
     try {
       const res = await axios.post("/api/admin/destinations", {
         ...formData,
         countryId,
       })
       if (res.status === 201) {
+        toast({
+          title: "Success!",
+          description: "Destination created successfully!",
+          variant: "success",
+        })
         setDestinations([...destinations, res.data])
         setFormData({ name: "", state: "", description: "", imageUrl: "" })
         setIsCreateOpen(false)
-        showToast("Destination created successfully!", "success")
       }
     } catch {
-      showToast("Failed to create destination", "error")
+      toast({
+        title: "Error!",
+        description: "Failed to create destination",
+        variant: "destructive",
+      })
+    } finally {
+      setCreateLoading(false);
     }
   }
 
@@ -162,19 +176,7 @@ export default function DestinationsPage() {
 
   return (
     <>
-      {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
-
-      {/* <header className="flex h-16 shrink-0 items-center gap-2 border-b border-slate-200 px-4 bg-gradient-to-r from-blue-50 to-indigo-50">
-        <Separator orientation="vertical" className="mr-2 h-4" />
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbPage className="text-slate-700 font-medium">Destinations</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-      </header> */}
-
+      {localToast && <Toast message={localToast.message} type={localToast.type} onClose={() => setLocalToast(null)} />}
       <div className="flex-1 space-y-6 p-4 md:p-8 pt-6 bg-gradient-to-br from-slate-50 to-blue-50 min-h-screen">
         <div className="flex justify-between items-center">
           <div className="space-y-2">
@@ -191,7 +193,7 @@ export default function DestinationsPage() {
 
           <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
             <DialogTrigger asChild>
-              <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
+              <Button className="cursor-pointer bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all duration-200">
                 <Plus className="h-4 w-4 mr-2" />
                 Add Destination
               </Button>
@@ -272,10 +274,20 @@ export default function DestinationsPage() {
                 </Button>
                 <Button
                   onClick={handleCreate}
-                  disabled={!formData.name}
+                  disabled={!formData.name || createLoading}
                   className="cursor-pointer bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg"
                 >
-                  Create Destination
+                  {createLoading ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                      </svg>
+                      Creating...
+                    </>
+                  ) : (
+                    "Create Destination"
+                  )}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -383,7 +395,7 @@ export default function DestinationsPage() {
 
         {/* Edit Dialog */}
         <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-          <DialogContent className="bg-white border-0 shadow-2xl max-w-2xl">
+          <DialogContent className="bg-white text-gray-600 border-0 shadow-2xl max-w-2xl">
             <DialogHeader className="pb-6">
               <DialogTitle className="text-2xl font-bold text-slate-800 flex items-center gap-2">
                 <Edit className="h-6 w-6 text-orange-600" />
