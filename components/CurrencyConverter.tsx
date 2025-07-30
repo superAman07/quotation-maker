@@ -1,15 +1,13 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Calculator, ArrowRight } from "lucide-react"
+import axios from "axios"
+import { Country } from "@/types/country"
 
 interface CurrencyConverterProps {
-  selectedCountry: {
-    name: string
-    currency: string
-    flag: string
-  }
+  selectedCountry: Country
 }
 
 export const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ selectedCountry }) => {
@@ -17,6 +15,35 @@ export const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ selectedCo
   const [amount, setAmount] = useState("1000")
 
   const convertedAmount = (Number.parseFloat(amount) * Number.parseFloat(rate)).toFixed(2)
+
+  useEffect(() => {
+    if (!selectedCountry) return;
+    const fetchRate = async () => {
+      try {
+        const res = await axios.get(`/api/admin/country-currency?countryId=${selectedCountry.id}`);
+        if (res.data && res.data.length > 0) {
+          setRate(res.data[0].conversionRate.toString());
+        } else {
+          setRate("");
+        }
+      } catch {
+        setRate("");
+      }
+    };
+    fetchRate();
+  }, [selectedCountry])
+
+  const handleUpdate = async () => {
+    if (!selectedCountry) return;
+    await axios.post('/api/admin/country-currency', {
+      countryId: selectedCountry.id,
+      currencyCode: selectedCountry.currency,
+      conversionRate: parseFloat(rate),
+      baseCurrency: 'INR',
+      targetCurrency: selectedCountry.currency,
+    });
+    // Optionally show a toast for success
+  };
 
   return (
     <div className="bg-white rounded-xl p-4 card-shadow border border-gray-100">
@@ -29,7 +56,7 @@ export const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ selectedCo
           <p className="text-xs text-gray-500">INR to {selectedCountry.currency}</p>
         </div>
       </div>
-      <div className="flex flex-col lg:flex-row gap-3 items-center"> 
+      <div className="flex flex-col lg:flex-row gap-3 items-center">
         <div className="flex flex-col sm:flex-row gap-2 flex-1">
           <div className="flex-1 min-w-0">
             <label className="block text-xs font-medium text-gray-600 mb-1">Amount (INR)</label>
@@ -56,7 +83,7 @@ export const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ selectedCo
             />
           </div>
         </div>
- 
+
         <div className="flex items-center gap-2 bg-gray-50 rounded-lg mt-4.5 px-3 py-2 min-w-fit">
           <div className="flex items-center gap-1">
             <span className="text-lg text-gray-500">🇮🇳</span>
@@ -73,7 +100,7 @@ export const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ selectedCo
           </div>
         </div>
 
-        <button className="bg-blue-600 text-white px-4 mt-4.5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors whitespace-nowrap">
+        <button onClick={handleUpdate} className="bg-blue-600 text-white px-4 mt-4.5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors whitespace-nowrap">
           Update
         </button>
       </div>

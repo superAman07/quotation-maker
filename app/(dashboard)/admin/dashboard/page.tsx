@@ -4,24 +4,9 @@ import { CurrencyConverter } from '@/components/CurrencyConverter';
 import { QuickActions } from '@/components/QuickActions';
 import { RecentActivity } from '@/components/RecentActivity';
 import { ServiceCards } from '@/components/ServiceCards';
+import { Country } from '@/types/country';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-
-// const countries = [
-//   { code: 'TH', name: 'Thailand', flag: '🇹🇭', currency: 'THB' },
-//   { code: 'SG', name: 'Singapore', flag: '🇸🇬', currency: 'SGD' },
-//   { code: 'MY', name: 'Malaysia', flag: '🇲🇾', currency: 'MYR' },
-//   { code: 'ID', name: 'Indonesia', flag: '🇮🇩', currency: 'IDR' },
-//   { code: 'VN', name: 'Vietnam', flag: '🇻🇳', currency: 'VND' },
-//   { code: 'PH', name: 'Philippines', flag: '🇵🇭', currency: 'PHP' },
-// ];
-
-interface Country {
-  code: string;
-  name: string;
-  flag: string;
-  currency: string;
-}
 
 const Index = () => {
   const [countries, setCountries] = useState<Country[]>([]);
@@ -60,7 +45,7 @@ const Index = () => {
 
           <CountrySelector
             selectedCountry={selectedCountry}
-            onCountryChange={setSelectedCountry}
+            onCountryChange={(country: Country) => setSelectedCountry(country)}
             countries={countries}
           />
         </div>

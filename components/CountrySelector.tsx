@@ -2,13 +2,8 @@
 
 import React, { useState, useRef , useEffect } from 'react';
 import { ChevronDown, Globe } from 'lucide-react';
+import { Country } from '@/types/country';
 
-interface Country {
-  code: string;
-  name: string;
-  flag: string;
-  currency: string;
-}
 interface CountrySelectorProps {
   selectedCountry: Country;
   onCountryChange: (country: Country) => void;
