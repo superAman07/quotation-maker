@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import { Calculator, ArrowRight } from "lucide-react"
 import axios from "axios"
 import { Country } from "@/types/country"
+import { toast } from "@/hooks/use-toast"
 
 interface CurrencyConverterProps {
   selectedCountry: Country
