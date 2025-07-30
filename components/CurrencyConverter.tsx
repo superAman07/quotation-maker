@@ -47,14 +47,15 @@ export const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ selectedCo
         targetCurrency: selectedCountry.currency,
       });
       toast({
-        title: "Success",
+        variant: "success",
+        title: "Success!",
         description: "Currency rate updated!",
       });
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to update currency rate.",
+        title: "Error!",
         variant: "destructive",
+        description: "Failed to update currency rate.",
       });
     } finally {
       setIsLoading(false);
