@@ -149,10 +149,11 @@ enum UserStatus {
 // Models for travel services
 
 model Destination {
-  id          Int     @id @default(autoincrement())
-  name        String  @unique
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
   state       String?
-  country     String?
+  countryId   Int?
+  country     Country? @relation(fields: [countryId], references: [id])
   description String?
   imageUrl    String?
 
@@ -354,12 +355,26 @@ model FullyPackedPackageExclusion {
   packageId Int
 }
 
+model Country {
+  id                Int               @id @default(autoincrement())
+  code              String            @unique
+  name              String
+  flag              String
+  currency          String
+  destinations      Destination[]
+  countryCurrencies CountryCurrency[]
+}
+
 model CountryCurrency {
   id             Int      @id @default(autoincrement())
-  country        String   @unique
+  countryId      Int
   currencyCode   String
   conversionRate Float
   baseCurrency   String
   targetCurrency String
   updatedAt      DateTime @updatedAt
+
+  country Country @relation(fields: [countryId], references: [id])
+
+  @@unique([countryId, currencyCode])
 }

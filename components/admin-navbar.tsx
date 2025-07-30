@@ -20,6 +20,7 @@ import {
   LogOut,
   SettingsIcon,
   User,
+  Plus,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -29,6 +30,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
+import CountryManager from "./countryformmodel"
 
 const navigationItems = [
   {
@@ -137,6 +139,7 @@ export function AdminNavbar() {
   const [mobileOpenDropdown, setMobileOpenDropdown] = useState<string | null>(null)
   const pathname = usePathname()
   const { openDropdown, handleMouseEnter, handleMouseLeave, forceClose } = useHoverDropdown()
+  const [showCountryManager, setShowCountryManager] = useState(false);
 
   const isActive = (href: string) => pathname === href
 
@@ -196,8 +199,8 @@ export function AdminNavbar() {
                     <Link
                       href={(item as any).href}
                       className={`inline-flex items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${isActive((item as any).href)
-                          ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
-                          : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                        : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
                         }`}
                     >
                       <item.icon className="w-4 h-4 mr-2" />
@@ -213,8 +216,8 @@ export function AdminNavbar() {
                       <Button
                         variant="ghost"
                         className={`inline-flex cursor-pointer items-center px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${openDropdown === item.title
-                            ? "text-blue-600 bg-blue-50"
-                            : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                          ? "text-blue-600 bg-blue-50"
+                          : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
                           }`}
                         onMouseEnter={() => handleMouseEnter(item.title)}
                       >
@@ -238,8 +241,8 @@ export function AdminNavbar() {
                               <Link
                                 href={subItem.href}
                                 className={`flex items-center px-3 py-3 mx-1 rounded-lg text-sm transition-all duration-200 ${isActive(subItem.href)
-                                    ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
-                                    : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                                  ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+                                  : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
                                   }`}
                                 onClick={forceClose}
                               >
@@ -256,6 +259,15 @@ export function AdminNavbar() {
                 </div>
               ))}
             </div>
+
+            <Button
+              variant="outline"
+              className="ml-2 mt-3 cursor-pointer bg-gradient-to-br from-blue-600 to-purple-600 text-white flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              onClick={() => setShowCountryManager(true)}
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Country
+            </Button>
 
             <div className="hidden md:flex items-center space-x-4">
               <DropdownMenu>
@@ -358,8 +370,8 @@ export function AdminNavbar() {
                   <Link
                     href={(item as any).href}
                     className={`flex items-center px-4 py-3 rounded-xl text-base font-medium transition-all duration-200 ${isActive((item as any).href)
-                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
-                        : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
+                      ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                      : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
                       }`}
                     onClick={toggleMobileMenu}
                   >
@@ -390,8 +402,8 @@ export function AdminNavbar() {
                           key={subItem.href}
                           href={subItem.href}
                           className={`flex items-center px-8 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${isActive(subItem.href)
-                              ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
-                              : "text-gray-600 hover:text-blue-600 hover:bg-blue-50"
+                            ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg"
+                            : "text-gray-600 hover:text-blue-600 hover:bg-blue-50"
                             }`}
                           onClick={toggleMobileMenu}
                         >
@@ -411,6 +423,10 @@ export function AdminNavbar() {
       {isMobileMenuOpen && (
         <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden" onClick={toggleMobileMenu} />
       )}
+      <CountryManager
+        isOpen={showCountryManager}
+        setIsOpen={setShowCountryManager}
+      />
     </>
   )
 }

@@ -6,8 +6,15 @@ import { jwtDecode } from 'jwt-decode'
 type DecodedToken = { role?: string }
 
 export async function GET() {
-  const currencies = await prisma.countryCurrency.findMany()
-  return NextResponse.json(currencies)
+  try {
+    const currencies = await prisma.countryCurrency.findMany({
+      include: { country: true },
+    })
+    return NextResponse.json(currencies)
+  } catch (error: any) {
+    console.error('GET /country-currencies error:', error)
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -25,16 +32,23 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
   }
 
-  const { country, currencyCode, conversionRate, baseCurrency, targetCurrency } = await request.json()
-  if (!country || !currencyCode || !conversionRate || !baseCurrency || !targetCurrency) {
+  const { countryId, currencyCode, conversionRate, baseCurrency, targetCurrency } = await request.json()
+  if (countryId == null || !currencyCode || conversionRate == null || !baseCurrency || !targetCurrency ) {
     return NextResponse.json({ error: 'Missing fields' }, { status: 400 })
   }
 
-  const currency = await prisma.countryCurrency.upsert({
-    where: { country },
-    update: { currencyCode, conversionRate, baseCurrency, targetCurrency },
-    create: { country, currencyCode, conversionRate, baseCurrency, targetCurrency }
-  })
+  try { 
+    const currency = await prisma.countryCurrency.upsert({
+      where: {
+        countryId_currencyCode: { countryId, currencyCode },
+      },
+      update: { conversionRate, baseCurrency, targetCurrency },
+      create: { countryId, currencyCode, conversionRate, baseCurrency, targetCurrency },
+    })
 
-  return NextResponse.json(currency)
+    return NextResponse.json(currency)
+  } catch (error: any) {
+    console.error('POST /country-currencies upsert error:', error)
+    return NextResponse.json({ error: 'Database error' }, { status: 500 })
+  }
 }
