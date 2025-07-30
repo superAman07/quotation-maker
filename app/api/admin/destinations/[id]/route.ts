@@ -13,17 +13,13 @@ export async function GET(_req: NextRequest, { params }: {params: Promise<{id:st
 }
 
 export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
-    console.log('PUT request received')
-    const id = parseInt((await context.params).id, 10)
-    console.log(`Updating destination with ID: ${id}`)
-    const { name, state, country, description, imageUrl } = await request.json()
-
-    console.log(`Received data:`, { name, state, country, description, imageUrl })
+    const id = parseInt((await context.params).id, 10) 
+    const { name, state, description, imageUrl } = await request.json()
+ 
     const updated = await prisma.destination.update({
         where: { id },
-        data: { name, state, country, description, imageUrl },
-    })
-    console.log(`Updated destination:`, updated)
+        data: { name, state, description, imageUrl },
+    }) 
     return NextResponse.json(updated, { status: 200 })
 }
 

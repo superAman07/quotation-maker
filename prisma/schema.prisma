@@ -42,10 +42,10 @@ model Quotation {
   totalNights Int     @default(0)
 
   // —— NEW foreign‑keys to admin tables ——
-  packageId Int? // optional package reference
+  packageId Int?
   package   Package? @relation(fields: [packageId], references: [id])
 
-  destinationId Int? // maps your `place`
+  destinationId Int?
   destination   Destination? @relation(fields: [destinationId], references: [id])
 
   flightRouteId Int?
@@ -70,17 +70,6 @@ model Quotation {
   itinerary     ItineraryItem[]
   inclusions    Inclusion[]
   exclusions    Exclusion[]
-
-  // accommodation Accommodation[]
-  // itinerary     ItineraryItem[]
-  // inclusions    Inclusion[]
-  // exclusions    Exclusion[]
-
-  // createdBy   User            @relation(fields: [createdById], references: [id])
-  // createdById Int
-  // status      QuotationStatus @default(DRAFT)
-  // createdAt   DateTime        @default(now())
-  // updatedAt   DateTime        @updatedAt
 }
 
 model Accommodation {
@@ -160,17 +149,18 @@ enum UserStatus {
 // Models for travel services
 
 model Destination {
-  id          Int     @id @default(autoincrement())
-  name        String  @unique
+  id          Int      @id @default(autoincrement())
+  name        String   @unique
   state       String?
-  country     String?
+  countryId   Int?
+  country     Country? @relation(fields: [countryId], references: [id])
   description String?
   imageUrl    String?
 
   // relations
-  venues     Venue[]
-  packages   Package[]
-  quotations Quotation[]
+  venues              Venue[]
+  packages            Package[]
+  quotations          Quotation[]
   fullyPackedPackages FullyPackedPackage[]
 }
 
@@ -242,7 +232,7 @@ model VehicleType {
 
 model MealPlan {
   id            Int     @id @default(autoincrement())
-  code          String  @unique  
+  code          String  @unique
   description   String?
   ratePerPerson Float
 
@@ -309,61 +299,82 @@ model Tax {
 
 // Fully Packed Package Models
 model FullyPackedPackage {
-  id          Int     @id @default(autoincrement())
-  name        String
-  description String?
-  destination Destination @relation(fields: [destinationId], references: [id])
+  id            Int         @id @default(autoincrement())
+  name          String
+  description   String?
+  destination   Destination @relation(fields: [destinationId], references: [id])
   destinationId Int
-  
-  // Template data
-  mealPlan    String?
-  vehicleUsed String?
-  localVehicleUsed String?
+
+  mealPlan            String?
+  vehicleUsed         String?
+  localVehicleUsed    String?
   flightCostPerPerson Float?
-  landCostPerPerson Float?
-  totalNights Int?
-  
-  // Relations
-  accommodations FullyPackedPackageAccommodation[]
-  itinerary     FullyPackedPackageItinerary[]
-  inclusions    FullyPackedPackageInclusion[]
-  exclusions    FullyPackedPackageExclusion[]
-  
+  landCostPerPerson   Float?
+  totalNights         Int?
+  accommodations      FullyPackedPackageAccommodation[]
+  itinerary           FullyPackedPackageItinerary[]
+  inclusions          FullyPackedPackageInclusion[]
+  exclusions          FullyPackedPackageExclusion[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model FullyPackedPackageAccommodation {
-  id          Int     @id @default(autoincrement())
-  location    String
-  hotelName   String
-  nights      Int
-  
-  package     FullyPackedPackage @relation(fields: [packageId], references: [id])
-  packageId   Int
+  id        Int    @id @default(autoincrement())
+  location  String
+  hotelName String
+  nights    Int
+
+  package   FullyPackedPackage @relation(fields: [packageId], references: [id])
+  packageId Int
 }
 
 model FullyPackedPackageItinerary {
-  id          Int     @id @default(autoincrement())
+  id          Int    @id @default(autoincrement())
   dayTitle    String
   description String
-  
-  package     FullyPackedPackage @relation(fields: [packageId], references: [id])
-  packageId   Int
+
+  package   FullyPackedPackage @relation(fields: [packageId], references: [id])
+  packageId Int
 }
 
 model FullyPackedPackageInclusion {
-  id          Int     @id @default(autoincrement())
-  item        String
-  
-  package     FullyPackedPackage @relation(fields: [packageId], references: [id])
-  packageId   Int
+  id   Int    @id @default(autoincrement())
+  item String
+
+  package   FullyPackedPackage @relation(fields: [packageId], references: [id])
+  packageId Int
 }
 
 model FullyPackedPackageExclusion {
-  id          Int     @id @default(autoincrement())
-  item        String
-  
-  package     FullyPackedPackage @relation(fields: [packageId], references: [id])
-  packageId   Int
+  id   Int    @id @default(autoincrement())
+  item String
+
+  package   FullyPackedPackage @relation(fields: [packageId], references: [id])
+  packageId Int
+}
+
+model Country {
+  id                Int               @id @default(autoincrement())
+  code              String            @unique
+  name              String
+  flag              String
+  currency          String
+  destinations      Destination[]
+  countryCurrencies CountryCurrency[]
+}
+
+model CountryCurrency {
+  id             Int      @id @default(autoincrement())
+  countryId      Int
+  currencyCode   String
+  conversionRate Float
+  baseCurrency   String
+  targetCurrency String
+  updatedAt      DateTime @updatedAt
+
+  country Country @relation(fields: [countryId], references: [id])
+
+  @@unique([countryId, currencyCode])
 }

@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { name, state, country, description, imageUrl } = body;
+    const { name, state, description, imageUrl, countryId } = body;
 
     if (!name || typeof name !== "string") {
         return NextResponse.json(
@@ -31,9 +31,15 @@ export async function POST(req: NextRequest) {
             { status: 400 }
         );
     }
+    if (!countryId) {
+        return NextResponse.json(
+            { error: "`countryId` is required" },
+            { status: 400 }
+        );
+    }
     try {
         const destination = await prisma.destination.create({
-            data: { name, state, country, description, imageUrl },
+            data: { name, state, description, imageUrl, countryId: Number(countryId) },
         });
         return NextResponse.json(
             { destination, message: "Destination created successfully" },
@@ -54,12 +60,17 @@ export async function POST(req: NextRequest) {
     }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
+    const { searchParams } = new URL(req.url);
+    const countryId = searchParams.get("countryId");
+
+    const where = countryId ? { countryId: Number(countryId) } : {};
+
     try {
         const destinations = await prisma.destination.findMany({
+            where,
             orderBy: { name: "asc" },
-        });
-        console.log("Retrieved destinations:", destinations);
+        }); 
         return NextResponse.json({ destinations }, { status: 200 });
     } catch (err) {
         console.error("DB error:", err);
