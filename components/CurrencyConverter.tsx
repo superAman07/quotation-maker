@@ -35,14 +35,17 @@ export const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ selectedCo
 
   const handleUpdate = async () => {
     if (!selectedCountry) return;
-    await axios.post('/api/admin/country-currency', {
-      countryId: selectedCountry.id,
-      currencyCode: selectedCountry.currency,
-      conversionRate: parseFloat(rate),
-      baseCurrency: 'INR',
-      targetCurrency: selectedCountry.currency,
-    });
-    // Optionally show a toast for success
+    try {
+      const response = await axios.post('/api/admin/country-currency', {
+        countryId: selectedCountry.id,
+        currencyCode: selectedCountry.currency,
+        conversionRate: parseFloat(rate),
+        baseCurrency: 'INR',
+        targetCurrency: selectedCountry.currency,
+      });
+    } catch (error) {
+      console.error("Error updating currency:", error);
+    }
   };
 
   return (

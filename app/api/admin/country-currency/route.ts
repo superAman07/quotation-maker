@@ -5,15 +5,18 @@ import { jwtDecode } from 'jwt-decode'
 
 type DecodedToken = { role?: string }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const countryId = searchParams.get('countryId');
+  const where = countryId ? { countryId: Number(countryId) } : {};
   try {
     const currencies = await prisma.countryCurrency.findMany({
+      where,
       include: { country: true },
-    })
-    return NextResponse.json(currencies)
+    });
+    return NextResponse.json(currencies);
   } catch (error: any) {
-    console.error('GET /country-currencies error:', error)
-    return NextResponse.json({ error: 'Server error' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
   }
 }
 
