@@ -76,6 +76,7 @@ export default function DestinationsPage() {
   })
   const [loading, setLoading] = useState(true)
   const [createLoading, setCreateLoading] = useState(false);
+  const [updateLoading, setUpdateLoading] = useState(false);
   const [localToast, setLocalToast] = useState<{ message: string; type: "success" | "error" | "info" } | null>(null);
   const searchParams = useSearchParams()
   const countryId = searchParams.get("countryId")
@@ -116,7 +117,7 @@ export default function DestinationsPage() {
           description: "Destination created successfully!",
           variant: "success",
         })
-        setDestinations([...destinations, res.data])
+        setDestinations([...destinations, res.data.destination])
         setFormData({ name: "", state: "", description: "", imageUrl: "" })
         setIsCreateOpen(false)
       }
@@ -143,6 +144,7 @@ export default function DestinationsPage() {
   }
 
   const handleUpdate = async () => {
+    setUpdateLoading(true);
     try {
       const res = await axios.put(`/api/admin/destinations/${editingDestination?.id}`, formData)
       const updated = await res.data
@@ -150,13 +152,23 @@ export default function DestinationsPage() {
         showToast("Failed to update destination", "error")
         return
       }
+      toast({
+        title: "Success!",
+        description: "Destination updated successfully!",
+        variant: "success",
+      })
       setDestinations((prev) => prev.map((d) => (d.id === updated.id ? updated : d)))
       setIsEditOpen(false)
       setEditingDestination(null)
       setFormData({ name: "", state: "", description: "", imageUrl: "" })
-      showToast("Destination updated successfully!", "success")
     } catch {
-      showToast("Failed to update destination", "error")
+      toast({
+        title: "Error!",
+        description: "Failed to update destination",
+        variant: "destructive",
+      })
+    } finally {
+      setUpdateLoading(false);
     }
   }
 
@@ -164,13 +176,25 @@ export default function DestinationsPage() {
     try {
       const res = await axios.delete(`/api/admin/destinations/${id}`)
       if (res.status !== 200) {
-        showToast("Failed to delete destination", "error")
+        toast({
+          title: "Error!",
+          description: "Failed to delete destination",
+          variant: "destructive"
+        })
         return
       }
       setDestinations((prev) => prev.filter((d) => d.id !== id))
-      showToast("Destination deleted successfully!", "success")
+      toast({
+        title: "Success!",
+        description: "Destination deleted successfully!",
+        variant: "success",
+      })
     } catch {
-      showToast("Failed to delete destination", "error")
+      toast({
+        title: "Error!",
+        description: "Failed to delete destination",
+        variant: "destructive",
+      })
     }
   }
 
@@ -347,7 +371,7 @@ export default function DestinationsPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleEdit(destination)}
-                          className="border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
+                          className="cursor-pointer border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
                         >
                           <Edit className="h-4 w-4" />
                         </Button>
@@ -356,7 +380,7 @@ export default function DestinationsPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 bg-transparent"
+                              className="cursor-pointer border-red-200 text-red-600 hover:bg-red-50 hover:border-red-300 bg-transparent"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -372,12 +396,12 @@ export default function DestinationsPage() {
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter className="gap-3">
-                              <AlertDialogCancel className="border-slate-300 text-slate-700 hover:bg-slate-50">
+                              <AlertDialogCancel className="cursor-pointer border-slate-300 text-slate-700 hover:bg-slate-50">
                                 Cancel
                               </AlertDialogCancel>
                               <AlertDialogAction
                                 onClick={() => handleDelete(destination.id)}
-                                className="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white"
+                                className="cursor-pointer bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white"
                               >
                                 Delete
                               </AlertDialogAction>
@@ -465,16 +489,26 @@ export default function DestinationsPage() {
               <Button
                 variant="outline"
                 onClick={() => setIsEditOpen(false)}
-                className="border-slate-300 text-slate-700 hover:bg-slate-50"
+                className="cursor-pointer border-slate-300 text-slate-700 hover:bg-slate-50"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleUpdate}
-                disabled={!formData.name}
-                className="bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white shadow-lg"
+                disabled={!formData.name || updateLoading}
+                className="cursor-pointer bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-700 hover:to-amber-700 text-white shadow-lg"
               >
-                Update Destination
+                {updateLoading ? (
+                  <>
+                    <svg className="animate-spin h-5 w-5 mr-2 text-white" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                    </svg>
+                    Updating...
+                  </>
+                ) : (
+                  "Update Destination"
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>
