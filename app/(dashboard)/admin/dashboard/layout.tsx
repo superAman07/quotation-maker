@@ -1,7 +1,8 @@
 import { cookies } from 'next/headers'
 import { jwtVerify } from 'jose'
-import { redirect } from 'next/navigation' 
+import { redirect } from 'next/navigation'
 import { AdminNavbar } from '@/components/admin-navbar';
+import { SelectedCountryProvider } from '@/components/SelectedCountryContext';
 
 export default async function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
@@ -16,10 +17,10 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
     redirect('/admin/auth/login')
   }
 
-  return <>
+  return <SelectedCountryProvider>
     <div className="min-h-screen bg-gray-50">
       <AdminNavbar />
       <main className="pt-16">{children}</main>
     </div>
-  </>
+  </SelectedCountryProvider>
 }

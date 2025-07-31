@@ -3,6 +3,7 @@ import { CountrySelector } from '@/components/CountrySelector';
 import { CurrencyConverter } from '@/components/CurrencyConverter';
 import { QuickActions } from '@/components/QuickActions';
 import { RecentActivity } from '@/components/RecentActivity';
+import { useSelectedCountry } from '@/components/SelectedCountryContext';
 import { ServiceCards } from '@/components/ServiceCards';
 import { Country } from '@/types/country';
 import axios from 'axios';
@@ -10,7 +11,9 @@ import React, { useEffect, useState } from 'react';
 
 const Index = () => {
   const [countries, setCountries] = useState<Country[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  const { selectedCountry, setSelectedCountry } = useSelectedCountry();
+
+  // const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
 
   useEffect(() => {
     const fetchCountries = async () => {

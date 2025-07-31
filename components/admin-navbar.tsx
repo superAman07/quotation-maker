@@ -31,6 +31,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import CountryManager from "./countryformmodel"
+import { useSelectedCountry } from "@/components/SelectedCountryContext";
 
 const navigationItems = [
   {
@@ -81,7 +82,6 @@ const navigationItems = [
   },
 ]
 
-// Custom hook for hover dropdown management
 function useHoverDropdown() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -140,6 +140,7 @@ export function AdminNavbar() {
   const pathname = usePathname()
   const { openDropdown, handleMouseEnter, handleMouseLeave, forceClose } = useHoverDropdown()
   const [showCountryManager, setShowCountryManager] = useState(false);
+  const { selectedCountry } = useSelectedCountry();
 
   const isActive = (href: string) => pathname === href
 
@@ -239,7 +240,11 @@ export function AdminNavbar() {
                           {item.items?.map((subItem, index) => (
                             <div key={subItem.href}>
                               <Link
-                                href={subItem.href}
+                                href={
+                                  item.title === "Destinations" && subItem.title === "Destinations" && selectedCountry?.id
+                                    ? `/admin/dashboard/destinations?countryId=${selectedCountry.id}`
+                                    : subItem.href
+                                }
                                 className={`flex items-center px-3 py-3 mx-1 rounded-lg text-sm transition-all duration-200 ${isActive(subItem.href)
                                   ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
                                   : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
