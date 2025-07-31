@@ -157,13 +157,14 @@ model Destination {
   description String?
   imageUrl    String?
 
-  // relations
-  venues              Venue[]
+  // venues              Venue[]
   packages            Package[]
   quotations          Quotation[]
   fullyPackedPackages FullyPackedPackage[]
+  hotels              Hotel[]  
 }
 
+// not required
 model Venue {
   id          Int     @id @default(autoincrement())
   name        String
@@ -172,11 +173,11 @@ model Venue {
   description String?
   imageUrl    String?
 
-  destination   Destination @relation(fields: [destinationId], references: [id])
+  // destination   Destination @relation(fields: [destinationId], references: [id])
   destinationId Int
 
   accommodations Accommodation[]
-  Hotel          Hotel[]
+  // Hotel          Hotel[]
 }
 
 model Hotel {
@@ -185,12 +186,12 @@ model Hotel {
   starRating Int?
   amenities  String?
   imageUrl   String?
-
-  venue   Venue @relation(fields: [venueId], references: [id])
-  venueId Int
+  countryId     Int?
+  country       Country? @relation(fields: [countryId], references: [id])
+  destinationId Int?
+  destination   Destination? @relation(fields: [destinationId], references: [id])
 
   rateCards     HotelRateCard[]
-  // legacy Accommodation.hotelName remains in Accommodation
   Accommodation Accommodation[]
 }
 
@@ -203,6 +204,7 @@ model HotelRateCard {
   rate     Float
 }
 
+// not required
 model FlightRoute {
   id          Int     @id @default(autoincrement())
   origin      String
@@ -363,6 +365,7 @@ model Country {
   currency          String
   destinations      Destination[]
   countryCurrencies CountryCurrency[]
+  hotels            Hotel[]           // Added relation field for Hotel
 }
 
 model CountryCurrency {

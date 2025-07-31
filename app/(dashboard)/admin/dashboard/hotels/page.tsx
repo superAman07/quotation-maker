@@ -31,21 +31,15 @@ import { Badge } from "@/components/ui/badge"
 import { Edit, Plus, Trash2, Star, DollarSign } from "lucide-react"
 import type { Hotel, Venue } from "@/lib/types"
 import Link from "next/link"
-// import { SidebarTrigger } from "@/components/sidebar-trigger"
 import { Separator } from "@/components/ui/separator"
 import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb"
 import axios from "axios"
-
-// Mock data
-const mockVenues: Venue[] = [
-  { id: 1, name: "Baga Beach Resort Area", destinationId: 1 },
-  { id: 2, name: "Alleppey Backwaters", destinationId: 2 },
-  { id: 3, name: "Jaipur City Center", destinationId: 3 },
-]
+import { useSearchParams } from "next/navigation"
 
 export default function HotelsPage() {
   const [hotels, setHotels] = useState<Hotel[]>([])
-  const [venues, setVenues] = useState<Venue[]>([])
+  // const [venues, setVenues] = useState<Venue[]>([])
+  const [destinations, setDestinations] = useState<any[]>([])
   const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [editingHotel, setEditingHotel] = useState<Hotel | null>(null)
@@ -54,26 +48,40 @@ export default function HotelsPage() {
     starRating: "",
     amenities: "",
     imageUrl: "",
-    venueId: "",
+    destinationId: "",
   })
+  const searchParams = useSearchParams();
+  const countryId = searchParams.get("countryId");
+
+  useEffect(() => {
+  async function fetchDestinations() {
+    if (!countryId) return;
+    const res = await axios.get(`/api/admin/destinations?countryId=${countryId}`);
+    setDestinations(res.data.destinations);
+  }
+  fetchDestinations();
+}, [countryId]);
 
   useEffect(() => {
     async function fetchData() {
-      const venuesRes = await axios.get("/api/admin/venues");
-      console.log("Fetched venues:", venuesRes.data.venues);
-      setVenues(venuesRes.data);
+      // const venuesRes = await axios.get("/api/admin/venues");
+      // console.log("Fetched venues:", venuesRes.data.venues);
+      // setVenues(venuesRes.data);
 
-      const hotelsRes = await axios.get("/api/admin/hotels");
-      console.log("Fetched hotels:", hotelsRes.data.hotels);
-      setHotels(hotelsRes.data.hotels);
+      if (!countryId) return;
+      const res = await axios.get(`/api/admin/hotels?countryId=${countryId}`);
+      setHotels(res.data.hotels);
     }
     fetchData();
   }, []);
 
   const handleCreate = async () => {
-    const res = await axios.post("/api/admin/hotels", formData);
+    const res = await axios.post("/api/admin/hotels", {
+      ...formData,
+      countryId: countryId,
+    });
     setHotels([...hotels, res.data.hotel]);
-    setFormData({ name: "", starRating: "", amenities: "", imageUrl: "", venueId: "" });
+    setFormData({ name: "", starRating: "", amenities: "", imageUrl: "", destinationId: "" });
     setIsCreateOpen(false);
   }
 
@@ -84,7 +92,7 @@ export default function HotelsPage() {
       starRating: hotel.starRating?.toString() || "",
       amenities: hotel.amenities || "",
       imageUrl: hotel.imageUrl || "",
-      venueId: hotel.venueId.toString(),
+      destinationId: hotel.destinationId?.toString() || "",
     })
     setIsEditOpen(true)
   }
@@ -96,7 +104,7 @@ export default function HotelsPage() {
     setHotels(hotels.map((h) => h.id === updated.id ? updated : h));
     setIsEditOpen(false);
     setEditingHotel(null);
-    setFormData({ name: "", starRating: "", amenities: "", imageUrl: "", venueId: "" });
+    setFormData({ name: "", starRating: "", amenities: "", imageUrl: "", destinationId: "" });
   }
 
   const handleDelete = async (id: number) => {
@@ -159,7 +167,7 @@ export default function HotelsPage() {
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2 ">
+                  {/* <div className="grid gap-2 ">
                     <Label htmlFor="venue">Venue *</Label>
                     <Select
                       value={formData.venueId}
@@ -172,6 +180,24 @@ export default function HotelsPage() {
                         {venues.map((venue) => (
                           <SelectItem key={venue.id} value={venue.id.toString()}>
                             {venue.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div> */}
+                  <div className="grid gap-2">
+                    <Label htmlFor="destinationId">Destination *</Label>
+                    <Select
+                      value={formData.destinationId}
+                      onValueChange={(value) => setFormData({ ...formData, destinationId: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select destination" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white text-gray-700">
+                        {destinations.map((destination) => (
+                          <SelectItem key={destination.id} value={destination.id.toString()}>
+                            {destination.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -219,7 +245,7 @@ export default function HotelsPage() {
                 <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={handleCreate} disabled={!formData.name || !formData.venueId}>
+                <Button onClick={handleCreate} disabled={!formData.name}>
                   Create Hotel
                 </Button>
               </DialogFooter>
@@ -232,7 +258,7 @@ export default function HotelsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Hotel Name</TableHead>
-                <TableHead>Venue</TableHead>
+                {/* <TableHead>Venue</TableHead> */}
                 <TableHead>Rating</TableHead>
                 <TableHead>Amenities</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -242,7 +268,7 @@ export default function HotelsPage() {
               {hotels.map((hotel) => (
                 <TableRow key={hotel.id}>
                   <TableCell className="font-medium">{hotel.name}</TableCell>
-                  <TableCell>{hotel.venue?.name}</TableCell>
+                  {/* <TableCell>{hotel.venue?.name}</TableCell> */}
                   <TableCell>{renderStars(hotel.starRating)}</TableCell>
                   <TableCell className="max-w-xs">
                     <div className="flex flex-wrap gap-1">
@@ -316,7 +342,7 @@ export default function HotelsPage() {
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
+                {/* <div className="grid gap-2">
                   <Label htmlFor="edit-venue">Venue *</Label>
                   <Select
                     value={formData.venueId}
@@ -333,7 +359,7 @@ export default function HotelsPage() {
                       ))}
                     </SelectContent>
                   </Select>
-                </div>
+                </div> */}
                 <div className="grid gap-2">
                   <Label htmlFor="edit-starRating">Star Rating</Label>
                   <Select
@@ -376,7 +402,7 @@ export default function HotelsPage() {
               <Button variant="outline" onClick={() => setIsEditOpen(false)}>
                 Cancel
               </Button>
-              <Button onClick={handleUpdate} disabled={!formData.name || !formData.venueId}>
+              <Button onClick={handleUpdate} disabled={!formData.name}>
                 Update Hotel
               </Button>
             </DialogFooter>

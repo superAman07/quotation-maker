@@ -25,8 +25,7 @@ export interface Hotel {
   starRating?: number
   amenities?: string
   imageUrl?: string
-  venueId: number
-  venue?: Venue
+  destinationId?: string
 }
 
 export interface HotelRateCard {

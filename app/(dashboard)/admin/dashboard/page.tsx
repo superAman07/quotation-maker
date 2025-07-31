@@ -3,6 +3,7 @@ import { CountrySelector } from '@/components/CountrySelector';
 import { CurrencyConverter } from '@/components/CurrencyConverter';
 import { QuickActions } from '@/components/QuickActions';
 import { RecentActivity } from '@/components/RecentActivity';
+import { useSelectedCountry } from '@/components/SelectedCountryContext';
 import { ServiceCards } from '@/components/ServiceCards';
 import { Country } from '@/types/country';
 import axios from 'axios';
@@ -10,7 +11,9 @@ import React, { useEffect, useState } from 'react';
 
 const Index = () => {
   const [countries, setCountries] = useState<Country[]>([]);
-  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  const { selectedCountry, setSelectedCountry } = useSelectedCountry();
+
+  // const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
 
   useEffect(() => {
     const fetchCountries = async () => {
@@ -51,13 +54,14 @@ const Index = () => {
         </div>
 
         <div className="mb-8">
-          <CurrencyConverter selectedCountry={selectedCountry} />
-        </div>
-
-        <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Travel Services</h2>
           <ServiceCards selectedCountry={selectedCountry} />
         </div>
+        
+        <div className="mb-8">
+          <CurrencyConverter selectedCountry={selectedCountry} />
+        </div>
+
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <RecentActivity />

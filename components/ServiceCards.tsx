@@ -1,6 +1,6 @@
 'use client'
 import React from 'react';
-import { MapPin, Car, Compass, Hotel, Plus } from 'lucide-react';
+import { MapPin, Car, Compass, Hotel, Plus, Package, Package2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 const services = [
@@ -10,6 +10,13 @@ const services = [
     description: 'Manage destinations and cities',
     gradient: 'bg-gradient-to-r from-blue-500 to-blue-400',
     color: '#667eea'
+  },
+  {
+    title: 'Accommodation',
+    icon: Hotel,
+    description: 'Hotels and lodging',
+    gradient: 'bg-gradient-to-r from-purple-400 to-blue-500',
+    color: '#4facfe'
   },
   {
     title: 'Transfer',
@@ -26,11 +33,11 @@ const services = [
     color: '#f093fb'
   },
   {
-    title: 'Accommodation',
-    icon: Hotel,
-    description: 'Hotels and lodging',
-    gradient: 'bg-gradient-to-r from-purple-400 to-blue-500',
-    color: '#4facfe'
+    title: 'Meal Plans',
+    icon: Plus,  
+    description: 'Meal plans and food options',
+    gradient: 'bg-gradient-to-r from-yellow-400 to-orange-400',
+    color: '#f6d365'
   },
   {
     title: 'Add-ons',
@@ -39,16 +46,35 @@ const services = [
     gradient: 'bg-gradient-to-r from-pink-400 to-yellow-300',
     color: '#ffecd2'
   },
+  {
+    title: 'Packages',
+    icon: Package,
+    description: 'Pre-built travel packages',
+    gradient: 'bg-gradient-to-r from-blue-400 to-green-400',
+    color: '#43e97b'
+  },
+  {
+    title: 'Custom Packages',
+    icon: Package2,
+    description: 'Fully customized packages',
+    gradient: 'bg-gradient-to-r from-purple-400 to-pink-400',
+    color: '#fa709a'
+  }
 ];
 
-export const ServiceCards = ({selectedCountry}:any) => {
+export const ServiceCards = ({ selectedCountry }: any) => {
   const router = useRouter();
 
   const serviceRoutes = {
     'Add City': '/admin/dashboard/destinations',
     'Transfer': '/admin/dashboard/vehicles',
+    'Packages': '/admin/dashboard/packages',
+    'Meal Plans': '/admin/dashboard/meal-plans',
     'Activities': '/admin/dashboard/activities',
+    'Custom Packages': '/admin/dashboard/fully-packed-packages',
     'Accommodation': '/admin/dashboard/hotels',
+    'Inclusion': '/admin/dashboard/inclusion-templates',
+    'Exclusion': '/admin/dashboard/exclusion-templates',
     'Add-ons': '/admin/dashboard/add-ons',
   };
   return (
@@ -63,11 +89,11 @@ export const ServiceCards = ({selectedCountry}:any) => {
             <div className={`w-16 h-16 ${service.gradient} rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
               <Icon className="w-8 h-8 text-white" />
             </div>
-            
+
             <h3 className="text-xl font-bold text-gray-800 mb-2">{service.title}</h3>
             <p className="text-gray-600 mb-4">{service.description}</p>
-            
-            <button 
+
+            <button
               className="w-full py-3 cursor-pointer group-hover:scale-101 rounded-xl font-semibold transition-all duration-300 text-white"
               style={{ backgroundColor: service.color }}
               onClick={() => {

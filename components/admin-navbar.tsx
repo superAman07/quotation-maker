@@ -31,38 +31,39 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
 import CountryManager from "./countryformmodel"
+import { useSelectedCountry } from "@/components/SelectedCountryContext";
 
 const navigationItems = [
-  {
-    title: "Destinations",
-    icon: MapPin,
-    items: [
-      { title: "Destinations", href: "/admin/dashboard/destinations", icon: MapPin },
-      { title: "Venues", href: "/admin/dashboard/venues", icon: Building2 },
-    ],
-  },
-  {
-    title: "Accommodations",
-    icon: Hotel,
-    items: [{ title: "Hotels", href: "/admin/dashboard/hotels", icon: Hotel }],
-  },
-  {
-    title: "Transportation",
-    icon: Plane,
-    items: [
-      { title: "Flight Routes", href: "/admin/dashboard/flight-routes", icon: Plane },
-      { title: "Vehicles", href: "/admin/dashboard/vehicles", icon: Car },
-    ],
-  },
-  {
-    title: "Services",
-    icon: Utensils,
-    items: [
-      { title: "Meal Plans", href: "/admin/dashboard/meal-plans", icon: Utensils },
-      { title: "Packages", href: "/admin/dashboard/packages", icon: Package },
-      { title: "Fully Packed Packages", href: "/admin/dashboard/fully-packed-packages", icon: Package },
-    ],
-  },
+  // {
+  //   title: "Destinations",
+  //   icon: MapPin,
+  //   items: [
+  //     { title: "Destinations", href: "/admin/dashboard/destinations", icon: MapPin },
+  //     // { title: "Venues", href: "/admin/dashboard/venues", icon: Building2 },
+  //   ],
+  // },
+  // {
+  //   title: "Accommodations",
+  //   icon: Hotel,
+  //   items: [{ title: "Hotels", href: "/admin/dashboard/hotels", icon: Hotel }],
+  // },
+  // {
+  //   title: "Transportation",
+  //   icon: Plane,
+  //   items: [
+  //     // { title: "Flight Routes", href: "/admin/dashboard/flight-routes", icon: Plane },
+  //     { title: "Vehicles", href: "/admin/dashboard/vehicles", icon: Car },
+  //   ],
+  // },
+  // {
+  //   title: "Services",
+  //   icon: Utensils,
+  //   items: [
+  //     { title: "Meal Plans", href: "/admin/dashboard/meal-plans", icon: Utensils },
+  //     { title: "Packages", href: "/admin/dashboard/packages", icon: Package },
+  //     { title: "Fully Packed Packages", href: "/admin/dashboard/fully-packed-packages", icon: Package },
+  //   ],
+  // },
   {
     title: "Templates",
     icon: FileText,
@@ -81,7 +82,6 @@ const navigationItems = [
   },
 ]
 
-// Custom hook for hover dropdown management
 function useHoverDropdown() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
@@ -140,6 +140,7 @@ export function AdminNavbar() {
   const pathname = usePathname()
   const { openDropdown, handleMouseEnter, handleMouseLeave, forceClose } = useHoverDropdown()
   const [showCountryManager, setShowCountryManager] = useState(false);
+  const { selectedCountry } = useSelectedCountry();
 
   const isActive = (href: string) => pathname === href
 
@@ -192,7 +193,7 @@ export function AdminNavbar() {
               </Link>
             </div>
 
-            <div className="hidden lg:flex items-center space-x-1">
+            <div className="hidden lg:flex items-center space-x-3">
               {navigationItems.map((item) => (
                 <div key={item.title} className="relative">
                   {!item.items ? (
@@ -239,7 +240,11 @@ export function AdminNavbar() {
                           {item.items?.map((subItem, index) => (
                             <div key={subItem.href}>
                               <Link
-                                href={subItem.href}
+                                href={
+                                  item.title === "Destinations" && subItem.title === "Destinations" && selectedCountry?.id
+                                    ? `/admin/dashboard/destinations?countryId=${selectedCountry.id}`
+                                    : subItem.href
+                                }
                                 className={`flex items-center px-3 py-3 mx-1 rounded-lg text-sm transition-all duration-200 ${isActive(subItem.href)
                                   ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
                                   : "text-gray-700 hover:text-blue-600 hover:bg-blue-50"
@@ -258,11 +263,9 @@ export function AdminNavbar() {
                   )}
                 </div>
               ))}
-            </div>
-
             <Button
               variant="outline"
-              className="ml-2 mt-3 cursor-pointer bg-gradient-to-br from-blue-600 to-purple-600 text-white flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              className="ml-2 mt-0 cursor-pointer bg-gradient-to-br from-blue-600 to-purple-600 text-white flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => setShowCountryManager(true)}
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -301,6 +304,8 @@ export function AdminNavbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+            </div>
+
 
             {/* Mobile menu button */}
             <div className="lg:hidden flex items-center space-x-2">
