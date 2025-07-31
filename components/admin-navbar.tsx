@@ -39,7 +39,7 @@ const navigationItems = [
     icon: MapPin,
     items: [
       { title: "Destinations", href: "/admin/dashboard/destinations", icon: MapPin },
-      { title: "Venues", href: "/admin/dashboard/venues", icon: Building2 },
+      // { title: "Venues", href: "/admin/dashboard/venues", icon: Building2 },
     ],
   },
   {
@@ -51,7 +51,7 @@ const navigationItems = [
     title: "Transportation",
     icon: Plane,
     items: [
-      { title: "Flight Routes", href: "/admin/dashboard/flight-routes", icon: Plane },
+      // { title: "Flight Routes", href: "/admin/dashboard/flight-routes", icon: Plane },
       { title: "Vehicles", href: "/admin/dashboard/vehicles", icon: Car },
     ],
   },

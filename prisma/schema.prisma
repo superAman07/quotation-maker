@@ -164,6 +164,7 @@ model Destination {
   fullyPackedPackages FullyPackedPackage[]
 }
 
+// not required
 model Venue {
   id          Int     @id @default(autoincrement())
   name        String
@@ -190,7 +191,6 @@ model Hotel {
   venueId Int
 
   rateCards     HotelRateCard[]
-  // legacy Accommodation.hotelName remains in Accommodation
   Accommodation Accommodation[]
 }
 
@@ -203,6 +203,7 @@ model HotelRateCard {
   rate     Float
 }
 
+// not required
 model FlightRoute {
   id          Int     @id @default(autoincrement())
   origin      String
