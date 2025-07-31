@@ -20,12 +20,9 @@ export async function POST(req: NextRequest) {
     if (decoded.role !== "Admin") {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const { name, starRating, amenities, imageUrl, venueId } = await req.json();
-    if (!name) {
-        return NextResponse.json({ error: 'Hotel name is required' }, { status: 400 })
-    }
-    if (!venueId) {
-        return NextResponse.json({ error: 'venueId is required' }, { status: 400 })
+    const { name, starRating, amenities, imageUrl, countryId, destinationId } = await req.json();
+    if (!name || !countryId || !destinationId) {
+        return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
     const hotel = await prisma.hotel.create({
         data: {
@@ -33,7 +30,8 @@ export async function POST(req: NextRequest) {
             starRating: parseInt(starRating, 10),
             amenities,
             imageUrl,
-            venue: { connect: { id: parseInt(venueId, 10) } }
+            countryId: Number(countryId),
+            destinationId: Number(destinationId),
         }
     })
     console.log("Hotel created:", hotel);
@@ -44,13 +42,17 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET(req: NextRequest) {
+    const { searchParams } = new URL(req.url);
+    const countryId = searchParams.get('countryId');
+    const where: any = {};
+    if (countryId) {
+        where.countryId = Number(countryId);
+    }
+
     const hotels = await prisma.hotel.findMany({
-        orderBy: {
-            name: 'asc'
-        }, include: {
-            venue: true
-        }
-    })
-    console.log("Hotels fetched:", hotels);
+        where,
+        orderBy: { name: 'asc' },
+        include: { country: true, destination: true }
+    });
     return NextResponse.json({ hotels }, { status: 200 });
 }
