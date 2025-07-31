@@ -34,36 +34,36 @@ import CountryManager from "./countryformmodel"
 import { useSelectedCountry } from "@/components/SelectedCountryContext";
 
 const navigationItems = [
-  {
-    title: "Destinations",
-    icon: MapPin,
-    items: [
-      { title: "Destinations", href: "/admin/dashboard/destinations", icon: MapPin },
-      // { title: "Venues", href: "/admin/dashboard/venues", icon: Building2 },
-    ],
-  },
-  {
-    title: "Accommodations",
-    icon: Hotel,
-    items: [{ title: "Hotels", href: "/admin/dashboard/hotels", icon: Hotel }],
-  },
-  {
-    title: "Transportation",
-    icon: Plane,
-    items: [
-      // { title: "Flight Routes", href: "/admin/dashboard/flight-routes", icon: Plane },
-      { title: "Vehicles", href: "/admin/dashboard/vehicles", icon: Car },
-    ],
-  },
-  {
-    title: "Services",
-    icon: Utensils,
-    items: [
-      { title: "Meal Plans", href: "/admin/dashboard/meal-plans", icon: Utensils },
-      { title: "Packages", href: "/admin/dashboard/packages", icon: Package },
-      { title: "Fully Packed Packages", href: "/admin/dashboard/fully-packed-packages", icon: Package },
-    ],
-  },
+  // {
+  //   title: "Destinations",
+  //   icon: MapPin,
+  //   items: [
+  //     { title: "Destinations", href: "/admin/dashboard/destinations", icon: MapPin },
+  //     // { title: "Venues", href: "/admin/dashboard/venues", icon: Building2 },
+  //   ],
+  // },
+  // {
+  //   title: "Accommodations",
+  //   icon: Hotel,
+  //   items: [{ title: "Hotels", href: "/admin/dashboard/hotels", icon: Hotel }],
+  // },
+  // {
+  //   title: "Transportation",
+  //   icon: Plane,
+  //   items: [
+  //     // { title: "Flight Routes", href: "/admin/dashboard/flight-routes", icon: Plane },
+  //     { title: "Vehicles", href: "/admin/dashboard/vehicles", icon: Car },
+  //   ],
+  // },
+  // {
+  //   title: "Services",
+  //   icon: Utensils,
+  //   items: [
+  //     { title: "Meal Plans", href: "/admin/dashboard/meal-plans", icon: Utensils },
+  //     { title: "Packages", href: "/admin/dashboard/packages", icon: Package },
+  //     { title: "Fully Packed Packages", href: "/admin/dashboard/fully-packed-packages", icon: Package },
+  //   ],
+  // },
   {
     title: "Templates",
     icon: FileText,
@@ -193,7 +193,7 @@ export function AdminNavbar() {
               </Link>
             </div>
 
-            <div className="hidden lg:flex items-center space-x-1">
+            <div className="hidden lg:flex items-center space-x-3">
               {navigationItems.map((item) => (
                 <div key={item.title} className="relative">
                   {!item.items ? (
@@ -263,11 +263,9 @@ export function AdminNavbar() {
                   )}
                 </div>
               ))}
-            </div>
-
             <Button
               variant="outline"
-              className="ml-2 mt-3 cursor-pointer bg-gradient-to-br from-blue-600 to-purple-600 text-white flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              className="ml-2 mt-0 cursor-pointer bg-gradient-to-br from-blue-600 to-purple-600 text-white flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               onClick={() => setShowCountryManager(true)}
             >
               <Plus className="w-4 h-4 mr-2" />
@@ -306,6 +304,8 @@ export function AdminNavbar() {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+            </div>
+
 
             {/* Mobile menu button */}
             <div className="lg:hidden flex items-center space-x-2">
