@@ -324,6 +324,18 @@ model FullyPackedPackageExclusion {
   packageId Int
 }
 
+model Activity {
+  id               Int      @id @default(autoincrement())
+  name             String
+  transfer         String?
+  ticketPriceAdult Float
+  ticketPriceChild Float?
+  countryId        Int
+  country          Country  @relation(fields: [countryId], references: [id])
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
 model Country {
   id                Int               @id @default(autoincrement())
   code              String            @unique
@@ -334,6 +346,7 @@ model Country {
   countryCurrencies CountryCurrency[]
   hotels            Hotel[]
   transfers         Transfer[]
+  activities        Activity[]
 }
 
 model CountryCurrency {

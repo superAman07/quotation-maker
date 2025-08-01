@@ -257,8 +257,7 @@ export default function TransfersDashboard() {
                         <div className="h-full overflow-y-auto">
                             <table className="w-full">
                                 <thead
-                                    className="sticky top-0 z-10"
-                                    style={{ background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)" }}
+                                    className="sticky top-0 z-10 bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 text-white" 
                                 >
                                     <tr>
                                         <th className="px-6 py-4 text-left text-sm font-semibold text-white">Transfer Type</th>
@@ -271,71 +270,71 @@ export default function TransfersDashboard() {
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                     {filteredTransfers.length === 0 ? (
-    <tr>
-      <td colSpan={6} className="py-10 text-center text-gray-500">
-        No transfers found for this country.
-      </td>
-    </tr>
-  ) : (
-                                    (filteredTransfers.map((transfer, index) => {
-                                        const converted = transfer.priceInINR && conversionRate
-                                            ? (transfer.priceInINR * conversionRate).toLocaleString(undefined, { maximumFractionDigits: 2 })
-                                            : "0";
-                                        return (
-                                            <tr
-                                                key={transfer.id}
-                                                className={`hover:bg-gray-50 transition-colors duration-150 ${index % 2 === 0 ? "bg-white" : "bg-gray-50"
-                                                    }`}
-                                            >
-                                                <td className="px-6 py-4">
-                                                    <div className="font-medium text-gray-900">{transfer.type}</div>
-                                                </td>
-                                                {/* Price */}
-                                                <td className="px-6 py-4">
-                                                    <div className="text-gray-900">
-                                                        <div className="font-semibold">₹{transfer.priceInINR.toLocaleString()}</div>
-                                                        <div className="text-sm text-gray-500">
-                                                            {currencyCode} {converted}
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                {/* Country */}
-                                                <td className="px-6 py-4">
-                                                    {transfer.country && (
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-xl">{transfer.country.flag}</span>
-                                                            <div>
-                                                                <div className="font-medium text-gray-900">{transfer.country.name}</div>
-                                                                <div className="text-sm text-gray-500">{currencyCode}</div>
+                                        <tr>
+                                            <td colSpan={6} className="py-10 text-center text-gray-500">
+                                                No transfers found for this country.
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        (filteredTransfers.map((transfer, index) => {
+                                            const converted = transfer.priceInINR && conversionRate
+                                                ? (transfer.priceInINR * conversionRate).toLocaleString(undefined, { maximumFractionDigits: 2 })
+                                                : "0";
+                                            return (
+                                                <tr
+                                                    key={transfer.id}
+                                                    className={`hover:bg-gray-50 transition-colors duration-150 ${index % 2 === 0 ? "bg-white" : "bg-gray-50"
+                                                        }`}
+                                                >
+                                                    <td className="px-6 py-4">
+                                                        <div className="font-medium text-gray-900">{transfer.type}</div>
+                                                    </td>
+                                                    {/* Price */}
+                                                    <td className="px-6 py-4">
+                                                        <div className="text-gray-900">
+                                                            <div className="font-semibold">₹{transfer.priceInINR.toLocaleString()}</div>
+                                                            <div className="text-sm text-gray-500">
+                                                                {currencyCode} {converted}
                                                             </div>
                                                         </div>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-4 text-gray-600">{new Date(transfer.createdAt).toLocaleDateString()}</td>
-                                                <td className="px-6 py-4 text-gray-600">{new Date(transfer.updatedAt).toLocaleDateString()}</td>
+                                                    </td>
+                                                    {/* Country */}
+                                                    <td className="px-6 py-4">
+                                                        {transfer.country && (
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-xl">{transfer.country.flag}</span>
+                                                                <div>
+                                                                    <div className="font-medium text-gray-900">{transfer.country.name}</div>
+                                                                    <div className="text-sm text-gray-500">{currencyCode}</div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-gray-600">{new Date(transfer.createdAt).toLocaleDateString()}</td>
+                                                    <td className="px-6 py-4 text-gray-600">{new Date(transfer.updatedAt).toLocaleDateString()}</td>
 
-                                                <td className="px-6 py-4">
-                                                    <div className="flex justify-center gap-2">
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={() => handleEditTransfer(transfer)}
-                                                            className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105"
-                                                        >
-                                                            <Edit className="h-3 w-3" />
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={() => handleDeleteTransfer(transfer.id)}
-                                                            className="cursor-pointer bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105"
-                                                        >
-                                                            <Trash2 className="h-3 w-3" />
-                                                        </Button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        )
-                                    }))
-                                )}
+                                                    <td className="px-6 py-4">
+                                                        <div className="flex justify-center gap-2">
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={() => handleEditTransfer(transfer)}
+                                                                className="cursor-pointer bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105"
+                                                            >
+                                                                <Edit className="h-3 w-3" />
+                                                            </Button>
+                                                            <Button
+                                                                size="sm"
+                                                                onClick={() => handleDeleteTransfer(transfer.id)}
+                                                                className="cursor-pointer bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-lg shadow-md transition-all duration-200 transform hover:scale-105"
+                                                            >
+                                                                <Trash2 className="h-3 w-3" />
+                                                            </Button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        }))
+                                    )}
                                 </tbody>
                             </table>
                         </div>
