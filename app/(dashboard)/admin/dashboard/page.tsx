@@ -13,8 +13,6 @@ const Index = () => {
   const [countries, setCountries] = useState<Country[]>([]);
   const { selectedCountry, setSelectedCountry } = useSelectedCountry();
 
-  // const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
-
   useEffect(() => {
     const fetchCountries = async () => {
       try {
