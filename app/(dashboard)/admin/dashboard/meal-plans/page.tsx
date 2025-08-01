@@ -189,13 +189,15 @@ export default function MealPlansPage() {
   };
 
   const handleDelete = async (id: number) => {
-    try {
-      await axios.delete(`/api/admin/meal-plans/${id}`);
-      setMealPlans(prev => prev.filter(p => p.id !== id));
-      toast({ title: "Success", description: "Meal plan deleted successfully." });
-    } catch (error) {
-      console.error('Failed to delete meal plan:', error);
-      toast({ title: "Error", description: "Failed to delete meal plan.", variant: "destructive" });
+    if (window.confirm("Are you sure you want to delete this meal plan? This action cannot be undone.")){
+      try {
+        await axios.delete(`/api/admin/meal-plans/${id}`);
+        setMealPlans(prev => prev.filter(p => p.id !== id));
+        toast({ title: "Success", description: "Meal plan deleted successfully." });
+      } catch (error) {
+        console.error('Failed to delete meal plan:', error);
+        toast({ title: "Error", description: "Failed to delete meal plan.", variant: "destructive" });
+      }
     }
   };
 
