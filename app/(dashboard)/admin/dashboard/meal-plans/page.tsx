@@ -123,11 +123,7 @@ export default function MealPlansPage() {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setCurrentMealPlan(prev => ({ ...prev, [name]: value }));
-  };
-
-  // const handleSelectChange = (value: string) => {
-  //   setCurrentMealPlan(prev => ({ ...prev, name: value }));
-  // };
+  }; 
 
   const handleSelectChange = (value: string) => {
     if (value === "Custom") {
@@ -173,12 +169,6 @@ export default function MealPlansPage() {
       setIsLoading(false);
     }
   };
-
-  // const handleEdit = (plan: MealPlan) => {
-  //   setCurrentMealPlan(plan);
-  //   setIsEditing(true);
-  //   setIsModalOpen(true);
-  // };
 
   const handleEdit = (plan: MealPlan) => {
     const isStandardType = mealTypes.includes(plan.name);
