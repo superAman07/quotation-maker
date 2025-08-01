@@ -12,10 +12,10 @@ export async function GET(_req: Request, { params }: {params: Promise<{id: strin
 
 export async function PUT(request: Request, { params }: {params: Promise<{id: string}>}) {
     const id = parseInt((await params).id, 10)
-    const { code, description, ratePerPerson } = await request.json()
+    const { name, description, ratePerPerson } = await request.json()
 
     const data: any = {}
-    if (code) data.code = code
+    if (name) data.name = name
     if (description !== undefined) data.description = description
     if (ratePerPerson !== undefined) {
         if (isNaN(ratePerPerson)) {

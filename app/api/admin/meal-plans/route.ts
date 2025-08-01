@@ -7,9 +7,19 @@ interface DecodedToken {
     name?: string; email?: string; role?: string
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+    const { searchParams } = new URL(request.url);
+    const countryId = searchParams.get('countryId');
+
+    if (!countryId) {
+        return NextResponse.json({ error: "Country ID is required" }, { status: 400 });
+    }
+
     const plans = await prisma.mealPlan.findMany({
-        orderBy: { code: 'asc' },
+        where: {
+            countryId: parseInt(countryId),
+        },
+        orderBy: { name: 'asc' },
     })
     return NextResponse.json(plans)
 }
@@ -30,16 +40,19 @@ export async function POST(request: NextRequest) {
     if (decoded.role !== "Admin") {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
-    const { code, description, ratePerPerson } = await request.json()
+    const { name, description, ratePerPerson, countryId } = await request.json()
 
-    if (!code) {
-        return NextResponse.json({ error: 'Meal plan code is required' }, { status: 400 })
+    if (!name) {
+        return NextResponse.json({ error: 'Meal plan name is required' }, { status: 400 })
     }
     if (ratePerPerson == null || isNaN(ratePerPerson)) {
         return NextResponse.json({ error: 'ratePerPerson must be a valid number' }, { status: 400 })
     }
+    if (!countryId) {
+        return NextResponse.json({ error: 'countryId is required' }, { status: 400 })
+    }
     const mealPlan = await prisma.mealPlan.create({
-        data: { code, description, ratePerPerson: parseFloat(ratePerPerson) },
+        data: { name, description, ratePerPerson: parseFloat(ratePerPerson), countryId: parseInt(countryId) },
     })
     return NextResponse.json(mealPlan, { status: 201 })
 }

@@ -67,7 +67,7 @@ export const ServiceCards = ({ selectedCountry }: any) => {
 
   const serviceRoutes = {
     'Add City': '/admin/dashboard/destinations',
-    'Transfer': '/admin/dashboard/vehicles',
+    'Transfer': '/admin/dashboard/transfer',
     'Packages': '/admin/dashboard/packages',
     'Meal Plans': '/admin/dashboard/meal-plans',
     'Activities': '/admin/dashboard/activities',
