@@ -16,9 +16,34 @@ export default function HotelDashboard() {
   const [editingHotel, setEditingHotel] = useState<Hotel | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(false)
+  const [conversionRate, setConversionRate] = useState(1);
+  const [currencyCode, setCurrencyCode] = useState("INR");
 
   const searchParams = useSearchParams()
   const countryId = searchParams.get("countryId")
+
+  useEffect(() => {
+    if (!countryId) return;
+
+    const fetchCurrency = async () => {
+      try {
+        const response = await axios.get(`/api/admin/country-currency?countryId=${countryId}`);
+        const currencyData = Array.isArray(response.data) && response.data.length > 0 ? response.data[0] : null;
+        setConversionRate(currencyData?.conversionRate || 1);
+        setCurrencyCode(currencyData?.currencyCode || "INR");
+      } catch (error) {
+        setConversionRate(1);
+        setCurrencyCode("INR");
+        toast({
+          title: "Error!",
+          description: "Failed to fetch currency info",
+          variant: "destructive",
+        });
+      }
+    };
+
+    fetchCurrency();
+  }, [countryId]);
 
   // Fetch hotels when countryId changes
   useEffect(() => {
@@ -175,6 +200,8 @@ export default function HotelDashboard() {
           onEdit={handleEditHotel}
           onDelete={handleDeleteHotel}
           loading={loading}
+          conversionRate={conversionRate}
+          currencyCode={currencyCode}
         />
 
         <HotelModal

@@ -9,9 +9,11 @@ interface HotelTableProps {
   onEdit: (hotel: Hotel) => void
   onDelete: (hotelId: string) => void
   loading?: boolean
+  conversionRate?: number
+  currencyCode?: string
 }
 
-export function HotelTable({ hotels, onEdit, onDelete, loading }: HotelTableProps) {
+export function HotelTable({ hotels, onEdit, onDelete, loading, conversionRate, currencyCode }: HotelTableProps) {
   const renderStarRating = (rating: number) => {
     return (
       <div className="flex items-center gap-1">
@@ -52,10 +54,10 @@ export function HotelTable({ hotels, onEdit, onDelete, loading }: HotelTableProp
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
-      <div className="overflow-x-auto">
+    <div className="bg-white shadow-sm overflow-hidden border border-gray-200">
+      <div className="overflow-x-auto max-h-[500px]">
         <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200">
+          <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
             <tr>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Hotel Details</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Location</th>
@@ -77,11 +79,11 @@ export function HotelTable({ hotels, onEdit, onDelete, loading }: HotelTableProp
                   className={`hover:bg-gray-50 transition-colors ${index % 2 === 0 ? "bg-white" : "bg-gray-50/30"}`}
                 >
                   <td className="px-6 py-4">
-                    <h3 className="text-lg font-semibold text-gray-900">{hotel.name}</h3>
+                    <h3 className="text-md font-semibold text-gray-600">{hotel.name}</h3>
                   </td>
 
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-2 text-gray-700">
+                    <div className="flex items-center gap-2 text-gray-600">
                       <MapPin className="w-4 h-4 text-gray-500 flex-shrink-0" />
                       <div>
                         <div className="font-medium">{hotel.destination?.name || "N/A"}</div>
@@ -129,11 +131,10 @@ export function HotelTable({ hotels, onEdit, onDelete, loading }: HotelTableProp
                   </td>
 
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-1 text-lg font-bold text-gray-900">
-                      <DollarSign className="w-4 h-4 text-gray-500" />
-                      {getCurrencySymbol(hotel.currency)}
+                    <div className="flex items-center gap-1 text-sm font-bold text-gray-600">
+                      <span className="font-semibold">{currencyCode}</span>
                       {hotel.basePricePerNight != null && !isNaN(Number(hotel.basePricePerNight))
-                        ? Number(hotel.basePricePerNight).toLocaleString()
+                        ? (Number(hotel.basePricePerNight) * (conversionRate ?? 1)).toLocaleString(undefined, { maximumFractionDigits: 2 })
                         : "0"}
                       <span className="text-sm font-normal text-gray-500 ml-1">/night</span>
                     </div>
