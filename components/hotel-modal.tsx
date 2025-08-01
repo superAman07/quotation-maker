@@ -1,6 +1,3 @@
-
-
-
 "use client"
 
 import type React from "react"
@@ -13,7 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Country, Destination, Hotel, HotelPayload } from "@/types/hotel"
-import { AMENITIES_OPTIONS, CURRENCY_OPTIONS, MEAL_PLAN_OPTIONS } from "@/constants/hotel-options"
+import { CURRENCY_OPTIONS, MEAL_PLAN_OPTIONS } from "@/constants/hotel-options"
 
 
 interface HotelModalProps {
@@ -41,6 +38,32 @@ export function HotelModal({ isOpen, onClose, onSave, hotel }: HotelModalProps) 
   const [destinations, setDestinations] = useState<Destination[]>([])
   const [amenityInput, setAmenityInput] = useState("")
   const [loading, setLoading] = useState(false)
+  const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
+  const [conversionRate, setConversionRate] = useState<number>(1);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("selectedCountry");
+      setSelectedCountry(stored ? JSON.parse(stored) : null);
+    }
+  }, []);
+
+
+  useEffect(() => {
+    if (selectedCountry?.id) {
+      const fetchDestinations = async () => {
+        try {
+          const response = await axios.get(`/api/admin/destinations?countryId=${selectedCountry.id}`);
+          setDestinations(response.data.destinations || []);
+        } catch (error) {
+          console.error("Error fetching destinations:", error);
+        }
+      };
+      fetchDestinations();
+    } else {
+      setDestinations([]);
+    }
+  }, [selectedCountry]);
 
   // Fetch countries when modal opens
   useEffect(() => {
@@ -76,10 +99,19 @@ export function HotelModal({ isOpen, onClose, onSave, hotel }: HotelModalProps) 
 
   // Reset city when country changes
   useEffect(() => {
-    if (formData.country && !destinations.some((dest) => dest.id.toString() === formData.city)) {
-      setFormData((prev) => ({ ...prev, city: "" }))
+    if (
+      formData.country &&
+      formData.city &&
+      !destinations.some((dest) => dest.id.toString() === formData.city)
+    ) {
+      setFormData((prev) => ({ ...prev, city: "" }));
     }
-  }, [formData.country, destinations, formData.city])
+  }, [formData.country, destinations]);
+  // useEffect(() => {
+  //   if (formData.country && !destinations.some((dest) => dest.id.toString() === formData.city)) {
+  //     setFormData((prev) => ({ ...prev, city: "" }))
+  //   }
+  // }, [formData.country, destinations, formData.city])
 
   // Initialize form data when hotel prop changes
   useEffect(() => {
@@ -108,7 +140,7 @@ export function HotelModal({ isOpen, onClose, onSave, hotel }: HotelModalProps) 
     } else {
       setFormData({
         name: "",
-        country: "",
+        country: selectedCountry?.id ? selectedCountry.id.toString() : "",
         city: "",
         starRating: 1,
         amenities: [],
@@ -131,36 +163,15 @@ export function HotelModal({ isOpen, onClose, onSave, hotel }: HotelModalProps) 
 
     setLoading(true)
     try {
-      await onSave(formData)
+      await onSave({
+        ...formData,
+        country: selectedCountry?.id ? selectedCountry.id.toString() : "",
+      })
     } catch (error) {
       console.error("Error saving hotel:", error)
     } finally {
       setLoading(false)
     }
-  }
-
-  const addAmenity = (amenity: string) => {
-    if (amenity && !formData.amenities.includes(amenity)) {
-      setFormData((prev) => ({
-        ...prev,
-        amenities: [...prev.amenities, amenity],
-      }))
-    }
-    setAmenityInput("")
-  }
-
-  const removeAmenity = (amenity: string) => {
-    setFormData((prev) => {
-      const amenitiesArray = Array.isArray(prev.amenities)
-        ? prev.amenities
-        : typeof prev.amenities === "string"
-          ? prev.amenities.split(",").map((a) => a.trim()).filter(Boolean)
-          : [];
-      return {
-        ...prev,
-        amenities: amenitiesArray.filter((a) => a !== amenity),
-      };
-    });
   }
 
   const updateFormData = (field: keyof HotelPayload, value: any) => {
@@ -197,7 +208,13 @@ export function HotelModal({ isOpen, onClose, onSave, hotel }: HotelModalProps) 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="country">Country *</Label>
-              <Select value={formData.country} onValueChange={(value) => updateFormData("country", value)}>
+              <div className="px-3 py-2 bg-gray-100 rounded text-gray-700 font-semibold flex items-center gap-2">
+                <span>{selectedCountry?.flag}</span>
+                <span>{selectedCountry?.name}</span>
+                <span className="ml-2 text-xs text-gray-500">{selectedCountry?.currency}</span>
+              </div>
+
+              {/* <Select value={formData.country} onValueChange={(value) => updateFormData("country", value)}>
                 <SelectTrigger className="cursor-pointer">
                   <SelectValue placeholder="Select Country" />
                 </SelectTrigger>
@@ -208,7 +225,7 @@ export function HotelModal({ isOpen, onClose, onSave, hotel }: HotelModalProps) 
                     </SelectItem>
                   ))}
                 </SelectContent>
-              </Select>
+              </Select> */}
             </div>
 
             <div className="space-y-2">
@@ -216,10 +233,10 @@ export function HotelModal({ isOpen, onClose, onSave, hotel }: HotelModalProps) 
               <Select
                 value={formData.city}
                 onValueChange={(value) => updateFormData("city", value)}
-                disabled={!formData.country}
+                disabled={!selectedCountry?.id}
               >
                 <SelectTrigger className="cursor-pointer">
-                  <SelectValue placeholder="Select City"/>
+                  <SelectValue placeholder="Select City" />
                 </SelectTrigger>
                 <SelectContent className="bg-white cursor-pointer text-gray-600">
                   {destinations.map((dest) => (
@@ -345,7 +362,7 @@ export function HotelModal({ isOpen, onClose, onSave, hotel }: HotelModalProps) 
               onClick={onClose}
             >
               Cancel
-            </Button>      
+            </Button>
             <Button type="submit" disabled={loading} className="cursor-pointer bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500 text-white font-semibold shadow-md hover:from-pink-600 hover:to-indigo-600 transition-colors duration-200 border-none px-6 py-2 rounded-lg">
               {loading ? "Saving..." : hotel ? "Update Hotel" : "Add Hotel"}
             </Button>
