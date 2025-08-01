@@ -38,6 +38,7 @@ export function HotelModal({ isOpen, onClose, onSave, hotel }: HotelModalProps) 
   const [loading, setLoading] = useState(false)
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [conversionRate, setConversionRate] = useState<number>(1);
+  const [currencyCode, setCurrencyCode] = useState<string>("INR");
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -45,6 +46,27 @@ export function HotelModal({ isOpen, onClose, onSave, hotel }: HotelModalProps) 
       setSelectedCountry(stored ? JSON.parse(stored) : null);
     }
   }, []);
+
+  useEffect(() => {
+    if (selectedCountry?.id) {
+      const fetchConversionRate = async () => {
+        try {
+          const response = await axios.get(`/api/admin/country-currency?countryId=${selectedCountry.id}`);
+          const currencyData = Array.isArray(response.data) && response.data.length > 0 ? response.data[0] : null;
+          setConversionRate(currencyData?.conversionRate || 1);
+          setCurrencyCode(currencyData?.currencyCode || "INR");
+        } catch (error) {
+          setConversionRate(1);
+          setCurrencyCode("INR");
+          console.error("Error fetching conversion rate:", error);
+        }
+      };
+      fetchConversionRate();
+    } else {
+      setConversionRate(1);
+      setCurrencyCode("INR");
+    }
+  }, [selectedCountry]);
 
 
   useEffect(() => {
@@ -95,8 +117,6 @@ export function HotelModal({ isOpen, onClose, onSave, hotel }: HotelModalProps) 
         city: hotel.destination && hotel.destination.id
           ? hotel.destination.id.toString()
           : "",
-        // country: typeof hotel.country === "object" ? hotel.country.id.toString() : hotel.country.toString(),
-        // city: hotel.destination?.id ? hotel.destination.id.toString() : "",
         starRating: hotel.starRating,
         amenities: amenitiesArray,
         hasMealPlan: hotel.hasMealPlan,
@@ -181,19 +201,6 @@ export function HotelModal({ isOpen, onClose, onSave, hotel }: HotelModalProps) 
                 <span>{selectedCountry?.name}</span>
                 <span className="ml-2 text-xs text-gray-500">{selectedCountry?.currency}</span>
               </div>
-
-              {/* <Select value={formData.country} onValueChange={(value) => updateFormData("country", value)}>
-                <SelectTrigger className="cursor-pointer">
-                  <SelectValue placeholder="Select Country" />
-                </SelectTrigger>
-                <SelectContent className="bg-white text-gray-600">
-                  {countries.map((country) => (
-                    <SelectItem key={country.id} value={country.id.toString()} className="cursor-pointer">
-                      {country.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select> */}
             </div>
 
             <div className="space-y-2">
@@ -293,30 +300,20 @@ export function HotelModal({ isOpen, onClose, onSave, hotel }: HotelModalProps) 
 
             <div className="space-y-2">
               <Label htmlFor="price">Price per Night *</Label>
-              <div className="flex">
-                <Select value={formData.currency} onValueChange={(value) => updateFormData("currency", value)}>
-                  <SelectTrigger className="w-20">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {CURRENCY_OPTIONS.map((currency) => (
-                      <SelectItem key={currency.code} value={currency.code} className="bg-white text-gray-600">
-                        {currency.symbol}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Input
-                  id="price"
-                  type="number"
-                  value={formData.price}
-                  onChange={(e) => updateFormData("price", Number.parseFloat(e.target.value) || 0)}
-                  placeholder="0.00"
-                  min="0"
-                  step="0.01"
-                  className="rounded-l-none"
-                  required
-                />
+              <Input
+                id="price"
+                type="number"
+                value={formData.price}
+                onChange={e => updateFormData("price", Number.parseFloat(e.target.value) || 0)}
+                placeholder="Enter price in INR"
+                min="0"
+                step="0.01"
+                required
+              />
+              <div className="mt-1 text-sm text-gray-600">
+                {currencyCode !== "INR" && (
+                  <>≈ {currencyCode} {(formData.price * conversionRate).toFixed(2)}</>
+                )}
               </div>
             </div>
           </div>
