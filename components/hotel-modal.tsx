@@ -34,9 +34,7 @@ export function HotelModal({ isOpen, onClose, onSave, hotel }: HotelModalProps) 
     currency: "USD",
   })
 
-  const [countries, setCountries] = useState<Country[]>([])
   const [destinations, setDestinations] = useState<Destination[]>([])
-  const [amenityInput, setAmenityInput] = useState("")
   const [loading, setLoading] = useState(false)
   const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
   const [conversionRate, setConversionRate] = useState<number>(1);
@@ -64,39 +62,6 @@ export function HotelModal({ isOpen, onClose, onSave, hotel }: HotelModalProps) 
       setDestinations([]);
     }
   }, [selectedCountry]);
-
-  // Fetch countries when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      const fetchCountries = async () => {
-        try {
-          const response = await axios.get("/api/admin/country")
-          setCountries(response.data.data || [])
-        } catch (error) {
-          console.error("Error fetching countries:", error)
-        }
-      }
-      fetchCountries()
-    }
-  }, [isOpen])
-
-  // Fetch destinations when country changes
-  useEffect(() => {
-    if (formData.country) {
-      const fetchDestinations = async () => {
-        try {
-          const response = await axios.get(`/api/admin/destinations?countryId=${formData.country}`)
-          setDestinations(response.data.destinations || [])
-        } catch (error) {
-          console.error("Error fetching destinations:", error)
-        }
-      }
-      fetchDestinations()
-    } else {
-      setDestinations([])
-    }
-  }, [formData.country])
-
   // Reset city when country changes
   useEffect(() => {
     if (
@@ -107,11 +72,6 @@ export function HotelModal({ isOpen, onClose, onSave, hotel }: HotelModalProps) 
       setFormData((prev) => ({ ...prev, city: "" }));
     }
   }, [formData.country, destinations]);
-  // useEffect(() => {
-  //   if (formData.country && !destinations.some((dest) => dest.id.toString() === formData.city)) {
-  //     setFormData((prev) => ({ ...prev, city: "" }))
-  //   }
-  // }, [formData.country, destinations, formData.city])
 
   // Initialize form data when hotel prop changes
   useEffect(() => {
@@ -127,8 +87,16 @@ export function HotelModal({ isOpen, onClose, onSave, hotel }: HotelModalProps) 
 
       setFormData({
         name: hotel.name,
-        country: typeof hotel.country === "object" ? hotel.country.id.toString() : hotel.country.toString(),
-        city: hotel.destination?.id ? hotel.destination.id.toString() : "",
+        country: hotel.country && typeof hotel.country === "object" && hotel.country.id
+          ? hotel.country.id.toString()
+          : hotel.country
+            ? hotel.country.toString()
+            : "",
+        city: hotel.destination && hotel.destination.id
+          ? hotel.destination.id.toString()
+          : "",
+        // country: typeof hotel.country === "object" ? hotel.country.id.toString() : hotel.country.toString(),
+        // city: hotel.destination?.id ? hotel.destination.id.toString() : "",
         starRating: hotel.starRating,
         amenities: amenitiesArray,
         hasMealPlan: hotel.hasMealPlan,
@@ -256,12 +224,12 @@ export function HotelModal({ isOpen, onClose, onSave, hotel }: HotelModalProps) 
               value={formData.starRating.toString()}
               onValueChange={(value) => updateFormData("starRating", Number.parseInt(value))}
             >
-              <SelectTrigger>
+              <SelectTrigger className="cursor-pointer">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {[1, 2, 3, 4, 5].map((rating) => (
-                  <SelectItem key={rating} value={rating.toString()}>
+                  <SelectItem key={rating} value={rating.toString()} className="bg-white text-gray-600 cursor-pointer">
                     {rating} Star{rating > 1 ? "s" : ""} {"★".repeat(rating)}
                   </SelectItem>
                 ))}

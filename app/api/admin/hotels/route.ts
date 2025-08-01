@@ -21,8 +21,17 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     const { name, starRating, amenities, countryId, destinationId, mealPlan, source,basePricePerNight } = await req.json();
-    if (!name || !countryId || !destinationId) {
-        return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    // if (!name || !countryId || !destinationId) {
+    //     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    // }
+    if(!name){
+        return NextResponse.json({ error: "Hotel name is required" }, { status: 400 });
+    }
+    if(!countryId){
+        return NextResponse.json({ error: "Country ID is required" }, { status: 400 });
+    }
+    if(!destinationId){
+        return NextResponse.json({ error: "Destination ID is required" }, { status: 400 });
     }
     const hotel = await prisma.hotel.create({
         data: {

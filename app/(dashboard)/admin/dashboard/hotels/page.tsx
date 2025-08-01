@@ -76,8 +76,9 @@ export default function HotelDashboard() {
         const response = await axios.get(`/api/admin/hotels?countryId=${countryId}`);
         setHotels(response.data.hotels || []);
       } else {
-        const response = await axios.post("/api/admin/hotels", payload)
-        setHotels(prev => [...prev, response.data.hotel])
+        await axios.post("/api/admin/hotels", payload); 
+        const response = await axios.get(`/api/admin/hotels?countryId=${countryId}`);
+        setHotels(response.data.hotels || []);
       }
 
       handleCloseModal()
