@@ -63,6 +63,7 @@ export default function MealPlansPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const [currentMealPlan, setCurrentMealPlan] = useState<Partial<MealPlan>>({});
+  const [showCustomMealInput, setShowCustomMealInput] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -124,8 +125,18 @@ export default function MealPlansPage() {
     setCurrentMealPlan(prev => ({ ...prev, [name]: value }));
   };
 
+  // const handleSelectChange = (value: string) => {
+  //   setCurrentMealPlan(prev => ({ ...prev, name: value }));
+  // };
+
   const handleSelectChange = (value: string) => {
-    setCurrentMealPlan(prev => ({ ...prev, name: value }));
+    if (value === "Custom") {
+      setShowCustomMealInput(true);
+      setCurrentMealPlan(prev => ({ ...prev, name: '' })); // Clear name for custom input
+    } else {
+      setShowCustomMealInput(false);
+      setCurrentMealPlan(prev => ({ ...prev, name: value }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -163,7 +174,15 @@ export default function MealPlansPage() {
     }
   };
 
+  // const handleEdit = (plan: MealPlan) => {
+  //   setCurrentMealPlan(plan);
+  //   setIsEditing(true);
+  //   setIsModalOpen(true);
+  // };
+
   const handleEdit = (plan: MealPlan) => {
+    const isStandardType = mealTypes.includes(plan.name);
+    setShowCustomMealInput(!isStandardType);
     setCurrentMealPlan(plan);
     setIsEditing(true);
     setIsModalOpen(true);
@@ -182,6 +201,7 @@ export default function MealPlansPage() {
 
   const openCreateModal = () => {
     setCurrentMealPlan({});
+    setShowCustomMealInput(false);
     setIsEditing(false);
     setIsModalOpen(true);
   };
@@ -269,15 +289,29 @@ export default function MealPlansPage() {
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
                 <label className="block text-xs font-medium mb-1 text-gray-600">Meal Type</label>
-                <Select onValueChange={handleSelectChange} value={currentMealPlan.name}>
+                <Select onValueChange={handleSelectChange} value={showCustomMealInput ? "Custom" : currentMealPlan.name || ""}>
                   <SelectTrigger className="focus:ring-2 focus:ring-indigo-500 text-gray-600 cursor-pointer">
                     <SelectValue placeholder="Select a meal type" />
                   </SelectTrigger>
                   <SelectContent className="text-gray-600 bg-white cursor-pointer">
                     {mealTypes.map(type => <SelectItem className="cursor-pointer" key={type} value={type}>{type}</SelectItem>)}
+                    <SelectItem value="Custom">Custom...</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
+              {showCustomMealInput && (
+                <div>
+                  <label className="block text-xs font-medium mb-1 text-gray-600">Custom Meal Name</label>
+                  <Input
+                    name="name"
+                    value={currentMealPlan.name || ''}
+                    onChange={handleInputChange}
+                    placeholder="e.g., Jain Meal, Vegan Dinner"
+                    required
+                    className="text-sm focus:ring-2 focus:ring-indigo-500 text-gray-600"
+                  />
+                </div>
+              )}
               <div>
                 <label className="block text-xs font-medium mb-1 text-gray-600">Description</label>
                 <Textarea
