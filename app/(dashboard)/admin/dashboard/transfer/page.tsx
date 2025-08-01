@@ -72,11 +72,13 @@ export default function TransfersDashboard() {
 
     useEffect(() => {
         async function fetchTransfers() {
-            const res = await axios.get("/api/admin/transfer")
-            setTransfers(res.data)
+            if (selectedCountry?.id) {
+                const res = await axios.get(`/api/admin/transfer?countryId=${selectedCountry.id}`);
+                setTransfers(res.data);
+            }
         }
         fetchTransfers()
-    }, [])
+    }, [selectedCountry])
 
     const filteredTransfers = transfers.filter((transfer) =>
         transfer.type.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -121,7 +123,7 @@ export default function TransfersDashboard() {
             } else {
                 await axios.post("/api/admin/transfer", transferData)
                 toast({ title: "Transfer Added", description: "New transfer has been successfully added.", className: "bg-green-50 border-green-200 text-green-800" })
-            } 
+            }
             const res = await axios.get("/api/admin/transfer")
             setTransfers(res.data)
             setIsModalOpen(false)
@@ -268,7 +270,14 @@ export default function TransfersDashboard() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                    {filteredTransfers.map((transfer, index) => {
+                                    {filteredTransfers.length === 0 ? (
+    <tr>
+      <td colSpan={6} className="py-10 text-center text-gray-500">
+        No transfers found for this country.
+      </td>
+    </tr>
+  ) : (
+                                    (filteredTransfers.map((transfer, index) => {
                                         const converted = transfer.priceInINR && conversionRate
                                             ? (transfer.priceInINR * conversionRate).toLocaleString(undefined, { maximumFractionDigits: 2 })
                                             : "0";
@@ -325,7 +334,8 @@ export default function TransfersDashboard() {
                                                 </td>
                                             </tr>
                                         )
-                                    })}
+                                    }))
+                                )}
                                 </tbody>
                             </table>
                         </div>

@@ -7,13 +7,27 @@ interface DecodedToken {
     name?: string; email?: string; role?: string
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const countryId = searchParams.get("countryId");
+
+  const where = countryId ? { countryId: Number(countryId) } : {};
+
   const transfers = await prisma.transfer.findMany({
+    where,
     include: { country: true },
     orderBy: { createdAt: "desc" },
   });
+
   return NextResponse.json(transfers);
 }
+// export async function GET() {
+//   const transfers = await prisma.transfer.findMany({
+//     include: { country: true },
+//     orderBy: { createdAt: "desc" },
+//   });
+//   return NextResponse.json(transfers);
+// }
 export async function POST(request: NextRequest) {
     const cookieStore = await cookies();
     const token = cookieStore.get("auth_token")?.value;
