@@ -29,7 +29,7 @@ export function SearchAndActions({ searchTerm, onSearchChange, onAddHotel }: Sea
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3">
-          <Button
+          {/* <Button
             variant="outline"
             className="flex items-center cursor-pointer gap-2 bg-white/80 backdrop-blur-sm border-2 border-purple-200 text-purple-700 hover:bg-purple-50 hover:border-purple-300 hover:text-purple-800 transition-all duration-200 shadow-sm hover:shadow-md rounded-xl px-4 py-2.5 font-medium"
           >
@@ -43,7 +43,7 @@ export function SearchAndActions({ searchTerm, onSearchChange, onAddHotel }: Sea
           >
             <Download className="w-4 h-4" />
             Export
-          </Button>
+          </Button> */}
 
           <Button
             onClick={onAddHotel}

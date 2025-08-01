@@ -57,7 +57,12 @@ export function HotelTable({ hotels, onEdit, onDelete, loading, conversionRate, 
     <div className="bg-white shadow-sm overflow-hidden border border-gray-200">
       <div className="overflow-x-auto max-h-[500px]">
         <table className="w-full">
-          <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+            <thead
+            className="border-b border-gray-200 sticky top-0 z-10"
+            style={{
+              background: "linear-gradient(90deg, #f9fafb 0%, #e0e7ff 50%, #fce7f3 100%)"
+            }}
+            >
             <tr>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Hotel Details</th>
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Location</th>
@@ -68,7 +73,7 @@ export function HotelTable({ hotels, onEdit, onDelete, loading, conversionRate, 
               <th className="px-6 py-4 text-left text-sm font-semibold text-gray-900">Price</th>
               <th className="px-6 py-4 text-center text-sm font-semibold text-gray-900">Actions</th>
             </tr>
-          </thead>
+            </thead>
           <tbody className="divide-y divide-gray-200">
             {hotels.map((hotel, index) => {
               const amenitiesArray = parseAmenities(hotel.amenities)
