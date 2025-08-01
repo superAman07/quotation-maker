@@ -201,9 +201,11 @@ model Transfer {
 
 model MealPlan {
   id            Int     @id @default(autoincrement())
-  code          String  @unique
+  name          String  @unique
   description   String?
   ratePerPerson Float
+  countryId     Int      
+  country       Country  @relation(fields: [countryId], references: [id])
 
   quotations Quotation[]
 }
@@ -347,6 +349,7 @@ model Country {
   hotels            Hotel[]
   transfers         Transfer[]
   activities        Activity[]
+  mealPlans         MealPlan[]
 }
 
 model CountryCurrency {
