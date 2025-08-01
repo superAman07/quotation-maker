@@ -8,33 +8,17 @@ import { HotelPayload } from '@/types/hotel'
 import { SearchAndActions } from '@/components/search-and-actions'
 import { HotelTable } from '@/components/hotel-table'
 import { HotelModal } from '@/components/hotel-modal'
+import { toast } from "@/hooks/use-toast"
 
 export default function HotelDashboard() {
   const [hotels, setHotels] = useState<Hotel[]>([])
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingHotel, setEditingHotel] = useState<Hotel | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
-  const [destinations, setDestinations] = useState<{ id: number; name: string; country?: string }[]>([])
   const [loading, setLoading] = useState(false)
 
   const searchParams = useSearchParams()
   const countryId = searchParams.get("countryId")
-
-  // Fetch destinations when countryId changes
-  useEffect(() => {
-    if (!countryId) return
-
-    const fetchDestinations = async () => {
-      try {
-        const response = await axios.get(`/api/admin/destinations?countryId=${countryId}`)
-        setDestinations(response.data.destinations || [])
-      } catch (error) {
-        console.error('Error fetching destinations:', error)
-      }
-    }
-
-    fetchDestinations()
-  }, [countryId])
 
   // Fetch hotels when countryId changes
   useEffect(() => {
@@ -46,6 +30,11 @@ export default function HotelDashboard() {
         const response = await axios.get(`/api/admin/hotels?countryId=${countryId}`)
         setHotels(response.data.hotels || [])
       } catch (error) {
+        toast({
+          title: "Error!",
+          description: "Failed to load hotels",
+          variant: "destructive",
+        })
         console.error('Error fetching hotels:', error)
       } finally {
         setLoading(false)
@@ -72,17 +61,32 @@ export default function HotelDashboard() {
       }
 
       if (editingHotel) {
-        await axios.put(`/api/admin/hotels/${editingHotel.id}`, payload); 
+        await axios.put(`/api/admin/hotels/${editingHotel.id}`, payload);
         const response = await axios.get(`/api/admin/hotels?countryId=${countryId}`);
         setHotels(response.data.hotels || []);
+        toast({
+          title: "Success!",
+          description: "Hotel updated successfully.",
+          variant: "success",
+        });
       } else {
-        await axios.post("/api/admin/hotels", payload); 
+        await axios.post("/api/admin/hotels", payload);
         const response = await axios.get(`/api/admin/hotels?countryId=${countryId}`);
         setHotels(response.data.hotels || []);
+        toast({
+          title: "Success!",
+          description: "Hotel added successfully.",
+          variant: "success",
+        });
       }
 
       handleCloseModal()
     } catch (error) {
+      toast({
+        title: "Error!",
+        description: "Failed to save hotel.",
+        variant: "destructive",
+      })
       console.error('Error saving hotel:', error)
     }
   }
@@ -100,7 +104,17 @@ export default function HotelDashboard() {
     try {
       await axios.delete(`/api/admin/hotels/${hotelId}`)
       setHotels(prev => prev.filter(hotel => String(hotel.id) !== String(hotelId)))
+      toast({
+        title: "Success!",
+        description: "Hotel deleted successfully.",
+        variant: "success",
+      })
     } catch (error) {
+      toast({
+        title: "Error!",
+        description: "Failed to delete hotel.",
+        variant: "destructive",
+      })
       console.error('Error deleting hotel:', error)
     }
   }
