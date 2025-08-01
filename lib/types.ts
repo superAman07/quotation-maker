@@ -20,12 +20,30 @@ export interface Venue {
 }
 
 export interface Hotel {
-  id: number
-  name: string
-  starRating?: number
-  amenities?: string
-  imageUrl?: string
-  destinationId?: string
+  id: number;
+  name: string;
+  starRating: number;
+  amenities: string | string[];
+  mealPlan: string;
+  source?: string;
+  countryId: number;
+  destinationId: number;
+  basePricePerNight: number;
+  country: {
+    id: number;
+    name: string;
+    code?: string;
+    flag?: string;
+    currency?: string;
+  };
+  destination: {
+    id: number;
+    name: string;
+    state?: string;
+    countryId?: number;
+    description?: string;
+    imageUrl?: string;
+  };
 }
 
 export interface HotelRateCard {
