@@ -48,14 +48,13 @@ model Quotation {
   destinationId Int?
   destination   Destination? @relation(fields: [destinationId], references: [id])
 
-  flightRouteId Int?
-  flightRoute   FlightRoute? @relation(fields: [flightRouteId], references: [id])
+  flightRoute   String?
 
   intercityVehicleId Int?
-  intercityVehicle   VehicleType? @relation("IntercityVehicle", fields: [intercityVehicleId], references: [id])
+  intercityVehicle   Transfer? @relation("IntercityVehicle", fields: [intercityVehicleId], references: [id])
 
   localVehicleId Int?
-  localVehicle   VehicleType? @relation("LocalVehicle", fields: [localVehicleId], references: [id])
+  localVehicle   Transfer? @relation("LocalVehicle", fields: [localVehicleId], references: [id])
 
   mealPlanId  Int?
   mealPlanRef MealPlan? @relation(fields: [mealPlanId], references: [id])
@@ -79,9 +78,6 @@ model Accommodation {
   nights      Int
   quotation   Quotation @relation(fields: [quotationId], references: [id])
   quotationId String
-
-  venueId Int?
-  venue   Venue? @relation(fields: [venueId], references: [id])
 
   hotelId Int?
   hotel   Hotel? @relation(fields: [hotelId], references: [id])
@@ -161,35 +157,21 @@ model Destination {
   packages            Package[]
   quotations          Quotation[]
   fullyPackedPackages FullyPackedPackage[]
-  hotels              Hotel[]  
-}
-
-// not required
-model Venue {
-  id          Int     @id @default(autoincrement())
-  name        String
-  address     String?
-  coordinates String?
-  description String?
-  imageUrl    String?
-
-  // destination   Destination @relation(fields: [destinationId], references: [id])
-  destinationId Int
-
-  accommodations Accommodation[]
-  // Hotel          Hotel[]
+  hotels              Hotel[]
 }
 
 model Hotel {
-  id         Int     @id @default(autoincrement())
-  name       String
-  starRating Int?
-  amenities  String?
-  imageUrl   String?
-  countryId     Int?
-  country       Country? @relation(fields: [countryId], references: [id])
-  destinationId Int?
-  destination   Destination? @relation(fields: [destinationId], references: [id])
+  id                Int          @id @default(autoincrement())
+  name              String
+  starRating        Int?
+  amenities         String?
+  mealPlan          String?      @default("No")
+  source            String?
+  countryId         Int?
+  country           Country?     @relation(fields: [countryId], references: [id])
+  destinationId     Int?
+  destination       Destination? @relation(fields: [destinationId], references: [id])
+  basePricePerNight Float?
 
   rateCards     HotelRateCard[]
   Accommodation Accommodation[]
@@ -204,32 +186,17 @@ model HotelRateCard {
   rate     Float
 }
 
-// not required
-model FlightRoute {
-  id          Int     @id @default(autoincrement())
-  origin      String
-  destination String
-  baseFare    Float
-  airline     String?
-  imageUrl    String?
+model Transfer {
+  id             Int      @id @default(autoincrement())
+  type           String   
+  priceInINR     Float
+  countryId      Int
+  country        Country  @relation(fields: [countryId], references: [id])
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  quotations Quotation[]
-}
-
-enum VehicleCategory {
-  INTERCITY
-  LOCAL
-}
-
-model VehicleType {
-  id         Int             @id @default(autoincrement())
-  type       String
-  category   VehicleCategory @default(INTERCITY)
-  ratePerDay Float?
-  ratePerKm  Float?
-
-  quotationsIntercity Quotation[] @relation("IntercityVehicle")
-  quotationsLocal     Quotation[] @relation("LocalVehicle")
+  intercityVehicleQuotations Quotation[] @relation("IntercityVehicle")
+  localVehicleQuotations Quotation[] @relation("LocalVehicle")
 }
 
 model MealPlan {
@@ -365,7 +332,8 @@ model Country {
   currency          String
   destinations      Destination[]
   countryCurrencies CountryCurrency[]
-  hotels            Hotel[]           // Added relation field for Hotel
+  hotels            Hotel[]
+  transfers         Transfer[]
 }
 
 model CountryCurrency {
