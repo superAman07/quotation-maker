@@ -153,9 +153,9 @@ export default function TransfersDashboard() {
                 </div>
 
                 {/* Controls */}
-                <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
+                <div className="bg-gray-100 rounded-2xl shadow-xl p-6 mb-6">
                     <div className="flex flex-col sm:flex-row gap-4 justify-between items-center">
-                        <div className="relative flex-1 max-w-md">
+                        <div className="relative flex-1 bg-white max-w-md">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
                             <Input
                                 placeholder="Search transfers..."
@@ -250,7 +250,7 @@ export default function TransfersDashboard() {
                 </div>
 
                 {/* Table */}
-                <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+                <div className="bg-white rounded shadow-xl overflow-hidden">
                     <div className="h-96 overflow-hidden">
                         <div className="h-full overflow-y-auto">
                             <table className="w-full">
