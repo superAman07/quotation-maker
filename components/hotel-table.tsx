@@ -147,7 +147,7 @@ export function HotelTable({ hotels, onEdit, onDelete, loading }: HotelTableProp
                         onClick={() => onEdit(hotel)}
                         className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                       >
-                        <Edit2 className="w-4 h-4" />
+                        <Edit2 className="w-4 h-4 cursor-pointer" />
                       </Button>
                       <Button
                         variant="ghost"
@@ -155,7 +155,7 @@ export function HotelTable({ hotels, onEdit, onDelete, loading }: HotelTableProp
                         onClick={() => onDelete(hotel.id)}
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4 cursor-pointer" />
                       </Button>
                     </div>
                   </td>
