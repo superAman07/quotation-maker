@@ -78,7 +78,7 @@ export const ServiceCards = ({ selectedCountry }: any) => {
     'Add-ons': '/admin/dashboard/add-ons',
   };
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {services.map((service, index) => {
         const Icon = service.icon;
         return (
