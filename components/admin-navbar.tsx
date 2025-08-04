@@ -183,15 +183,6 @@ export function AdminNavbar() {
             <div className="flex items-center flex-shrink-0">
               <Link href="/admin/dashboard" className="flex items-center space-x-3 group">
                 <Image src="/logo.png" alt="Logo" width={200} height={100} className="rounded-full" />
-                {/* <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
-                  <Route className="size-5" />
-                </div>
-                <div className="hidden sm:block">
-                  <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Travomine
-                  </span>
-                  <div className="text-xs text-gray-500 font-medium">Admin Portal</div>
-                </div> */}
               </Link>
             </div>
 
