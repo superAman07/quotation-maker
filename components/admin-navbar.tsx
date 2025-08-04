@@ -22,6 +22,7 @@ import {
   SettingsIcon,
   User,
   Plus,
+  User2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -73,14 +74,14 @@ const navigationItems = [
       { title: "Exclusion Templates", href: "/admin/dashboard/exclusion-templates", icon: FileText },
     ],
   },
-  {
-    title: "Settings",
-    icon: Percent,
-    items: [
-      { title: "Pricing Rules", href: "/admin/dashboard/pricing-rules", icon: Percent },
-      { title: "Users & Roles", href: "/admin/dashboard/users", icon: Users },
-    ],
-  },
+  // {
+  //   title: "Settings",
+  //   icon: Percent,
+  //   items: [
+  //     { title: "Pricing Rules", href: "/admin/dashboard/pricing-rules", icon: Percent },
+  //     { title: "Users & Roles", href: "/admin/dashboard/users", icon: Users },
+  //   ],
+  // },
 ]
 
 function useHoverDropdown() {
@@ -256,47 +257,47 @@ export function AdminNavbar() {
                   )}
                 </div>
               ))}
-            <Button
-              variant="outline"
-              className="ml-2 mt-0 cursor-pointer bg-gradient-to-br from-blue-600 to-purple-600 text-white flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
-              onClick={() => setShowCountryManager(true)}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Country
-            </Button>
+              <Button
+                variant="outline"
+                className="ml-2 mt-0 cursor-pointer bg-gradient-to-br from-blue-600 to-purple-600 text-white flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                onClick={() => setShowCountryManager(true)}
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Country
+              </Button>
 
-            <div className="hidden md:flex items-center space-x-4">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="relative p-0 h-8 w-8 cursor-pointer rounded-full hover:bg-blue-50 transition-colors"
+              <div className="hidden md:flex items-center space-x-4">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="relative p-0 h-8 w-8 cursor-pointer rounded-full hover:bg-blue-50 transition-colors"
+                    >
+                      <div className="h-8 w-8 p-0 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 text-white flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                        <User className="h-5 w-5" />
+                      </div>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-48 mt-2 bg-white/95 backdrop-blur-md border border-gray-200 shadow-xl rounded-xl"
                   >
-                    <div className="h-8 w-8 p-0 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 text-white flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-                      <User className="h-5 w-5" />
-                    </div>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  align="end"
-                  className="w-48 mt-2 bg-white/95 backdrop-blur-md border border-gray-200 shadow-xl rounded-xl"
-                >
-                  <DropdownMenuItem className="flex items-center px-3 py-3 rounded-lg mx-1 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                    <User className="h-4 w-4 mr-3" />
-                    Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex items-center px-3 py-3 rounded-lg mx-1 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
-                    <SettingsIcon className="h-4 w-4 mr-3" />
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="mx-2" />
-                  <DropdownMenuItem className="flex items-center px-3 py-3 rounded-lg mx-1 text-red-600 hover:bg-red-50">
-                    <LogOut className="h-4 w-4 mr-3" />
-                    Logout
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                    {/* <DropdownMenuItem className="flex items-center px-3 py-3 rounded-lg mx-1 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                      <User className="h-4 w-4 mr-3" />
+                      Profile
+                    </DropdownMenuItem> */}
+                    <DropdownMenuItem className="flex items-center px-3 py-3 rounded-lg mx-1 text-gray-700 hover:bg-blue-50 hover:text-blue-600">
+                      <Link href='/admin/dashboard/users' className="flex items-center w-full space-x-2">
+                        <User2 className="h-4 w-4 mr-3" /> <span className="mt-0.5">Employees</span>
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="flex items-center px-3 py-3 rounded-lg mx-1 text-red-600 hover:bg-red-50">
+                      <LogOut className="h-4 w-4 mr-3" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
             </div>
 
 

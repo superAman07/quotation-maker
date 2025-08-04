@@ -48,7 +48,7 @@ model Quotation {
   destinationId Int?
   destination   Destination? @relation(fields: [destinationId], references: [id])
 
-  flightRoute   String?
+  flightRoute String?
 
   intercityVehicleId Int?
   intercityVehicle   Transfer? @relation("IntercityVehicle", fields: [intercityVehicleId], references: [id])
@@ -142,8 +142,6 @@ enum UserStatus {
   INACTIVE
 }
 
-// Models for travel services
-
 model Destination {
   id          Int      @id @default(autoincrement())
   name        String   @unique
@@ -153,11 +151,9 @@ model Destination {
   description String?
   imageUrl    String?
 
-  // venues              Venue[]
-  packages            Package[]
-  quotations          Quotation[]
-  fullyPackedPackages FullyPackedPackage[]
-  hotels              Hotel[]
+  packages   Package[]
+  quotations Quotation[]
+  hotels     Hotel[]
 }
 
 model Hotel {
@@ -187,16 +183,16 @@ model HotelRateCard {
 }
 
 model Transfer {
-  id             Int      @id @default(autoincrement())
-  type           String   
-  priceInINR     Float
-  countryId      Int
-  country        Country  @relation(fields: [countryId], references: [id])
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id         Int      @id @default(autoincrement())
+  type       String
+  priceInINR Float
+  countryId  Int
+  country    Country  @relation(fields: [countryId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   intercityVehicleQuotations Quotation[] @relation("IntercityVehicle")
-  localVehicleQuotations Quotation[] @relation("LocalVehicle")
+  localVehicleQuotations     Quotation[] @relation("LocalVehicle")
 }
 
 model MealPlan {
@@ -204,8 +200,8 @@ model MealPlan {
   name          String  @unique
   description   String?
   ratePerPerson Float
-  countryId     Int      
-  country       Country  @relation(fields: [countryId], references: [id])
+  countryId     Int
+  country       Country @relation(fields: [countryId], references: [id])
 
   quotations Quotation[]
 }
@@ -251,79 +247,6 @@ model MarkupRule {
   id          Int         @id @default(autoincrement())
   serviceType ServiceType
   percentage  Float
-}
-
-model Discount {
-  id          Int      @id @default(autoincrement())
-  code        String   @unique
-  description String?
-  percentage  Float
-  validFrom   DateTime
-  validTo     DateTime
-}
-
-model Tax {
-  id          Int         @id @default(autoincrement())
-  serviceType ServiceType
-  percentage  Float
-}
-
-// Fully Packed Package Models
-model FullyPackedPackage {
-  id            Int         @id @default(autoincrement())
-  name          String
-  description   String?
-  destination   Destination @relation(fields: [destinationId], references: [id])
-  destinationId Int
-
-  mealPlan            String?
-  vehicleUsed         String?
-  localVehicleUsed    String?
-  flightCostPerPerson Float?
-  landCostPerPerson   Float?
-  totalNights         Int?
-  accommodations      FullyPackedPackageAccommodation[]
-  itinerary           FullyPackedPackageItinerary[]
-  inclusions          FullyPackedPackageInclusion[]
-  exclusions          FullyPackedPackageExclusion[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model FullyPackedPackageAccommodation {
-  id        Int    @id @default(autoincrement())
-  location  String
-  hotelName String
-  nights    Int
-
-  package   FullyPackedPackage @relation(fields: [packageId], references: [id])
-  packageId Int
-}
-
-model FullyPackedPackageItinerary {
-  id          Int    @id @default(autoincrement())
-  dayTitle    String
-  description String
-
-  package   FullyPackedPackage @relation(fields: [packageId], references: [id])
-  packageId Int
-}
-
-model FullyPackedPackageInclusion {
-  id   Int    @id @default(autoincrement())
-  item String
-
-  package   FullyPackedPackage @relation(fields: [packageId], references: [id])
-  packageId Int
-}
-
-model FullyPackedPackageExclusion {
-  id   Int    @id @default(autoincrement())
-  item String
-
-  package   FullyPackedPackage @relation(fields: [packageId], references: [id])
-  packageId Int
 }
 
 model Activity {
