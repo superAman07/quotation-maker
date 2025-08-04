@@ -73,14 +73,14 @@ const navigationItems = [
       { title: "Exclusion Templates", href: "/admin/dashboard/exclusion-templates", icon: FileText },
     ],
   },
-  {
-    title: "Settings",
-    icon: Percent,
-    items: [
-      { title: "Pricing Rules", href: "/admin/dashboard/pricing-rules", icon: Percent },
-      { title: "Users & Roles", href: "/admin/dashboard/users", icon: Users },
-    ],
-  },
+  // {
+  //   title: "Settings",
+  //   icon: Percent,
+  //   items: [
+  //     { title: "Pricing Rules", href: "/admin/dashboard/pricing-rules", icon: Percent },
+  //     { title: "Users & Roles", href: "/admin/dashboard/users", icon: Users },
+  //   ],
+  // },
 ]
 
 function useHoverDropdown() {
