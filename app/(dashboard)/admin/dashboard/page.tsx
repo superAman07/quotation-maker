@@ -11,8 +11,7 @@ import React, { useEffect, useState } from 'react';
 
 const Index = () => {
   const [countries, setCountries] = useState<Country[]>([]);
-  const { selectedCountry, setSelectedCountry } = useSelectedCountry();
-  // const [isLoading, setIsLoading] = useState(true);
+  const { selectedCountry, setSelectedCountry } = useSelectedCountry(); 
 
   useEffect(() => {
     const fetchCountries = async () => {
@@ -25,8 +24,7 @@ const Index = () => {
         }
       } catch (err) {
         setCountries([]);
-      } finally {
-        // setIsLoading(false);
+      } finally { 
       }
     };
     fetchCountries();
@@ -71,10 +69,10 @@ const Index = () => {
         </div>
 
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <RecentActivity />
           <QuickActions />
-        </div>
+        </div> */}
       </div>
     </div>
   );
