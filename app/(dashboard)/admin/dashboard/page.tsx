@@ -71,10 +71,10 @@ const Index = () => {
         </div>
 
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <RecentActivity />
           <QuickActions />
-        </div>
+        </div> */}
       </div>
     </div>
   );
