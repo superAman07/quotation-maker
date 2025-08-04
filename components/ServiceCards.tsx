@@ -8,58 +8,58 @@ const services = [
     title: 'Add City',
     icon: MapPin,
     description: 'Manage destinations and cities',
-    gradient: 'bg-gradient-to-r from-blue-500 to-blue-400',
-    color: '#667eea'
+    gradient: 'bg-gradient-to-r from-blue-600 to-blue-500',
+    color: '#3b5bdb'
   },
   {
     title: 'Accommodation',
     icon: Hotel,
     description: 'Hotels and lodging',
-    gradient: 'bg-gradient-to-r from-purple-400 to-blue-500',
-    color: '#4facfe'
+    gradient: 'bg-gradient-to-r from-purple-500 to-blue-600',
+    color: '#3182ce'
   },
   {
     title: 'Transfer',
     icon: Car,
     description: 'Transportation services',
-    gradient: 'bg-gradient-to-r from-green-400 to-green-600',
-    color: '#56ab2f'
+    gradient: 'bg-gradient-to-r from-green-500 to-green-700',
+    color: '#2f855a'
   },
   {
     title: 'Activities',
     icon: Compass,
     description: 'Tours and experiences',
-    gradient: 'bg-gradient-to-r from-orange-400 to-pink-500',
-    color: '#f093fb'
+    gradient: 'bg-gradient-to-r from-orange-500 to-pink-600',
+    color: '#d53f8c'
   },
   {
     title: 'Meal Plans',
     icon: Plus,  
     description: 'Meal plans and food options',
-    gradient: 'bg-gradient-to-r from-yellow-400 to-orange-400',
-    color: '#f6d365'
+    gradient: 'bg-gradient-to-r from-yellow-500 to-orange-500',
+    color: '#dd6b20'
   },
   {
     title: 'Add-ons',
     icon: Plus,
     description: 'Extra services and amenities',
-    gradient: 'bg-gradient-to-r from-pink-400 to-yellow-300',
-    color: '#ffecd2'
+    gradient: 'bg-gradient-to-r from-pink-500 to-yellow-400',
+    color: '#d69e2e'
   },
   {
     title: 'Packages',
     icon: Package,
     description: 'Pre-built travel packages',
-    gradient: 'bg-gradient-to-r from-blue-400 to-green-400',
-    color: '#43e97b'
+    gradient: 'bg-gradient-to-r from-blue-500 to-green-500',
+    color: '#38a169'
   },
-  {
-    title: 'Custom Packages',
-    icon: Package2,
-    description: 'Fully customized packages',
-    gradient: 'bg-gradient-to-r from-purple-400 to-pink-400',
-    color: '#fa709a'
-  }
+  // {
+  //   title: 'Custom Packages',
+  //   icon: Package2,
+  //   description: 'Fully customized packages',
+  //   gradient: 'bg-gradient-to-r from-purple-400 to-pink-400',
+  //   color: '#fa709a'
+  // }
 ];
 
 export const ServiceCards = ({ selectedCountry }: any) => {
