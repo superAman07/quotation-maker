@@ -12,23 +12,33 @@ import React, { useEffect, useState } from 'react';
 const Index = () => {
   const [countries, setCountries] = useState<Country[]>([]);
   const { selectedCountry, setSelectedCountry } = useSelectedCountry();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const res = await axios.get('/api/admin/country');
-        setCountries(res.data.data || []); 
+        const minDelay = new Promise(resolve => setTimeout(resolve, 1000));
+        const fetchPromise = axios.get('/api/admin/country');
+        const [_, res] = await Promise.all([minDelay, fetchPromise]);
+
+        setCountries(res.data.data || []);
         if (!selectedCountry && res.data.data && res.data.data.length > 0) {
           setSelectedCountry(res.data.data[0]);
         }
-      } catch (err) { 
+      } catch (err) {
         setCountries([]);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchCountries();
   }, [])
 
-  if (!selectedCountry) return <div>Loading...</div>;
+  if (isLoading || !selectedCountry) return (
+    <div className="loader-container">
+      <div className="loader"></div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -37,10 +47,12 @@ const Index = () => {
           <div className="flex items-center gap-4">
             <div className="text-4xl text-gray-500">{selectedCountry?.flag}</div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">
+              <h1 className="text-4xl font-bold text-transparent bg-gradient-to-r from-blue-600 to-purple-600 text-mask"
+                style={{ backgroundImage: "url('/mountain-image.jpg')" }}>
                 {selectedCountry?.name} Dashboard
               </h1>
-              <p className="text-gray-600">Manage travel services for {selectedCountry?.name}</p>
+              <p className="text-lg font-semi-bold text-transparent bg-gradient-to-r from-blue-600 to-purple-600 text-mask"
+                style={{ backgroundImage: "url('/mountain-image.jpg')" }}>Manage travel services for {selectedCountry?.name}</p>
             </div>
           </div>
 
@@ -55,7 +67,7 @@ const Index = () => {
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Travel Services</h2>
           <ServiceCards selectedCountry={selectedCountry} />
         </div>
-        
+
         <div className="mb-8">
           <CurrencyConverter selectedCountry={selectedCountry} />
         </div>
