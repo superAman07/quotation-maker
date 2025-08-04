@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import {
   Building2,
   Car,
@@ -181,7 +182,8 @@ export function AdminNavbar() {
           <div className="flex justify-between h-16">
             <div className="flex items-center flex-shrink-0">
               <Link href="/admin/dashboard" className="flex items-center space-x-3 group">
-                <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
+                <Image src="/logo.png" alt="Logo" width={200} height={100} className="rounded-full" />
+                {/* <div className="flex aspect-square size-10 items-center justify-center rounded-xl bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-105">
                   <Route className="size-5" />
                 </div>
                 <div className="hidden sm:block">
@@ -189,7 +191,7 @@ export function AdminNavbar() {
                     Travomine
                   </span>
                   <div className="text-xs text-gray-500 font-medium">Admin Portal</div>
-                </div>
+                </div> */}
               </Link>
             </div>
 

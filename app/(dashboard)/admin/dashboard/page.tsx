@@ -31,7 +31,7 @@ const Index = () => {
   if (!selectedCountry) return <div>Loading...</div>;
 
   return (
-    <div className="min-h-screen  bg-gray-50">
+    <div className="min-h-screen bg-gray-50">
       <div className="pt-20 p-4 sm:p-6 lg:p-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
