@@ -46,9 +46,8 @@ export function HotelTable({ hotels, onEdit, onDelete, loading, conversionRate, 
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-4 text-gray-600">Loading hotels...</p>
+      <div className="bg-white rounded-xl w-full flex justify-center shadow-sm p-8 text-center text-gray-600">
+        <div className="mini-loader"></div>
       </div>
     )
   }

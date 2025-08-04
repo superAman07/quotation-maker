@@ -280,7 +280,9 @@ export default function ActivitiesPage() {
                                 {isLoading ? (
                                     <tr>
                                         <td colSpan={5} className="text-center p-4 text-gray-600">
-                                            Loading...
+                                            <div className="flex justify-center">
+                                                <div className="mini-loader"></div>
+                                            </div>
                                         </td>
                                     </tr>
                                 ) : filteredActivities.length === 0 ? (

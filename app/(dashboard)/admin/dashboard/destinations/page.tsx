@@ -321,9 +321,8 @@ export default function DestinationsPage() {
         <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-hidden">
           {loading ? (
             <div className="text-center py-16">
-              <div className="inline-flex items-center gap-3 text-slate-500">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                <span className="text-lg">Loading destinations...</span>
+              <div className="inline-flex items-center gap-3 text-slate-500"> 
+                <div className="mini-loader"></div>
               </div>
             </div>
           ) : destinations.length === 0 ? (

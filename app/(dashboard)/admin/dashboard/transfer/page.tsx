@@ -43,6 +43,7 @@ export default function TransfersDashboard() {
     const [selectedCountry, setSelectedCountry] = useState<Country | null>(null);
     const [conversionRate, setConversionRate] = useState(1);
     const [currencyCode, setCurrencyCode] = useState("INR");
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (typeof window !== "undefined") {
@@ -50,16 +51,38 @@ export default function TransfersDashboard() {
             setSelectedCountry(stored ? JSON.parse(stored) : null);
         }
     }, []);
+ 
 
     useEffect(() => {
-        if (selectedCountry?.id) {
-            axios.get(`/api/admin/country-currency?countryId=${selectedCountry.id}`)
-                .then(res => {
-                    const currencyData = Array.isArray(res.data) && res.data.length > 0 ? res.data[0] : null;
-                    setConversionRate(currencyData?.conversionRate || 1);
-                    setCurrencyCode(currencyData?.currencyCode || "INR");
-                });
+        if (!selectedCountry?.id) {
+            setLoading(false);
+            setTransfers([]);
+            return;
         }
+
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const [transfersRes, currencyRes] = await Promise.all([
+                    axios.get(`/api/admin/transfer?countryId=${selectedCountry.id}`),
+                    axios.get(`/api/admin/country-currency?countryId=${selectedCountry.id}`)
+                ]);
+
+                setTransfers(transfersRes.data);
+
+                const currencyData = Array.isArray(currencyRes.data) && currencyRes.data.length > 0 ? currencyRes.data[0] : null;
+                setConversionRate(currencyData?.conversionRate || 1);
+                setCurrencyCode(currencyData?.currencyCode || "INR");
+
+            } catch (error) {
+                console.error("Failed to fetch initial data:", error);
+                toast({ title: "Error", description: "Could not load transfer data.", variant: "destructive" });
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, [selectedCountry]);
 
     useEffect(() => {
@@ -68,17 +91,7 @@ export default function TransfersDashboard() {
             const country = JSON.parse(stored);
             setFormData((prev) => ({ ...prev, countryId: country.id }));
         }
-    }, [isModalOpen])
-
-    useEffect(() => {
-        async function fetchTransfers() {
-            if (selectedCountry?.id) {
-                const res = await axios.get(`/api/admin/transfer?countryId=${selectedCountry.id}`);
-                setTransfers(res.data);
-            }
-        }
-        fetchTransfers()
-    }, [selectedCountry])
+    }, [isModalOpen]) 
 
     const filteredTransfers = transfers.filter((transfer) =>
         transfer.type.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -257,7 +270,7 @@ export default function TransfersDashboard() {
                         <div className="h-full overflow-y-auto">
                             <table className="w-full">
                                 <thead
-                                    className="sticky top-0 z-10 bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 text-white" 
+                                    className="sticky top-0 z-10 bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 text-white"
                                 >
                                     <tr>
                                         <th className="px-6 py-4 text-left text-sm font-semibold text-white">Transfer Type</th>
@@ -269,7 +282,13 @@ export default function TransfersDashboard() {
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                    {filteredTransfers.length === 0 ? (
+                                    {loading ? (<tr>
+                                        <td colSpan={6} className="py-10 text-center text-gray-500">
+                                            <div className="flex justify-center">
+                                                <div className="mini-loader"></div>
+                                            </div>
+                                        </td>
+                                    </tr>) : filteredTransfers.length === 0 ? (
                                         <tr>
                                             <td colSpan={6} className="py-10 text-center text-gray-500">
                                                 No transfers found for this country.

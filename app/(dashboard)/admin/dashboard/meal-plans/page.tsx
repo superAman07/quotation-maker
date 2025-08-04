@@ -240,7 +240,7 @@ export default function MealPlansPage() {
               </thead>
               <tbody>
                 {isLoading ? (
-                  <tr><td colSpan={4} className="text-center text-gray-600 p-4">Loading...</td></tr>
+                  <tr><td colSpan={4} className="text-center text-gray-600 p-4"><div className="flex justify-center"><div className="mini-loader"></div></div></td></tr>
                 ) : filteredMealPlans.length === 0 ? (
                   <tr><td colSpan={4} className="text-center text-gray-600 p-4">No meal plans found.</td></tr>
                 ) : (
