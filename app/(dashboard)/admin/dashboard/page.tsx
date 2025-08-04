@@ -12,14 +12,12 @@ import React, { useEffect, useState } from 'react';
 const Index = () => {
   const [countries, setCountries] = useState<Country[]>([]);
   const { selectedCountry, setSelectedCountry } = useSelectedCountry();
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchCountries = async () => {
-      try {
-        const minDelay = new Promise(resolve => setTimeout(resolve, 1000));
-        const fetchPromise = axios.get('/api/admin/country');
-        const [_, res] = await Promise.all([minDelay, fetchPromise]);
+      try { 
+        const res = await axios.get('/api/admin/country'); 
 
         setCountries(res.data.data || []);
         if (!selectedCountry && res.data.data && res.data.data.length > 0) {
@@ -28,13 +26,13 @@ const Index = () => {
       } catch (err) {
         setCountries([]);
       } finally {
-        setIsLoading(false);
+        // setIsLoading(false);
       }
     };
     fetchCountries();
   }, [])
 
-  if (isLoading || !selectedCountry) return (
+  if (!selectedCountry) return (
     <div className="loader-container">
       <div className="loader"></div>
     </div>
