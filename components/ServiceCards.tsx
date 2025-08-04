@@ -52,14 +52,7 @@ const services = [
     description: 'Pre-built travel packages',
     gradient: 'bg-gradient-to-r from-blue-500 to-green-500',
     color: '#38a169'
-  },
-  // {
-  //   title: 'Custom Packages',
-  //   icon: Package2,
-  //   description: 'Fully customized packages',
-  //   gradient: 'bg-gradient-to-r from-purple-400 to-pink-400',
-  //   color: '#fa709a'
-  // }
+  }, 
 ];
 
 export const ServiceCards = ({ selectedCountry }: any) => {
@@ -67,15 +60,14 @@ export const ServiceCards = ({ selectedCountry }: any) => {
 
   const serviceRoutes = {
     'Add City': '/admin/dashboard/destinations',
-    'Transfer': '/admin/dashboard/transfer',
-    'Packages': '/admin/dashboard/packages',
-    'Meal Plans': '/admin/dashboard/meal-plans',
-    'Activities': '/admin/dashboard/activities',
-    'Custom Packages': '/admin/dashboard/fully-packed-packages',
     'Accommodation': '/admin/dashboard/hotels',
+    'Transfer': '/admin/dashboard/transfer',
+    'Activities': '/admin/dashboard/activities', 
+    'Meal Plans': '/admin/dashboard/meal-plans',
+    'Add-ons': '/admin/dashboard/add-ons',
+    'Packages': '/admin/dashboard/packages',
     'Inclusion': '/admin/dashboard/inclusion-templates',
     'Exclusion': '/admin/dashboard/exclusion-templates',
-    'Add-ons': '/admin/dashboard/add-ons',
   };
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
