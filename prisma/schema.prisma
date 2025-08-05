@@ -20,44 +20,33 @@ model User {
 }
 
 model Quotation {
-  id               String   @id @default(uuid())
-  quotationNo      String   @unique
-  travelDate       DateTime
-  groupSize        Int
-  mealPlan         String?
-  place            String?
-  vehicleUsed      String?
-  localVehicleUsed String?
-  flightCost       Float?
-  flightImageUrl   String?
-  landCostPerHead  Float?
-  totalPerHead     Float?
-  totalGroupCost   Float?
-  clientPhone      String?
-  clientName       String?
-  clientEmail      String?
-  clientAddress    String?
+  id          String @id @default(uuid())
+  quotationNo String @unique
 
-  notes       String?
-  totalNights Int     @default(0)
+  clientName      String?
+  clientEmail     String?
+  clientPhone     String?
+  clientAddress   String?
+  travelDate      DateTime
+  groupSize       Int
+  destinationName String?
+  totalNights     Int      @default(0)
 
-  // —— NEW foreign‑keys to admin tables ——
-  packageId Int?
-  package   Package? @relation(fields: [packageId], references: [id])
+  flightCostPerPerson Float?
+  landCostPerPerson   Float?
+  totalCostPerPerson  Float?
+  totalGroupCost      Float?
+  
+  flightRoute         String?
+  flightImageUrl      String?
 
+  mealPlanName String?
+  notes String?
+
+  packageId     Int?
+  package       Package?     @relation(fields: [packageId], references: [id])
   destinationId Int?
   destination   Destination? @relation(fields: [destinationId], references: [id])
-
-  flightRoute String?
-
-  intercityVehicleId Int?
-  intercityVehicle   Transfer? @relation("IntercityVehicle", fields: [intercityVehicleId], references: [id])
-
-  localVehicleId Int?
-  localVehicle   Transfer? @relation("LocalVehicle", fields: [localVehicleId], references: [id])
-
-  mealPlanId  Int?
-  mealPlanRef MealPlan? @relation(fields: [mealPlanId], references: [id])
 
   createdBy   User            @relation(fields: [createdById], references: [id])
   createdById Int
@@ -65,51 +54,77 @@ model Quotation {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
-  accommodation Accommodation[]
-  itinerary     ItineraryItem[]
-  inclusions    Inclusion[]
-  exclusions    Exclusion[]
+  mealPlanId  Int? 
+
+  accommodations QuotationAccommodation[]
+  transfers      QuotationTransfer[]
+  itinerary      QuotationItinerary[]
+  inclusions     QuotationInclusion[]
+  exclusions     QuotationExclusion[]
 }
 
-model Accommodation {
+model QuotationAccommodation {
   id          Int       @id @default(autoincrement())
-  location    String
-  hotelName   String
-  nights      Int
-  quotation   Quotation @relation(fields: [quotationId], references: [id])
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
   quotationId String
 
-  hotelId Int?
-  hotel   Hotel? @relation(fields: [hotelId], references: [id])
+  location    String // e.g., "Leh"
+  hotelName   String // e.g., "The Grand Dragon"
+  roomType    String // e.g., "Deluxe Room"
+  nights      Int
+  price       Float  // Price per night AT THE TIME OF QUOTING
 }
 
-model ItineraryItem {
+model QuotationTransfer {
   id          Int       @id @default(autoincrement())
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  quotationId String
+
+  type        String // "Intercity" or "Local Sightseeing"
+  vehicleName String // "Toyota Innova"
+  price       Float  // Price for this transfer AT THE TIME OF QUOTING
+}
+
+model QuotationItinerary {
+  id          Int       @id @default(autoincrement())
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  quotationId String
   dayTitle    String
   description String
-  quotation   Quotation @relation(fields: [quotationId], references: [id])
-  quotationId String
 }
 
-model Inclusion {
+model QuotationInclusion {
   id          Int       @id @default(autoincrement())
-  item        String
-  quotation   Quotation @relation(fields: [quotationId], references: [id])
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
   quotationId String
-
-  templateId Int?
-  template   InclusionTemplate? @relation(fields: [templateId], references: [id])
+  item        String
 }
-
-model Exclusion {
+model QuotationExclusion {
   id          Int       @id @default(autoincrement())
-  item        String
-  quotation   Quotation @relation(fields: [quotationId], references: [id])
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
   quotationId String
-
-  templateId Int?
-  template   ExclusionTemplate? @relation(fields: [templateId], references: [id])
+  item        String
 }
+
+// model Accommodation {
+//   id          Int       @id @default(autoincrement())
+//   location    String
+//   hotelName   String
+//   nights      Int
+//   quotation   Quotation @relation(fields: [quotationId], references: [id])
+//   quotationId String
+
+//   hotelId Int?
+//   hotel   Hotel? @relation(fields: [hotelId], references: [id])
+// }
+
+// model ItineraryItem {
+//   id          Int       @id @default(autoincrement())
+//   dayTitle    String
+//   description String
+//   quotation   Quotation @relation(fields: [quotationId], references: [id])
+//   quotationId String
+// }
 
 enum Role {
   Employee
@@ -170,7 +185,7 @@ model Hotel {
   basePricePerNight Float?
 
   rateCards     HotelRateCard[]
-  Accommodation Accommodation[]
+  // Accommodation Accommodation[]
 }
 
 model HotelRateCard {
@@ -191,8 +206,8 @@ model Transfer {
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
-  intercityVehicleQuotations Quotation[] @relation("IntercityVehicle")
-  localVehicleQuotations     Quotation[] @relation("LocalVehicle")
+  // intercityVehicleQuotations Quotation[] @relation("IntercityVehicle")
+  // localVehicleQuotations     Quotation[] @relation("LocalVehicle")
 }
 
 model MealPlan {
@@ -203,21 +218,7 @@ model MealPlan {
   countryId     Int
   country       Country @relation(fields: [countryId], references: [id])
 
-  quotations Quotation[]
-}
-
-model InclusionTemplate {
-  id          Int         @id @default(autoincrement())
-  name        String
-  description String?
-  inclusions  Inclusion[]
-}
-
-model ExclusionTemplate {
-  id          Int         @id @default(autoincrement())
-  name        String
-  description String?
-  exclusions  Exclusion[]
+  // quotations Quotation[]
 }
 
 model Package {
