@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 export async function POST(){
-    return NextRespone.json({message: "System Under process"}, {status: 201})
+    return NextResponse.json({message: "System Under process"}, {status: 201})
 }
 
 // import { prisma } from "@/lib/prisma";
