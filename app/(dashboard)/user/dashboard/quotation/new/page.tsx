@@ -22,7 +22,8 @@ interface ClientInfo {
   address: string;
 }
 interface TravelDetails {
-  destinationName: string;
+  countryId: number | '';
+  airportId: number | '';
   travelDate: string;
   groupSize: number;
   totalNights: number;
@@ -102,6 +103,18 @@ interface CountryCurrencyBlueprint {
   conversionRate: number;
 }
 
+interface CountryBlueprint {
+  id: number;
+  name: string;
+}
+
+interface AirportBlueprint {
+  id: number;
+  name: string;
+  code: string;
+  countryId: number;
+}
+
 export default function NewQuotationPage() {
   const { toast } = useToast();
 
@@ -111,7 +124,7 @@ export default function NewQuotationPage() {
     phone: '',
     address: ''
   });
-  const [travelDetails, setTravelDetails] = useState<TravelDetails>({ destinationName: '', travelDate: '', groupSize: 1, totalNights: 0 });
+  const [travelDetails, setTravelDetails] = useState<TravelDetails>({ countryId: '', airportId: '', travelDate: '', groupSize: 1, totalNights: 0 });
   const [flightDetails, setFlightDetails] = useState<FlightDetails>({ costPerPerson: 0, imageUrl: '' });
   const [accommodations, setAccommodations] = useState<AccommodationItem[]>([]);
   const [transfers, setTransfers] = useState<TransferItem[]>([]);
@@ -129,6 +142,8 @@ export default function NewQuotationPage() {
   const [allExclusionTemplates, setAllExclusionTemplates] = useState<ExclusionTemplateBlueprint[]>([]);
   const [allCountryCurrencies, setAllCountryCurrencies] = useState<CountryCurrencyBlueprint[]>([]);
 
+  const [allCountries, setAllCountries] = useState<CountryBlueprint[]>([]);
+  const [allAirports, setAllAirports] = useState<AirportBlueprint[]>([]);
 
   // --- UI & Loading State ---
   const [isLoading, setIsLoading] = useState(true);
@@ -139,12 +154,16 @@ export default function NewQuotationPage() {
     async function fetchAllBlueprints() {
       try {
         const [
+          countriesRes,
+          airportsRes,
           destinationsRes,
           hotelsRes,
           transfersRes,
           mealPlansRes,
           currenciesRes,
         ] = await Promise.all([
+          axios.get('/api/user/countries'),
+          axios.get('/api/user/airports'),
           axios.get('/api/user/destinations'),
           axios.get('/api/admin/hotels'),
           axios.get('/api/admin/transfer'),
@@ -154,6 +173,8 @@ export default function NewQuotationPage() {
 
         console.log("Destinations from API:", destinationsRes.data.destinations);
 
+        setAllCountries(countriesRes.data || []);
+        setAllAirports(airportsRes.data || []);
         setAllDestinations(destinationsRes.data.destinations || []);
         setAllHotels(hotelsRes.data.hotels || []);
         setAllTransfers(transfersRes.data || []);
@@ -180,10 +201,19 @@ export default function NewQuotationPage() {
 
   const handleTravelDetailsChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setTravelDetails(prev => ({
-      ...prev,
-      [name]: name === 'groupSize' || name === 'totalNights' ? parseInt(value, 10) || 0 : value,
-    }));
+
+    const parsedValue = ['groupSize', 'totalNights', 'countryId', 'airportId'].includes(name)
+      ? parseInt(value, 10) || ''
+      : value;
+
+    setTravelDetails(prev => {
+      const newDetails = { ...prev, [name]: parsedValue };
+      if (name === 'countryId') {
+        newDetails.airportId = '';
+        setAccommodations([]);
+      }
+      return newDetails;
+    });
   };
 
   const handleFlightDetailsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -313,18 +343,38 @@ export default function NewQuotationPage() {
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="space-y-2">
-                    <Label htmlFor="destinationName" className='text-gray-600'>Destination</Label>
+                    <Label htmlFor="countryId" className='text-gray-600'>Country</Label>
                     <select
-                      id="destinationName"
-                      name="destinationName"
-                      value={travelDetails.destinationName}
+                      id="countryId"
+                      name="countryId"
+                      value={travelDetails.countryId}
                       onChange={handleTravelDetailsChange}
                       className="w-full h-10 border-gray-300 rounded-md text-gray-600 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                     >
-                      <option value="">Select a destination</option>
-                      {allDestinations.map(dest => (
-                        <option key={dest.id} className='text-gray-600' value={dest.name}>{dest.name}</option>
+                      <option value="">Select a country</option>
+                      {allCountries.map(country => (
+                        <option key={country.id} value={country.id}>{country.name}</option>
                       ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="airportId" className='text-gray-600'>Arrival Airport</Label>
+                    <select
+                      id="airportId"
+                      name="airportId"
+                      value={travelDetails.airportId}
+                      onChange={handleTravelDetailsChange}
+                      disabled={!travelDetails.countryId}
+                      className="w-full h-10 border-gray-300 rounded-md text-gray-600 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+                    >
+                      <option value="">
+                        {travelDetails.countryId ? 'Select an airport' : 'Select country first'}
+                      </option>
+                      {allAirports
+                        .filter(airport => airport.countryId === travelDetails.countryId)
+                        .map(airport => (
+                          <option key={airport.id} value={airport.id}>{airport.name} ({airport.code})</option>
+                        ))}
                     </select>
                   </div>
                   <div className="space-y-2">
@@ -411,16 +461,12 @@ export default function NewQuotationPage() {
                               }}
                             >
                               <option value="">Select Location</option>
-                              {(() => {
-                                // Get the selected main destination
-                                const selectedDest = allDestinations.find(d => d.name === travelDetails.destinationName);
-
-                                // Filter locations (states) by the country of the selected destination
-                                const relevantLocations = selectedDest
-                                  ? allDestinations.filter(d => d.countryId === selectedDest.countryId)
+                              {(() => { 
+                                const selectedCountryId = travelDetails.countryId;
+                                const relevantLocations = selectedCountryId
+                                  ? allDestinations.filter(d => d.countryId === selectedCountryId)
                                   : allDestinations;
 
-                                // Return the filtered locations showing their state values
                                 return relevantLocations.map(dest => (
                                   <option key={dest.id} value={dest.state ?? ''}>{dest.state ?? 'Unknown'}</option>
                                 ));
@@ -434,36 +480,28 @@ export default function NewQuotationPage() {
                               disabled={!acc.location}
                               onChange={e => {
                                 const hotelName = e.target.value;
-
-                                // Find the matching hotel from filteredHotels
                                 const hotel = filteredHotels.find(h => h.name === hotelName);
 
                                 console.log("Selected hotel:", hotel);
-
-                                // Update the hotel name first
                                 updateAccommodation(acc.id, 'hotelName', hotelName);
 
                                 if (hotel) {
-                                  // First try to use rate cards if available
                                   if (hotel.rateCards && hotel.rateCards.length > 0) {
                                     updateAccommodation(acc.id, 'roomType', hotel.rateCards[0].roomType);
                                     updateAccommodation(acc.id, 'price', hotel.rateCards[0].rate);
                                     console.log("Using rate card price:", hotel.rateCards[0].rate);
-                                  }
-                                  // Fall back to the base price if no rate cards
+                                  } 
                                   else if (hotel.basePricePerNight) {
-                                    updateAccommodation(acc.id, 'roomType', 'Standard'); // Default room type
+                                    updateAccommodation(acc.id, 'roomType', 'Standard'); 
                                     updateAccommodation(acc.id, 'price', hotel.basePricePerNight);
                                     console.log("Using base price:", hotel.basePricePerNight);
-                                  }
-                                  // No pricing data available
+                                  } 
                                   else {
                                     updateAccommodation(acc.id, 'roomType', '');
                                     updateAccommodation(acc.id, 'price', 0);
                                     console.log("No pricing data found for hotel");
                                   }
-                                } else {
-                                  // No hotel found
+                                } else { 
                                   updateAccommodation(acc.id, 'roomType', '');
                                   updateAccommodation(acc.id, 'price', 0);
                                 }
