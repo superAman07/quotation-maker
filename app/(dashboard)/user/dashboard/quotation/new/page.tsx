@@ -278,7 +278,6 @@ export default function NewQuotationPage() {
     setTransfers(prev => prev.filter(t => t.id !== id));
   };
 
-  // --- Meal Plan State ---
   const [selectedMealPlan, setSelectedMealPlan] = useState('');
 
 
@@ -427,8 +426,7 @@ export default function NewQuotationPage() {
                 <CardTitle className='text-gray-600'>Services</CardTitle>
                 <p className="text-sm text-gray-500">Select accommodation, transport, and meal plans for this quotation.</p>
               </CardHeader>
-              <CardContent className="space-y-8">
-                {/* Accommodation Section */}
+              <CardContent className="space-y-8"> 
                 <div>
                   <h3 className="text-lg font-medium text-gray-800 mb-4">Accommodation</h3>
                   <div className="space-y-4">
@@ -449,7 +447,6 @@ export default function NewQuotationPage() {
                       return (
                         <div key={acc.id} className="p-4 border rounded-lg bg-gray-50/50 space-y-3 relative">
                           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                            {/* Location Dropdown */}
                             <select
                               className="w-full h-10 border-gray-300 text-gray-600 rounded-md shadow-sm"
                               value={acc.location}
