@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
-    const { id } = params;
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     const { name, code, city } = await request.json();
 
     if (!name || !code || !city) {
@@ -20,8 +20,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
-    const { id } = params;
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
     try {
         await prisma.airport.delete({
             where: { id: parseInt(id) },
