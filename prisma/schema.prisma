@@ -36,12 +36,12 @@ model Quotation {
   landCostPerPerson   Float?
   totalCostPerPerson  Float?
   totalGroupCost      Float?
-  
-  flightRoute         String?
-  flightImageUrl      String?
+
+  flightRoute    String?
+  flightImageUrl String?
 
   mealPlanName String?
-  notes String?
+  notes        String?
 
   packageId     Int?
   package       Package?     @relation(fields: [packageId], references: [id])
@@ -54,7 +54,7 @@ model Quotation {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
-  mealPlanId  Int? 
+  mealPlanId Int?
 
   accommodations QuotationAccommodation[]
   transfers      QuotationTransfer[]
@@ -68,11 +68,11 @@ model QuotationAccommodation {
   quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
   quotationId String
 
-  location    String // e.g., "Leh"
-  hotelName   String // e.g., "The Grand Dragon"
-  roomType    String // e.g., "Deluxe Room"
-  nights      Int
-  price       Float  // Price per night AT THE TIME OF QUOTING
+  location  String // e.g., "Leh"
+  hotelName String // e.g., "The Grand Dragon"
+  roomType  String // e.g., "Deluxe Room"
+  nights    Int
+  price     Float // Price per night AT THE TIME OF QUOTING
 }
 
 model QuotationTransfer {
@@ -82,7 +82,7 @@ model QuotationTransfer {
 
   type        String // "Intercity" or "Local Sightseeing"
   vehicleName String // "Toyota Innova"
-  price       Float  // Price for this transfer AT THE TIME OF QUOTING
+  price       Float // Price for this transfer AT THE TIME OF QUOTING
 }
 
 model QuotationItinerary {
@@ -99,6 +99,7 @@ model QuotationInclusion {
   quotationId String
   item        String
 }
+
 model QuotationExclusion {
   id          Int       @id @default(autoincrement())
   quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
@@ -184,7 +185,7 @@ model Hotel {
   destination       Destination? @relation(fields: [destinationId], references: [id])
   basePricePerNight Float?
 
-  rateCards     HotelRateCard[]
+  rateCards HotelRateCard[]
   // Accommodation Accommodation[]
 }
 
@@ -274,6 +275,7 @@ model Country {
   transfers         Transfer[]
   activities        Activity[]
   mealPlans         MealPlan[]
+  airports          Airport[]
 }
 
 model CountryCurrency {
@@ -288,4 +290,15 @@ model CountryCurrency {
   country Country @relation(fields: [countryId], references: [id])
 
   @@unique([countryId, currencyCode])
+}
+
+model Airport {
+  id        Int      @id @default(autoincrement())
+  name      String
+  code      String   @unique
+  city      String
+  country   Country  @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  countryId Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

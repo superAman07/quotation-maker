@@ -1,6 +1,6 @@
 'use client'
 import React from 'react';
-import { MapPin, Car, Compass, Hotel, Plus, Package, Package2 } from 'lucide-react';
+import { MapPin, Car, Compass, Hotel, Plus, Package, Package2, Plane } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 const services = [
@@ -53,6 +53,13 @@ const services = [
     gradient: 'bg-gradient-to-r from-blue-500 to-green-500',
     color: '#38a169'
   }, 
+  { 
+    title: 'Airports',
+    icon: Plane,
+    description: 'Manage airport information',
+    gradient: 'bg-gradient-to-r from-gray-500 to-gray-700',
+    color: '#4a5568'
+  },
 ];
 
 export const ServiceCards = ({ selectedCountry }: any) => {
@@ -68,6 +75,7 @@ export const ServiceCards = ({ selectedCountry }: any) => {
     'Packages': '/admin/dashboard/packages',
     'Inclusion': '/admin/dashboard/inclusion-templates',
     'Exclusion': '/admin/dashboard/exclusion-templates',
+    'Airports': '/admin/dashboard/airports',
   };
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
