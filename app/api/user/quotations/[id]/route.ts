@@ -34,7 +34,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             include: {
                 createdBy: true,
                 itinerary: true,
-                accommodation: true,
+                accommodations: true,
                 inclusions: true,
                 exclusions: true, 
             }

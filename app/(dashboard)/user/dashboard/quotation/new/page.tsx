@@ -68,6 +68,7 @@ interface TransferBlueprint {
   id: number;
   type: string;
   priceInINR: number;
+  countryId: number;
 }
 
 interface MealPlanBlueprint {
@@ -543,21 +544,65 @@ export default function NewQuotationPage() {
                 <div>
                   <h3 className="text-lg font-medium text-gray-800 mb-4">Transfers</h3>
                   <div className="space-y-4">
-                    {transfers.map((t, index) => (
-                      <div key={t.id} className="p-4 border rounded-lg bg-gray-50/50 space-y-3">
-                        <div className="grid grid-cols-1 md:grid-cols-3 text-gray-600 gap-4">
-                          <select value={t.type} onChange={e => updateTransfer(t.id, 'type', e.target.value)} className="w-full cursor-pointer h-10 border-gray-300 rounded-md shadow-sm">
-                            <option>Intercity</option>
-                            <option>Local Sightseeing</option>
-                          </select>
-                          <Input placeholder="Vehicle Name" value={t.vehicleName} onChange={e => updateTransfer(t.id, 'vehicleName', e.target.value)} />
-                          <Input type="number" placeholder="Price" value={t.price} onChange={e => updateTransfer(t.id, 'price', parseFloat(e.target.value))} />
+                    {transfers.map((t) => {
+                      // Filter available transfers by the selected country
+                      const availableTransfers = travelDetails.countryId
+                        ? allTransfers.filter(at => at.countryId === travelDetails.countryId)
+                        : [];
+                      
+                      // Get currency info for conversion display
+                      const currencyInfo = travelDetails.countryId
+                        ? allCountryCurrencies.find(c => c.countryId === travelDetails.countryId)
+                        : null;
+                      const conversionRate = currencyInfo?.conversionRate || 1;
+                      const currencyCode = currencyInfo?.currencyCode || 'INR';
+
+                      return (
+                        <div key={t.id} className="p-4 border rounded-lg bg-gray-50/50 space-y-3 relative">
+                          <div className="grid grid-cols-1 md:grid-cols-3 text-gray-600 gap-4">
+                            <select
+                              value={t.type}
+                              disabled={!travelDetails.countryId}
+                              onChange={e => {
+                                const selectedType = e.target.value;
+                                const selectedTransfer = availableTransfers.find(at => at.type === selectedType);
+                                
+                                updateTransfer(t.id, 'type', selectedType);
+                                if (selectedTransfer) {
+                                  updateTransfer(t.id, 'price', selectedTransfer.priceInINR);
+                                } else {
+                                  updateTransfer(t.id, 'price', 0);
+                                }
+                              }}
+                              className="w-full cursor-pointer h-10 border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
+                            >
+                              <option value="">
+                                {travelDetails.countryId ? 'Select Transfer Type' : 'Select Country First'}
+                              </option>
+                              {availableTransfers.map(transferType => (
+                                <option key={transferType.id} value={transferType.type}>
+                                  {transferType.type}
+                                </option>
+                              ))}
+                            </select>
+                            
+                            <Input placeholder="Vehicle Name (Optional)" value={t.vehicleName} onChange={e => updateTransfer(t.id, 'vehicleName', e.target.value)} />
+                            
+                            <div className="relative">
+                              <Input type="number" placeholder="Price" value={t.price} onChange={e => updateTransfer(t.id, 'price', parseFloat(e.target.value))} />
+                              {currencyInfo && t.price > 0 && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                                  {currencyCode} {(t.price * conversionRate).toFixed(2)}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 cursor-pointer absolute top-1 right-1" onClick={() => removeTransfer(t.id)}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
-                        <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 cursor-pointer" onClick={() => removeTransfer(t.id)}>
-                          <Trash2 className="w-4 h-4 mr-2" /> Remove
-                        </Button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                   <Button variant="outline" size="sm" className="mt-4 text-gray-600 cursor-pointer" onClick={addTransfer}>
                     <Plus className="w-4 h-4 mr-2" /> Add Transfer
