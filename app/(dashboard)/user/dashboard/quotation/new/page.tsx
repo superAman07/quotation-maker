@@ -380,10 +380,10 @@ export default function NewQuotationPage() {
 
     try {
       // We will uncomment and use this in the next step
-      // const response = await axios.post('/api/user/new-quotation', payload);
-      // toast({ title: "Success", description: `Quotation saved as ${status.toLowerCase()}.` });
-      // router.push('/user/dashboard/quotations'); // Redirect after success
-      
+      const response = await axios.post('/api/user/new-quotation', payload);
+      toast({ title: "Success", description: `Quotation saved as ${status.toLowerCase()}.` });
+      window.location.href = '/user/dashboard/quotations'; // Redirect after success
+      console.log("Quotation created successfully:", response.data);
       // For now, just show a success toast
       toast({ title: "Payload Assembled!", description: "Check the browser console to see the payload." });
 
