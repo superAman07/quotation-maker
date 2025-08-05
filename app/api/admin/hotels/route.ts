@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
     const hotels = await prisma.hotel.findMany({
         where,
         orderBy: { name: 'asc' },
-        include: { country: true, destination: true }
+        include: { country: true, destination: true , rateCards: true,}
     });
     return NextResponse.json({ hotels }, { status: 200 });
 }

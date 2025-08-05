@@ -7,12 +7,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-import { Plus, Trash2, Upload, X } from 'lucide-react';
+import { Loader2, Plus, Trash2, Upload, X } from 'lucide-react';
 import Layout from '@/components/Layout';
 import axios from 'axios';
 import { QuotationPDF } from '@/components/Quotation-pdf';
 import { PDFViewer } from '@react-pdf/renderer';
 import { Combobox } from '@headlessui/react';
+import { useToast } from '@/hooks/use-toast';
 
 interface ClientInfo {
   name: string;
@@ -20,40 +21,33 @@ interface ClientInfo {
   phone: string;
   address: string;
 }
-
-interface InclusionTemplate {
-  id: number;
-  description: string;
-}
-
-interface ExclusionTemplate {
-  id: number;
-  description: string;
-}
-
-interface TravelSummary {
-  dateOfTravel: string;
+interface TravelDetails {
+  countryId: number | '';
+  airportId: number | '';
+  travelDate: string;
   groupSize: number;
-  mealPlan: string;
-  place: string;
-  placeCustom?: string;
-  vehicleUsedType?: string;
-  vehicleUsed: string;
-  localVehicleUsed: string;
-  vehicleUsedCustom?: string;
-  localVehicleUsedCustom?: string;
-  flightCostPerPerson: number;
-  flightImageUrl: string;
-  mealPlanCustom: string;
+  totalNights: number;
 }
 
-interface Accommodation {
+interface FlightDetails {
+  costPerPerson: number;
+  imageUrl: string;
+}
+
+interface AccommodationItem {
   id: string;
   location: string;
-  locationCustom?: string;
   hotelName: string;
-  numberOfNights: number;
-  hotelNameCustom?: string;
+  roomType: string;
+  nights: number;
+  price: number;
+}
+
+interface TransferItem {
+  id: string;
+  type: string;
+  vehicleName: string;
+  price: number;
 }
 
 interface ItineraryItem {
@@ -62,1227 +56,576 @@ interface ItineraryItem {
   description: string;
 }
 
-interface Costing {
-  landCostPerPerson: number;
-  flightCostPerPerson: number;
-  totalCostPerPerson: number;
-  totalGroupCost: number;
+interface HotelBlueprint {
+  id: number;
+  name: string;
+  destination: { name: string; state: string | null };
+  rateCards: { roomType: string; rate: number }[];
+  basePricePerNight: number;
 }
 
-export default function QuotationForm() {
+interface TransferBlueprint {
+  id: number;
+  type: string;
+  priceInINR: number;
+}
+
+interface MealPlanBlueprint {
+  id: number;
+  name: string;
+  ratePerPerson: number;
+}
+
+interface DestinationBlueprint {
+  id: number;
+  name: string;
+  state: string | null;
+  countryId: number;
+  description: string | null;
+  imageUrl: string | null;
+}
+
+interface InclusionTemplateBlueprint {
+  id: number;
+  name: string;
+  description: string;
+}
+
+interface ExclusionTemplateBlueprint {
+  id: number;
+  name: string;
+  description: string;
+}
+
+interface CountryCurrencyBlueprint {
+  countryId: number;
+  currencyCode: string;
+  conversionRate: number;
+}
+
+interface CountryBlueprint {
+  id: number;
+  name: string;
+}
+
+interface AirportBlueprint {
+  id: number;
+  name: string;
+  code: string;
+  countryId: number;
+}
+
+export default function NewQuotationPage() {
+  const { toast } = useToast();
+
   const [clientInfo, setClientInfo] = useState<ClientInfo>({
     name: '',
     email: '',
     phone: '',
     address: ''
   });
-
-  const [travelSummary, setTravelSummary] = useState<TravelSummary>({
-    dateOfTravel: '',
-    groupSize: 1,
-    mealPlan: '',
-    place: '',
-    placeCustom: '',
-    vehicleUsedType: '',
-    vehicleUsed: '',
-    vehicleUsedCustom: '',
-    localVehicleUsed: '',
-    localVehicleUsedCustom: '',
-    flightCostPerPerson: 0,
-    flightImageUrl: '',
-    mealPlanCustom: "",
-  });
-  const [mealPlans, setMealPlans] = useState<{ id: number; code: string; description: string }[]>([]);
-  const [loadingMealPlans, setLoadingMealPlans] = useState(true);
-
-  const [vehicles, setVehicles] = useState<{ id: number; name: string; type?: string }[]>([]);
-  const [flightRoutes, setFlightRoutes] = useState<{
-    id: number;
-    origin: string;
-    destination: string;
-    baseFare: number;
-    airline: string;
-    imageUrl: string;
-  }[]>([]);
-  const [hotels, setHotels] = useState<{
-    id: number;
-    name: string;
-    starRating?: number;
-    amenities?: string;
-    imageUrl?: string;
-    venueId?: number;
-    venue?: {
-      id: number;
-      name: string;
-      address: string;
-      coordinates?: string;
-      description?: string;
-      imageUrl?: string;
-      destinationId?: number;
-    };
-  }[]>([]);
-
-  const [destinations, setDestinations] = useState<{
-    id: number;
-    name: string;
-    state?: string;
-    country?: string;
-    description?: string;
-    imageUrl?: string;
-  }[]>([]);
-
-  const [query, setQuery] = useState('');
-  const filteredDestinations = query === ''
-    ? destinations
-    : destinations.filter(dest =>
-      dest.name.toLowerCase().includes(query.toLowerCase())
-    );
-
-  const [packages, setPackages] = useState<{
-    id: number;
-    name: string;
-    description: string;
-    durationDays: number;
-    basePricePerPerson: number;
-    totalNights: number;
-    destinationId: number | null;
-    packageItineraries: {
-      id: number;
-      packageId: number;
-      dayNumber: number;
-      title: string;
-      description: string;
-    }[];
-  }[]>([]);
-  const [selectedPackageId, setSelectedPackageId] = useState<number | null>(null);
-  const selectedPackage = packages.find(p => p.id === selectedPackageId);
-  const packageNights = selectedPackage?.totalNights ?? null;
-
-  const [fullyPackedPackages, setFullyPackedPackages] = useState<{
-    id: number;
-    name: string;
-    description?: string;
-    destination: {
-      id: number;
-      name: string;
-    };
-    mealPlan?: string;
-    vehicleUsed?: string;
-    localVehicleUsed?: string;
-    flightCostPerPerson?: number;
-    landCostPerPerson?: number;
-    totalNights?: number;
-    accommodations: Array<{
-      id: number;
-      location: string;
-      hotelName: string;
-      nights: number;
-    }>;
-    itinerary: Array<{
-      id: number;
-      dayTitle: string;
-      description: string;
-    }>;
-    inclusions: Array<{
-      id: number;
-      item: string;
-    }>;
-    exclusions: Array<{
-      id: number;
-      item: string;
-    }>;
-  }[]>([]);
-  const [selectedFullyPackedPackageId, setSelectedFullyPackedPackageId] = useState<number | null>(null);
-  const selectedFullyPackedPackage = fullyPackedPackages.find(p => p.id === selectedFullyPackedPackageId);
-
-  const [loadingVehicles, setLoadingVehicles] = useState(true);
-
-  const [accommodations, setAccommodations] = useState<Accommodation[]>([
-    { id: '1', location: '', hotelName: '', numberOfNights: 1 }
-  ]);
-
-  const [itinerary, setItinerary] = useState<ItineraryItem[]>([
-    { id: '1', dayTitle: '', description: '' }
-  ]);
-
-  const [inclusions, setInclusions] = useState<string[]>(['']);
-  const [exclusions, setExclusions] = useState<string[]>(['']);
-
-  const [inclusionTemplates, setInclusionTemplates] = useState<any[]>([]);
-  const [exclusionTemplates, setExclusionTemplates] = useState<any[]>([]);
-
-  const adminInclusions: string[] = inclusionTemplates.flatMap((t: InclusionTemplate) =>
-    t.description
-      ? t.description.split(/\r?\n|,/).map((item: string) => item.trim()).filter(Boolean)
-      : []
-  );
-
-  const adminExclusions: string[] = exclusionTemplates.flatMap((t: ExclusionTemplate) =>
-    t.description
-      ? t.description.split(/\r?\n|,/).map((item: string) => item.trim()).filter(Boolean)
-      : []
-  );
-
-  const [costing, setCosting] = useState<Costing>({
-    landCostPerPerson: 0,
-    flightCostPerPerson: 0,
-    totalCostPerPerson: 0,
-    totalGroupCost: 0
-  });
-
+  const [travelDetails, setTravelDetails] = useState<TravelDetails>({ countryId: '', airportId: '', travelDate: '', groupSize: 1, totalNights: 0 });
+  const [flightDetails, setFlightDetails] = useState<FlightDetails>({ costPerPerson: 0, imageUrl: '' });
+  const [accommodations, setAccommodations] = useState<AccommodationItem[]>([]);
+  const [transfers, setTransfers] = useState<TransferItem[]>([]);
+  const [itinerary, setItinerary] = useState<ItineraryItem[]>([]);
+  const [inclusions, setInclusions] = useState<string[]>([]);
+  const [exclusions, setExclusions] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
-  const [flightImage, setFlightImage] = useState<File | null>(null);
-  const [flightImagePreview, setFlightImagePreview] = useState<string>('');
-  const [showPdfPreview, setShowPdfPreview] = useState(false);
 
-  // Handler functions
-  const addAccommodation = () => {
-    setAccommodations([...accommodations, {
-      id: Date.now().toString(),
-      location: '',
-      hotelName: '',
-      numberOfNights: 1
-    }]);
+  // --- Fetched Admin Data State ---
+  const [allHotels, setAllHotels] = useState<HotelBlueprint[]>([]);
+  const [allTransfers, setAllTransfers] = useState<TransferBlueprint[]>([]);
+  const [allMealPlans, setAllMealPlans] = useState<MealPlanBlueprint[]>([]);
+  const [allDestinations, setAllDestinations] = useState<DestinationBlueprint[]>([]);
+  const [allInclusionTemplates, setAllInclusionTemplates] = useState<InclusionTemplateBlueprint[]>([]);
+  const [allExclusionTemplates, setAllExclusionTemplates] = useState<ExclusionTemplateBlueprint[]>([]);
+  const [allCountryCurrencies, setAllCountryCurrencies] = useState<CountryCurrencyBlueprint[]>([]);
+
+  const [allCountries, setAllCountries] = useState<CountryBlueprint[]>([]);
+  const [allAirports, setAllAirports] = useState<AirportBlueprint[]>([]);
+
+  // --- UI & Loading State ---
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    async function fetchAllBlueprints() {
+      try {
+        const [
+          countriesRes,
+          airportsRes,
+          destinationsRes,
+          hotelsRes,
+          transfersRes,
+          mealPlansRes,
+          currenciesRes,
+        ] = await Promise.all([
+          axios.get('/api/user/countries'),
+          axios.get('/api/user/airports'),
+          axios.get('/api/user/destinations'),
+          axios.get('/api/admin/hotels'),
+          axios.get('/api/admin/transfer'),
+          axios.get('/api/user/meal-plans'),
+          axios.get('/api/user/country-currencies'),
+        ]);
+
+        console.log("Destinations from API:", destinationsRes.data.destinations);
+
+        setAllCountries(countriesRes.data || []);
+        setAllAirports(airportsRes.data || []);
+        setAllDestinations(destinationsRes.data.destinations || []);
+        setAllHotels(hotelsRes.data.hotels || []);
+        setAllTransfers(transfersRes.data || []);
+        setAllMealPlans(mealPlansRes.data || []);
+        setAllCountryCurrencies(currenciesRes.data || []);
+
+      } catch (error) {
+        console.error("Failed to fetch initial data", error);
+        toast({
+          title: "Error",
+          description: "Could not load required data from admin panel. Please check if all services are configured.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchAllBlueprints();
+  }, [toast]);
+
+  const handleClientInfoChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setClientInfo(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const removeAccommodation = (id: string) => {
-    setAccommodations(accommodations.filter(acc => acc.id !== id));
+  const handleTravelDetailsChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+
+    const parsedValue = ['groupSize', 'totalNights', 'countryId', 'airportId'].includes(name)
+      ? parseInt(value, 10) || ''
+      : value;
+
+    setTravelDetails(prev => {
+      const newDetails = { ...prev, [name]: parsedValue };
+      if (name === 'countryId') {
+        newDetails.airportId = '';
+        setAccommodations([]);
+      }
+      return newDetails;
+    });
   };
 
-  const updateAccommodation = (id: string, field: keyof Accommodation, value: string | number) => {
-    setAccommodations(accommodations.map(acc =>
-      acc.id === id ? { ...acc, [field]: value } : acc
-    ));
-  };
-
-  const addItineraryItem = () => {
-    setItinerary([...itinerary, {
-      id: Date.now().toString(),
-      dayTitle: '',
-      description: ''
-    }]);
-  };
-
-  const removeItineraryItem = (id: string) => {
-    setItinerary(itinerary.filter(item => item.id !== id));
-  };
-
-  const updateItineraryItem = (id: string, field: keyof ItineraryItem, value: string) => {
-    setItinerary(itinerary.map(item =>
-      item.id === id ? { ...item, [field]: value } : item
-    ));
-  };
-
-  const addInclusion = () => {
-    setInclusions([...inclusions, '']);
-  };
-
-  const removeInclusion = (index: number) => {
-    setInclusions(inclusions.filter((_, i) => i !== index));
-  };
-
-  const updateInclusion = (index: number, value: string) => {
-    const updated = [...inclusions];
-    updated[index] = value;
-    setInclusions(updated);
-  };
-
-  const addExclusion = () => {
-    setExclusions([...exclusions, '']);
-  };
-
-  const removeExclusion = (index: number) => {
-    setExclusions(exclusions.filter((_, i) => i !== index));
-  };
-
-  const updateExclusion = (index: number, value: string) => {
-    const updated = [...exclusions];
-    updated[index] = value;
-    setExclusions(updated);
+  const handleFlightDetailsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFlightDetails(prev => ({
+      ...prev,
+      [name]: name === 'costPerPerson' ? parseFloat(value) || 0 : value,
+    }));
   };
 
   const handleFlightImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append('file', file);
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-      const data = await res.json();
-      setFlightImagePreview(data.url);
-    }
-  };
+    if (!file) return;
 
-  const handleFullyPackedPackageSelect = (packageId: number | null) => {
-    setSelectedFullyPackedPackageId(packageId);
-    
-    if (packageId) {
-      const selectedPackage = fullyPackedPackages.find(p => p.id === packageId);
-      if (selectedPackage) {
-        console.log('Selected package:', selectedPackage);
-        console.log('Available hotels:', hotels);
-        console.log('Hotels for destination:', hotels.filter(h => h.venue?.destinationId === selectedPackage.destination.id));
-        // Auto-fill travel summary
-        setTravelSummary(prev => ({
-          ...prev,
-          mealPlan: selectedPackage.mealPlan || '',
-          vehicleUsed: selectedPackage.vehicleUsed || '',
-          localVehicleUsed: selectedPackage.localVehicleUsed || '',
-          flightCostPerPerson: selectedPackage.flightCostPerPerson || 0,
-          place: selectedPackage.destination.name,
-        }));
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
 
-        // Auto-fill costing
-        setCosting(prev => ({
-          ...prev,
-          landCostPerPerson: selectedPackage.landCostPerPerson || 0,
-          flightCostPerPerson: selectedPackage.flightCostPerPerson || 0,
-        }));
-
-        // Auto-fill accommodations
-        if (selectedPackage.accommodations.length > 0) {
-          setAccommodations(selectedPackage.accommodations.map(acc => ({
-            id: acc.id.toString(),
-            location: acc.location,
-            hotelName: acc.hotelName,
-            numberOfNights: acc.nights,
-          })));
-        } else {
-          // Reset accommodations if no accommodations in package
-          setAccommodations([{ id: '1', location: '', hotelName: '', numberOfNights: 1 }]);
-        }
-
-        // Auto-fill itinerary
-        if (selectedPackage.itinerary.length > 0) {
-          setItinerary(selectedPackage.itinerary.map(item => ({
-            id: item.id.toString(),
-            dayTitle: item.dayTitle,
-            description: item.description,
-          })));
-        }
-
-        // Auto-fill inclusions
-        if (selectedPackage.inclusions.length > 0) {
-          setInclusions(selectedPackage.inclusions.map(item => item.item));
-        }
-
-        // Auto-fill exclusions
-        if (selectedPackage.exclusions.length > 0) {
-          setExclusions(selectedPackage.exclusions.map(item => item.item));
-        }
-      }
-    }
-  };
-
-  const removeFlightImage = () => {
-    setFlightImage(null);
-    setFlightImagePreview('');
-    setTravelSummary(prev => ({ ...prev, flightImageUrl: '' }));
-  };
-
-  useEffect(() => {
-    async function fetchMealPlans() {
-      try {
-        const res = await axios.get('/api/admin/meal-plans');
-        setMealPlans(res.data);
-      } catch {
-        setMealPlans([]);
-      } finally {
-        setLoadingMealPlans(false);
-      }
-    }
-    fetchMealPlans();
-  }, []);
-
-  useEffect(() => {
-    async function fetchVehicles() {
-      const res = await axios.get('/api/admin/vehicle-types');
-      setVehicles(res.data);
-    }
-    async function fetchFlights() {
-      const res = await axios.get('/api/admin/flight-routes');
-      setFlightRoutes(res.data.routes);
-    }
-    fetchVehicles();
-    fetchFlights();
-  }, []);
-
-  useEffect(() => {
-    async function fetchHotels() {
-      try {
-        const res = await axios.get('/api/admin/hotels');
-        setHotels(res.data.hotels);
-      } catch {
-        setHotels([]);
-      }
-    }
-    fetchHotels();
-  }, []);
-
-  useEffect(() => {
-    async function fetchDestinations() {
-      try {
-        const res = await axios.get('/api/admin/destinations');
-        setDestinations(res.data.destinations);
-      } catch {
-        setDestinations([]);
-      }
-    }
-    fetchDestinations();
-  }, []);
-
-  useEffect(() => {
-    async function fetchPackages() {
-      try {
-        const res = await axios.get('/api/admin/packages');
-        setPackages(res.data);
-      } catch {
-        setPackages([]);
-      }
-    }
-    fetchPackages();
-  }, []);
-
-  useEffect(() => {
-    async function fetchFullyPackedPackages() {
-      try {
-        const res = await axios.get('/api/user/fully-packed-packages');
-        setFullyPackedPackages(res.data);
-      } catch {
-        setFullyPackedPackages([]);
-      }
-    }
-    fetchFullyPackedPackages();
-  }, []);
-
-  useEffect(() => {
-    async function fetchTemplates() {
-      const [incRes, excRes] = await Promise.all([
-        axios.get('/api/admin/inclusion-templates'),
-        axios.get('/api/admin/exclusion-templates'),
-      ]);
-      setInclusionTemplates(incRes.data);
-      setExclusionTemplates(excRes.data);
-      console.log("Inclusion Templates:", incRes.data);
-      console.log("Exclusion Templates:", excRes.data);
-    }
-    fetchTemplates();
-  }, []);
-
-  useEffect(() => {
-    if (selectedPackageId) {
-      const pkg = packages.find(p => p.id === selectedPackageId);
-      if (pkg) {
-        setCosting(prev => ({
-          ...prev,
-          landCostPerPerson: pkg.basePricePerPerson
-        }));
-        setItinerary(
-          pkg.packageItineraries.map(it => ({
-            id: it.id.toString(),
-            dayTitle: it.title,
-            description: it.description
-          }))
-        );
-      }
-    }
-  }, [selectedPackageId, packages]);
-
-  React.useEffect(() => {
-    const totalPerPerson = costing.landCostPerPerson + travelSummary.flightCostPerPerson;
-    const totalGroup = totalPerPerson * travelSummary.groupSize;
-
-    setCosting(prev => ({
-      ...prev,
-      flightCostPerPerson: travelSummary.flightCostPerPerson,
-      totalCostPerPerson: totalPerPerson,
-      totalGroupCost: totalGroup
-    }));
-  }, [costing.landCostPerPerson, travelSummary.flightCostPerPerson, travelSummary.groupSize]);
-
-  function generateQuotationNo() {
-    const now = new Date();
-    const date = now.toISOString().slice(0, 10).replace(/-/g, '');
-    const rand = Math.floor(100000 + Math.random() * 900000);
-    return `QTN-${date}-${rand}`;
-  }
-
-  const totalNights = accommodations.reduce(
-    (sum, acc) => sum + (acc.numberOfNights || 0),
-    0
-  );
-  const totalAccommodationNights = accommodations.reduce(
-    (sum, acc) => sum + (acc.numberOfNights || 0),
-    0
-  );
-  const mealPlanToSend = travelSummary.mealPlan === "__custom" ? travelSummary.mealPlanCustom : travelSummary.mealPlan;
-
-  const vehicleUsedToSend = travelSummary.vehicleUsed === "__custom" ? travelSummary.vehicleUsedCustom : travelSummary.vehicleUsed;
-  const localVehicleUsedToSend = travelSummary.localVehicleUsed === "__custom" ? travelSummary.localVehicleUsedCustom : travelSummary.localVehicleUsed;
-  const payload = {
-    quotationNo: generateQuotationNo(),
-    logoUrl: "/logo.png",
-    clientName: clientInfo.name,
-    clientEmail: clientInfo.email,
-    clientPhone: clientInfo.phone,
-    clientAddress: clientInfo.address,
-    travelDate: travelSummary.dateOfTravel,
-    groupSize: travelSummary.groupSize,
-    mealPlan: mealPlanToSend,
-    place: travelSummary.place,
-    vehicleUsed: vehicleUsedToSend,
-    localVehicleUsed: localVehicleUsedToSend,
-    flightCost: travelSummary.flightCostPerPerson,
-    flightImageUrl: flightImagePreview,
-    landCostPerHead: costing.landCostPerPerson,
-    totalPerHead: costing.totalCostPerPerson,
-    totalGroupCost: costing.totalGroupCost,
-    notes,
-    status: "SENT",
-    accommodation: accommodations.map(acc => ({
-      location:
-        acc.location === "__custom"
-          ? acc.locationCustom || ""
-          : acc.location,
-      hotelName:
-        acc.hotelName === "__custom"
-          ? acc.hotelNameCustom || ""
-          : acc.hotelName,
-      nights: acc.numberOfNights,
-    })),
-    totalNights,
-    itinerary: itinerary.map(item => ({
-      dayTitle: item.dayTitle,
-      description: item.description,
-    })),
-    // inclusions: inclusions.filter(Boolean),
-    // exclusions: exclusions.filter(Boolean),
-    inclusions: inclusions.filter(Boolean).map(item => ({ item })),
-    exclusions: exclusions.filter(Boolean).map(item => ({ item })),
-  };
-
-  console.log("Accommodation Payload: ", payload.accommodation);
-  const handleSubmitQuotation = async () => {
     try {
-      const response = await axios.post('/api/user/new-quotation', payload);
-      console.log(response.data);
-      if (response.data.status === 201) {
-        alert('Quotation created successfully!');
-      } else {
-        alert('Failed to create quotation. Please try again.');
-      }
+      const response = await axios.post('/api/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setFlightDetails(prev => ({ ...prev, imageUrl: response.data.url }));
+      toast({
+        title: "Success",
+        description: "Flight image uploaded successfully.",
+      });
     } catch (error) {
-      console.error('Error creating quotation:', error);
-      alert('An error occurred while creating the quotation. Please try again.');
+      console.error("Image upload failed:", error);
+      toast({
+        title: "Upload Failed",
+        description: "Could not upload the image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
     }
+  };
+
+  const addAccommodation = () => {
+    setAccommodations(prev => [...prev, { id: Date.now().toString(), location: '', hotelName: '', roomType: '', nights: 1, price: 0 }]);
+  };
+
+  const updateAccommodation = (id: string, field: keyof AccommodationItem, value: any) => {
+    setAccommodations(prev => prev.map(acc => acc.id === id ? { ...acc, [field]: value } : acc));
+  };
+
+  const removeAccommodation = (id: string) => {
+    setAccommodations(prev => prev.filter(acc => acc.id !== id));
+  };
+
+  // --- Transfer Handlers ---
+  const addTransfer = () => {
+    setTransfers(prev => [...prev, { id: Date.now().toString(), type: 'Intercity', vehicleName: '', price: 0 }]);
+  };
+
+  const updateTransfer = (id: string, field: keyof TransferItem, value: any) => {
+    setTransfers(prev => prev.map(t => t.id === id ? { ...t, [field]: value } : t));
+  };
+
+  const removeTransfer = (id: string) => {
+    setTransfers(prev => prev.filter(t => t.id !== id));
+  };
+
+  // --- Meal Plan State ---
+  const [selectedMealPlan, setSelectedMealPlan] = useState('');
+
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[calc(100vh-8rem)]">
+          <div className="mini-loader"></div>
+        </div>
+      </Layout>
+    );
   }
+
+  console.log("ALL HOTELS:", JSON.stringify(allHotels, null, 2));
 
   return (
     <Layout>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 pb-32">
         {/* Header */}
-        <div className="bg-white shadow-sm border-b">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <h1 className="text-2xl font-bold text-gray-900 border-b-2 border-green-500 pb-2 mb-0">
-              New Quotation
+        <div className="bg-white shadow-sm border-b sticky top-0 z-20">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <h1 className="text-2xl font-bold text-gray-600">
+              Create New Quotation
             </h1>
+            <p className="text-sm text-gray-600">Build a detailed quotation using admin-managed services.</p>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pb-32">
+        {/* Main Form Content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="space-y-8">
-            {/* Client Details */}
-            <Card className="shadow-sm">
+            {/* Client Information */}
+            <Card>
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Client Details</CardTitle>
+                <CardTitle className='text-gray-600'>Client Information</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="clientName" className="text-gray-700 font-medium">Client Name</Label>
-                    <Input
-                      id="clientName"
-                      value={clientInfo.name}
-                      onChange={(e) => setClientInfo(prev => ({ ...prev, name: e.target.value }))}
-                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                      placeholder="e.g. Joe Smith"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="email" className="text-gray-700 font-medium">Email Address</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={clientInfo.email}
-                      onChange={(e) => setClientInfo(prev => ({ ...prev, email: e.target.value }))}
-                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                      placeholder="e.g. aman@email.com"
-                    />
-                  </div>
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className='text-gray-600'>Full Name</Label>
+                  <Input id="name" name="name" className='text-gray-600' value={clientInfo.name} onChange={handleClientInfoChange} placeholder="e.g., John Doe" />
                 </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="phone" className="text-gray-700 font-medium">Phone Number</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      value={clientInfo.phone}
-                      onChange={(e) => setClientInfo(prev => ({ ...prev, phone: e.target.value }))}
-                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                      placeholder="e.g. +91 98765 43210"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="address" className="text-gray-700 font-medium">Address</Label>
-                    <Textarea
-                      id="address"
-                      rows={3}
-                      value={clientInfo.address}
-                      onChange={(e) => setClientInfo(prev => ({ ...prev, address: e.target.value }))}
-                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                      placeholder="e.g. 123, Main Street, Lucknow"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email" className='text-gray-600'>Email Address</Label>
+                  <Input id="email" name="email" className='text-gray-600' type="email" value={clientInfo.email} onChange={handleClientInfoChange} placeholder="e.g., john.doe@example.com" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className='text-gray-600'>Phone Number</Label>
+                  <Input id="phone" name="phone" className='text-gray-600' value={clientInfo.phone} onChange={handleClientInfoChange} placeholder="e.g., +91 12345 67890" />
+                </div>
+                <div className="space-y-2 md:col-span-2">
+                  <Label htmlFor="address" className='text-gray-600'>Address</Label>
+                  <Textarea id="address" name="address" className='text-gray-600' value={clientInfo.address} onChange={handleClientInfoChange} placeholder="Client's full address" />
                 </div>
               </CardContent>
             </Card>
 
-            {/* Fully Packed Package Selection */}
-            <Card className="shadow-sm">
+            {/* Travel & Flight Details */}
+            <Card>
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Quick Start with Pre-built Package</CardTitle>
+                <CardTitle className='text-gray-600'>Travel & Flight Details</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="fullyPackedPackage" className="text-gray-700 font-medium">
-                    Select Fully Packed Package (Optional)
-                  </Label>
-                  <select
-                    id="fullyPackedPackage"
-                    value={selectedFullyPackedPackageId ?? ""}
-                    onChange={(e) => handleFullyPackedPackageSelect(Number(e.target.value) || null)}
-                    className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
-                  >
-                    <option value="">Choose a pre-built package to auto-fill the form...</option>
-                    {fullyPackedPackages.map(pkg => (
-                      <option key={pkg.id} value={pkg.id}>
-                        {pkg.name} - {pkg.destination.name} (₹{pkg.landCostPerPerson?.toLocaleString() || '0'})
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="countryId" className='text-gray-600'>Country</Label>
+                    <select
+                      id="countryId"
+                      name="countryId"
+                      value={travelDetails.countryId}
+                      onChange={handleTravelDetailsChange}
+                      className="w-full h-10 border-gray-300 rounded-md text-gray-600 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                    >
+                      <option value="">Select a country</option>
+                      {allCountries.map(country => (
+                        <option key={country.id} value={country.id}>{country.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="airportId" className='text-gray-600'>Arrival Airport</Label>
+                    <select
+                      id="airportId"
+                      name="airportId"
+                      value={travelDetails.airportId}
+                      onChange={handleTravelDetailsChange}
+                      disabled={!travelDetails.countryId}
+                      className="w-full h-10 border-gray-300 rounded-md text-gray-600 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+                    >
+                      <option value="">
+                        {travelDetails.countryId ? 'Select an airport' : 'Select country first'}
                       </option>
-                    ))}
-                  </select>
-                  {selectedFullyPackedPackage && (
-                    <div className="mt-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <p className="text-sm text-green-800">
-                        <strong>Selected:</strong> {selectedFullyPackedPackage.name}
-                      </p>
-                      <p className="text-xs text-green-600 mt-1">
-                        This will auto-fill travel details, accommodation, itinerary, inclusions, and exclusions. 
-                        You can still customize any field after selection.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Travel Summary */}
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Travel Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div>
-                    <Label htmlFor="dateOfTravel" className="text-gray-700 font-medium">Date of Travel</Label>
-                    <Input
-                      id="dateOfTravel"
-                      type="date"
-                      value={travelSummary.dateOfTravel}
-                      onChange={(e) => setTravelSummary(prev => ({ ...prev, dateOfTravel: e.target.value }))}
-                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                    />
-                  </div>
-                  <div className='text-gray-700 font-medium'>
-                    <Label className="text-gray-700 font-medium">Local Vehicle Used</Label>
-                    <select
-                      id="localVehicleUsed"
-                      value={travelSummary.localVehicleUsed}
-                      onChange={e => setTravelSummary(prev => ({ ...prev, localVehicleUsed: e.target.value }))}
-                      className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
-                    >
-                      <option value="">Select local vehicle...</option>
-                      {vehicles.map(vehicle => (
-                        <option key={vehicle.id} value={vehicle.name}>
-                          {vehicle.name} {vehicle.type ? `${vehicle.type}` : ""}
-                        </option>
-                      ))}
-                      <option value="__custom">Other (Add new)</option>
-                    </select>
-                    {travelSummary.localVehicleUsed === "__custom" && (
-                      <Input
-                        value={travelSummary.localVehicleUsedCustom || ""}
-                        onChange={e => setTravelSummary(prev => ({ ...prev, localVehicleUsedCustom: e.target.value }))}
-                        placeholder="Enter custom local vehicle"
-                        className="mt-2 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                      />
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="groupSize" className="text-gray-700 font-medium">Group Size (Pax)</Label>
-                    <Input
-                      id="groupSize"
-                      type="number"
-                      min="1"
-                      value={travelSummary.groupSize}
-                      onChange={(e) => setTravelSummary(prev => ({ ...prev, groupSize: parseInt(e.target.value) || 1 }))}
-                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="mealPlan" className="text-gray-700 font-medium">Meal Plan</Label>
-                    <select
-                      id="mealPlan"
-                      value={travelSummary.mealPlan}
-                      onChange={e => setTravelSummary(prev => ({ ...prev, mealPlan: e.target.value }))}
-                      className="mt-1 block w-full h-10 rounded-md shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
-                    >
-                      <option value="">Select meal plan...</option>
-                      {mealPlans.map(plan => (
-                        <option key={plan.id} value={plan.code}>
-                          {plan.code} {plan.description ? `- ${plan.description}` : ""}
-                        </option>
-                      ))}
-                      <option value="__custom">Other (Add new)</option>
-                    </select>
-                    {travelSummary.mealPlan === "__custom" && (
-                      <Input
-                        value={travelSummary.mealPlanCustom || ""}
-                        onChange={e => setTravelSummary(prev => ({ ...prev, mealPlanCustom: e.target.value }))}
-                        placeholder="Enter custom meal plan"
-                        className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                      />
-                    )}
-                  </div>
-                  <div>
-                    <Label htmlFor="place" className="text-gray-700 font-medium">Place</Label>
-                    <Combobox
-                      value={travelSummary.place}
-                      onChange={value => setTravelSummary(prev => ({ ...prev, place: value ?? "" }))}
-                    >
-                      <div className="relative">
-                        <Combobox.Input
-                          className="mt-1 block w-full h-10 rounded-md pl-1 border-gray-300 shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                          displayValue={value => String(value)}
-                          onChange={e => setQuery(e.target.value)}
-                          placeholder="Start typing destination..."
-                        />
-                        <Combobox.Options className="absolute z-10 mt-1 pl-1 w-full bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto focus:ring-green-500 focus:border-green-500 text-gray-900">
-                          {filteredDestinations.length === 0 && query !== '' ? (
-                            <Combobox.Option value={query} className="cursor-pointer px-4 py-2">
-                              Add "{query}"
-                            </Combobox.Option>
-                          ) : (
-                            filteredDestinations.map(dest => (
-                              <Combobox.Option key={dest.id} value={dest.name} className="cursor-pointer px-4 py-2">
-                                {dest.name} {dest.state ? `(${dest.state})` : ''}
-                              </Combobox.Option>
-                            ))
-                          )}
-                        </Combobox.Options>
-                      </div>
-                    </Combobox>
-                  </div>
-                </div>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className='text-gray-700 font-medium'>
-                    <div>
-                      <Label htmlFor="airline" className="text-gray-700 font-medium">Airline</Label>
-                      <select
-                        id="airline"
-                        value={travelSummary.vehicleUsed}
-                        onChange={e => {
-                          const selectedId = Number(e.target.value);
-                          const selectedRoute = flightRoutes.find(route => route.id === selectedId);
-                          setTravelSummary(prev => ({
-                            ...prev,
-                            vehicleUsed: e.target.value,
-                            flightCostPerPerson: selectedRoute ? selectedRoute.baseFare : 0,
-                          }));
-                        }}
-                        className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
-                      >
-                        <option value="">Select airline...</option>
-                        {flightRoutes.map(route => (
-                          <option key={route.id} value={route.id}>
-                            {route.airline} ({route.origin} → {route.destination})
-                          </option>
+                      {allAirports
+                        .filter(airport => airport.countryId === travelDetails.countryId)
+                        .map(airport => (
+                          <option key={airport.id} value={airport.id}>{airport.name} ({airport.code})</option>
                         ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div>
-                    <Label htmlFor="flightCostPerPerson" className="text-gray-700 font-medium">Flight Cost per Person</Label>
-                    <Input
-                      id="flightCostPerPerson"
-                      type="number"
-                      min="0"
-                      value={travelSummary.flightCostPerPerson}
-                      onChange={e =>
-                        setTravelSummary(prev => ({
-                          ...prev,
-                          flightCostPerPerson: parseFloat(e.target.value) || 0,
-                        }))
-                      }
-                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                      placeholder="e.g. 12000"
-                    />
-                  </div>
-                </div>
-
-                {/* Flight Image Upload */}
-                <div>
-                  <Label className="text-gray-700 font-medium">Upload Flight Image</Label>
-                  {!flightImagePreview ? (
-                    <div className="mt-1 border-2 border-dashed border-green-300 rounded-lg p-6 text-center">
-                      <Upload className="mx-auto h-12 w-12 text-green-500" />
-                      <div className="mt-2">
-                        <input
-                          type="file"
-                          accept=".jpg,.jpeg,.png,.webp"
-                          onChange={handleFlightImageUpload}
-                          className="hidden"
-                          id="flightImage"
-                        />
-                        <label
-                          htmlFor="flightImage"
-                          className="cursor-pointer text-sm text-green-600 hover:text-green-800 font-medium"
-                        >
-                          Click to upload flight image
-                        </label>
-                      </div>
-                      <p className="text-xs text-gray-500 mt-1">PNG, JPG, WEBP up to 10MB</p>
-                    </div>
-                  ) : (
-                    <div className="mt-1 relative">
-                      <img
-                        src={flightImagePreview}
-                        alt="Flight preview"
-                        className="w-full h-48 object-cover rounded-lg"
-                      />
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        className="absolute top-2 right-2"
-                        onClick={removeFlightImage}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Accommodation Section */}
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Accommodation</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {accommodations.map((accommodation, index) => (
-                  <div key={accommodation.id} className="bg-gray-50 p-4 rounded-xl relative">
-                    {accommodations.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute cursor-pointer top-2 right-2 text-red-500 hover:text-red-700"
-                        onClick={() => removeAccommodation(accommodation.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                    <div className="grid md:grid-cols-3 gap-4">
-                      <div>
-                        <Label className="text-gray-700 font-medium">Location</Label>
-                        <Input
-                          placeholder='e.g. Leh, Ladakh'
-                          value={accommodation.location}
-                          onChange={(e) => updateAccommodation(accommodation.id, 'location', e.target.value)}
-                          className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-gray-700 font-medium">Hotel Name or Similar</Label>
-                        <select
-                          value={accommodation.hotelName}
-                          onChange={e => {
-                            const selectedHotel = hotels.find(h => h.name === e.target.value);
-                            if (e.target.value !== "__custom" && selectedHotel?.venue?.address) {
-                              setAccommodations(accommodations.map(acc =>
-                                acc.id === accommodation.id
-                                  ? { ...acc, hotelName: e.target.value, location: selectedHotel.venue?.address || "" }
-                                  : acc
-                              ));
-                            } else if (e.target.value === "__custom") {
-                              setAccommodations(accommodations.map(acc =>
-                                acc.id === accommodation.id
-                                  ? { ...acc, hotelName: e.target.value, location: '' }
-                                  : acc
-                              ));
-                            } else {
-                              updateAccommodation(accommodation.id, 'hotelName', e.target.value);
-                            }
-                          }}
-                          className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
-                        >
-                          <option value="">Select hotel...</option>
-                          {hotels
-                            .filter(hotel => {
-                              // If a fully packed package is selected, filter hotels by destination
-                              if (selectedFullyPackedPackage) {
-                                // Filter by destination name (case-insensitive)
-                                const packageDestination = selectedFullyPackedPackage.destination.name.toLowerCase();
-                                const hotelLocation = hotel.venue?.address?.toLowerCase() || '';
-                                return hotelLocation.includes(packageDestination) || 
-                                       hotel.venue?.destinationId === selectedFullyPackedPackage.destination.id;
-                              }
-                              // If no package selected, show all hotels
-                              return true;
-                            })
-                            .map(hotel => (
-                              <option key={hotel.id} value={hotel.name}>
-                                {hotel.name}
-                                {hotel.venue?.name && ` - ${hotel.venue.name}`}
-                              </option>
-                            ))}
-                          <option value="__custom">Other (Add new)</option>
-                        </select>
-                        {accommodation.hotelName === "__custom" && (
-                          <Input
-                            value={accommodation.hotelNameCustom || ""}
-                            onChange={e => {
-                              updateAccommodation(accommodation.id, 'hotelNameCustom', e.target.value)
-                            }}
-                            placeholder="Enter custom hotel name"
-                            className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900" />
-                        )}
-                      </div>
-                      <div>
-                        <Label className="text-gray-700 font-medium">Number of Nights</Label>
-                        <Input
-                          type="number"
-                          min="1"
-                          value={accommodation.numberOfNights}
-                          onChange={(e) => updateAccommodation(accommodation.id, 'numberOfNights', parseInt(e.target.value) || 1)}
-                          className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {selectedPackageId && packageNights !== null && totalAccommodationNights !== packageNights && (
-                  <div className="mt-2 p-2 bg-yellow-100 border border-yellow-400 rounded text-yellow-800 font-medium">
-                    Warning: Total accommodation nights ({totalAccommodationNights}) do not match the package's nights ({packageNights}). Please review!
-                  </div>
-                )}
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full cursor-pointer border-dashed border-green-400 text-green-600 hover:bg-green-50 hover:text-green-700"
-                  onClick={addAccommodation}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Accommodation
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Day-by-Day Itinerary */}
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Day-by-Day Itinerary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {itinerary.map((item, index) => (
-                  <div key={item.id} className="bg-gray-50 p-4 rounded-xl relative">
-                    {itinerary.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute top-2 right-2 text-red-500 hover:text-red-700"
-                        onClick={() => removeItineraryItem(item.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
-                    <div className="space-y-3">
-                      <div>
-                        <Label className="text-gray-700 font-medium">Day Title</Label>
-                        <Input
-                          placeholder="e.g., Day 1: Arrival in Leh"
-                          value={item.dayTitle}
-                          onChange={(e) => updateItineraryItem(item.id, 'dayTitle', e.target.value)}
-                          className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-gray-700 font-medium">Description</Label>
-                        <Textarea
-                          rows={3}
-                          value={item.description}
-                          onChange={(e) => updateItineraryItem(item.id, 'description', e.target.value)}
-                          className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full border-dashed border-green-400 text-green-600 hover:bg-green-50 hover:text-green-700"
-                  onClick={addItineraryItem}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Another Day
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Inclusions */}
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Inclusions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {inclusions.map((inclusion, index) => (
-                  <div key={index} className="flex gap-2">
-                    {/* <Input
-                      value={inclusion}
-                      onChange={(e) => updateInclusion(index, e.target.value)}
-                      placeholder="Enter inclusion item"
-                      className="focus:ring-green-500 focus:border-green-500 text-gray-900"
-                    /> */}
-                    <select
-                      value={inclusion}
-                      onChange={e => updateInclusion(index, e.target.value)}
-                      className="block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
-                    >
-                      <option value="">Select inclusion...</option>
-                      {adminInclusions.map((item, idx) => (
-                        <option key={idx} value={item}>{item}</option>
-                      ))}
                     </select>
-                    {inclusions.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-500 hover:text-red-700"
-                        onClick={() => removeInclusion(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
                   </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full border-dashed border-green-400 text-green-600 hover:bg-green-50 hover:text-green-700"
-                  onClick={addInclusion}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Inclusion
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Exclusions */}
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Exclusions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {exclusions.map((exclusion, index) => (
-                  <div key={index} className="flex gap-2">
-                    {/* <Input
-                      value={exclusion}
-                      onChange={(e) => updateExclusion(index, e.target.value)}
-                      placeholder="Enter exclusion item"
-                      className="focus:ring-green-500 focus:border-green-500 text-gray-900"
-                    /> */}
-                    <select
-                      value={exclusion}
-                      onChange={e => updateExclusion(index, e.target.value)}
-                      className="block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
-                    >
-                      <option value="">Select exclusion...</option>
-                      {adminExclusions.map((item, idx) => (
-                        <option key={idx} value={item}>{item}</option>
-                      ))}
-                    </select>
-                    {exclusions.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="text-red-500 hover:text-red-700"
-                        onClick={() => removeExclusion(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    )}
+                  <div className="space-y-2">
+                    <Label htmlFor="travelDate" className='text-gray-600'>Travel Date</Label>
+                    <Input id="travelDate" name="travelDate" type="date" className='text-gray-600' value={travelDetails.travelDate} onChange={handleTravelDetailsChange} />
                   </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="w-full border-dashed border-green-400 text-green-600 hover:bg-green-50 hover:text-green-700"
-                  onClick={addExclusion}
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Exclusion
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Costing Summary */}
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Costing Summary</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Card className="shadow-sm">
-                  <CardHeader>
-                    <CardTitle className="text-lg font-semibold text-gray-900">Select Package</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <Label htmlFor="package" className="text-gray-700 font-medium">Package</Label>
-                      <select
-                        id="package"
-                        value={selectedPackageId ?? ""}
-                        onChange={e => setSelectedPackageId(Number(e.target.value))}
-                        className="mt-1 block w-full h-10 rounded-md border-gray-300 shadow-sm focus:ring-green-500 focus:border-green-500 text-gray-900"
-                      >
-                        <option value="">Select package...</option>
-                        {packages.map(pkg => (
-                          <option key={pkg.id} value={pkg.id}>
-                            {pkg.name} ({pkg.durationDays} days)
-                          </option>
-                        ))}
-                      </select>
-                      {selectedPackageId && (
-                        <div className="mt-2 p-2 bg-gray-100 rounded">
-                          <div className="font-semibold">{packages.find(p => p.id === selectedPackageId)?.description}</div>
-                          <div className="text-sm text-gray-600">
-                            Duration: {packages.find(p => p.id === selectedPackageId)?.durationDays} days, Nights: {packages.find(p => p.id === selectedPackageId)?.totalNights}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="landCost" className="text-gray-700 font-medium">Land Cost Per Person</Label>
-                    <Input
-                      id="landCost"
-                      type="number"
-                      min="0"
-                      value={costing.landCostPerPerson}
-                      onChange={(e) => setCosting(prev => ({ ...prev, landCostPerPerson: parseFloat(e.target.value) || 0 }))}
-                      className="mt-1 focus:ring-green-500 focus:border-green-500 text-gray-900"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-gray-700 font-medium">Flight Cost Per Person</Label>
-                    <Input
-                      value={costing.flightCostPerPerson}
-                      disabled
-                      className="mt-1 bg-gray-100 text-gray-700"
-                    />
+                  <div className="space-y-2">
+                    <Label htmlFor="groupSize" className='text-gray-600'>Group Size</Label>
+                    <Input id="groupSize" name="groupSize" type="number" className='text-gray-600' min="1" value={travelDetails.groupSize} onChange={handleTravelDetailsChange} placeholder="e.g., 4" />
                   </div>
                 </div>
                 <Separator />
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-gray-700 font-medium">Total Cost Per Person</Label>
-                    <Input
-                      value={costing.totalCostPerPerson}
-                      disabled
-                      className="mt-1 bg-gray-100 font-semibold text-gray-900"
-                    />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                  <div className="space-y-2">
+                    <Label htmlFor="costPerPerson" className='text-gray-600'>Flight Cost per Person (₹)</Label>
+                    <Input id="costPerPerson" name="costPerPerson" className='text-gray-600' type="number" value={flightDetails.costPerPerson} onChange={handleFlightDetailsChange} placeholder="e.g., 15000" />
                   </div>
-                  <div>
-                    <Label className="text-gray-700 font-medium">Total Group Cost</Label>
-                    <Input
-                      value={costing.totalGroupCost}
-                      disabled
-                      className="mt-1 bg-gray-100 font-semibold text-gray-900"
-                    />
+                  <div className="space-y-2 md:col-span-2">
+                    <Label className='text-gray-600'>Flight Ticket Image</Label>
+                    <div className="flex items-center gap-4">
+                      <div className="w-full">
+                        <label htmlFor="flight-image-upload" className="flex text-gray-600 items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-100 transition">
+                          {isUploading ? (
+                            <Loader2 className="h-6 w-6 animate-spin text-gray-500" />
+                          ) : flightDetails.imageUrl ? (
+                            <img src={flightDetails.imageUrl} alt="Flight ticket" className="h-full w-auto object-contain p-2" />
+                          ) : (
+                            <div className="flex flex-col items-center justify-center">
+                              <Upload className="w-8 h-8 text-gray-400" />
+                              <p className="text-sm text-gray-500">Click to upload image</p>
+                            </div>
+                          )}
+                        </label>
+                        <Input id="flight-image-upload" type="file" className="hidden" onChange={handleFlightImageUpload} accept="image/*" disabled={isUploading} />
+                      </div>
+                      {flightDetails.imageUrl && (
+                        <Button variant="ghost" size="icon" onClick={() => setFlightDetails(prev => ({ ...prev, imageUrl: '' }))}>
+                          <X className="h-5 w-5 text-red-500" />
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Notes & Terms */}
-            <Card className="shadow-sm">
+            {/* Services */}
+            <Card>
               <CardHeader>
-                <CardTitle className="text-lg font-semibold text-gray-900">Notes & Terms</CardTitle>
+                <CardTitle className='text-gray-600'>Services</CardTitle>
+                <p className="text-sm text-gray-500">Select accommodation, transport, and meal plans for this quotation.</p>
               </CardHeader>
-              <CardContent>
-                <Textarea
-                  rows={6}
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Any special instructions, cancellation policy, payment terms..."
-                  className="focus:ring-green-500 focus:border-green-500 text-gray-900"
-                />
+              <CardContent className="space-y-8">
+                {/* Accommodation Section */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-800 mb-4">Accommodation</h3>
+                  <div className="space-y-4">
+                    {accommodations.map((acc) => {
+                      const selectedDestination = allDestinations.find(d => d.name === acc.location);
+                      const currencyInfo = selectedDestination
+                        ? allCountryCurrencies.find(c => c.countryId === selectedDestination.countryId)
+                        : null;
+
+                      const conversionRate = currencyInfo?.conversionRate || 1;
+                      const currencyCode = currencyInfo?.currencyCode || 'INR';
+                      const filteredHotels = acc.location
+                        ? allHotels.filter(h => h.destination?.state === acc.location)
+                        : [];
+
+                      console.log("LOCATION:", acc.location);
+                      console.log("FILTERED HOTELS:", JSON.stringify(filteredHotels, null, 2));
+                      return (
+                        <div key={acc.id} className="p-4 border rounded-lg bg-gray-50/50 space-y-3 relative">
+                          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                            {/* Location Dropdown */}
+                            <select
+                              className="w-full h-10 border-gray-300 text-gray-600 rounded-md shadow-sm"
+                              value={acc.location}
+                              onChange={e => {
+                                updateAccommodation(acc.id, 'location', e.target.value);
+                                updateAccommodation(acc.id, 'hotelName', '');
+                                updateAccommodation(acc.id, 'roomType', '');
+                                updateAccommodation(acc.id, 'price', 0);
+                              }}
+                            >
+                              <option value="">Select Location</option>
+                              {(() => { 
+                                const selectedCountryId = travelDetails.countryId;
+                                const relevantLocations = selectedCountryId
+                                  ? allDestinations.filter(d => d.countryId === selectedCountryId)
+                                  : allDestinations;
+
+                                return relevantLocations.map(dest => (
+                                  <option key={dest.id} value={dest.state ?? ''}>{dest.state ?? 'Unknown'}</option>
+                                ));
+                              })()}
+                            </select>
+
+                            {/* Hotel Dropdown */}
+                            <select
+                              className="w-full h-10 border-gray-300 text-gray-600 rounded-md shadow-sm"
+                              value={acc.hotelName}
+                              disabled={!acc.location}
+                              onChange={e => {
+                                const hotelName = e.target.value;
+                                const hotel = filteredHotels.find(h => h.name === hotelName);
+
+                                console.log("Selected hotel:", hotel);
+                                updateAccommodation(acc.id, 'hotelName', hotelName);
+
+                                if (hotel) {
+                                  if (hotel.rateCards && hotel.rateCards.length > 0) {
+                                    updateAccommodation(acc.id, 'roomType', hotel.rateCards[0].roomType);
+                                    updateAccommodation(acc.id, 'price', hotel.rateCards[0].rate);
+                                    console.log("Using rate card price:", hotel.rateCards[0].rate);
+                                  } 
+                                  else if (hotel.basePricePerNight) {
+                                    updateAccommodation(acc.id, 'roomType', 'Standard'); 
+                                    updateAccommodation(acc.id, 'price', hotel.basePricePerNight);
+                                    console.log("Using base price:", hotel.basePricePerNight);
+                                  } 
+                                  else {
+                                    updateAccommodation(acc.id, 'roomType', '');
+                                    updateAccommodation(acc.id, 'price', 0);
+                                    console.log("No pricing data found for hotel");
+                                  }
+                                } else { 
+                                  updateAccommodation(acc.id, 'roomType', '');
+                                  updateAccommodation(acc.id, 'price', 0);
+                                }
+                              }}
+                            >
+                              <option value="">
+                                {acc.location
+                                  ? (filteredHotels.length > 0 ? 'Select Hotel' : 'No hotels in location')
+                                  : 'Select Location First'}
+                              </option>
+                              {filteredHotels.map(hotel => (
+                                <option key={hotel.id} value={hotel.name}>{hotel.name}</option>
+                              ))}
+                            </select>
+
+                            <Input placeholder="Room Type" className='text-gray-600' value={acc.roomType} onChange={e => updateAccommodation(acc.id, 'roomType', e.target.value)} />
+                            <Input type="number" placeholder="Nights" className='text-gray-600' value={acc.nights} onChange={e => updateAccommodation(acc.id, 'nights', parseInt(e.target.value))} />
+                            <div className="relative">
+                              <Input type="number" placeholder="Price/Night (INR)" className='text-gray-600' value={acc.price} onChange={e => updateAccommodation(acc.id, 'price', parseFloat(e.target.value))} />
+                              {currencyInfo && acc.price > 0 && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                                  {currencyCode} {(acc.price * conversionRate).toFixed(2)}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 absolute top-1 right-1" onClick={() => removeAccommodation(acc.id)}>
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <Button variant="outline" size="sm" className="mt-4 text-gray-600 cursor-pointer" onClick={addAccommodation}>
+                    <Plus className="w-4 h-4 mr-2 text-gray-600" /> Add Accommodation
+                  </Button>
+                </div>
+
+                <Separator />
+
+                {/* Transfers Section */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-800 mb-4">Transfers</h3>
+                  <div className="space-y-4">
+                    {transfers.map((t, index) => (
+                      <div key={t.id} className="p-4 border rounded-lg bg-gray-50/50 space-y-3">
+                        <div className="grid grid-cols-1 md:grid-cols-3 text-gray-600 gap-4">
+                          <select value={t.type} onChange={e => updateTransfer(t.id, 'type', e.target.value)} className="w-full cursor-pointer h-10 border-gray-300 rounded-md shadow-sm">
+                            <option>Intercity</option>
+                            <option>Local Sightseeing</option>
+                          </select>
+                          <Input placeholder="Vehicle Name" value={t.vehicleName} onChange={e => updateTransfer(t.id, 'vehicleName', e.target.value)} />
+                          <Input type="number" placeholder="Price" value={t.price} onChange={e => updateTransfer(t.id, 'price', parseFloat(e.target.value))} />
+                        </div>
+                        <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 cursor-pointer" onClick={() => removeTransfer(t.id)}>
+                          <Trash2 className="w-4 h-4 mr-2" /> Remove
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                  <Button variant="outline" size="sm" className="mt-4 text-gray-600 cursor-pointer" onClick={addTransfer}>
+                    <Plus className="w-4 h-4 mr-2" /> Add Transfer
+                  </Button>
+                </div>
+
+                <Separator />
+
+                {/* Meal Plan Section */}
+                <div>
+                  <Label htmlFor="mealPlan" className="text-lg font-medium text-gray-800">Meal Plan</Label>
+                  <select
+                    id="mealPlan"
+                    value={selectedMealPlan}
+                    onChange={e => setSelectedMealPlan(e.target.value)}
+                    className="mt-2 block w-full md:w-1/3 h-10 border-gray-300 cursor-pointer text-gray-600 rounded-md shadow-sm"
+                  >
+                    <option value="">Select Meal Plan</option>
+                    {allMealPlans.map(plan => (
+                      <option key={plan.id} value={plan.name}>{plan.name} (₹{plan.ratePerPerson}/person)</option>
+                    ))}
+                  </select>
+                </div>
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className='text-gray-600'>Itinerary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-500">Day-by-day itinerary builder will go here.</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className='text-gray-600'>Inclusions & Exclusions</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-500">Inclusions and Exclusions selection will go here.</p>
+              </CardContent>
+            </Card>
+
           </div>
         </div>
 
-        {/* Sticky Footer */}
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg z-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex justify-end gap-3">
-              {/* <Button variant="outline" className="border-green-400 text-green-600 hover:bg-green-50 hover:text-green-700">
+        {/* Sticky Footer for Actions */}
+        <div className="fixed bottom-0 left-0 lg:left-64 right-0 bg-white/80 backdrop-blur-sm border-t shadow-lg z-30">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+            <div className="flex justify-end items-center gap-3">
+              <Button variant="outline" disabled={isSubmitting}>
                 Save as Draft
-              </Button> */}
-              <Button onClick={() => setShowPdfPreview(true)} variant="ghost" className="border border-gray-300 hover:bg-gray-50 text-gray-700">
+              </Button>
+              <Button variant="secondary" disabled={isSubmitting}>
                 Preview PDF
               </Button>
-              <Button onClick={handleSubmitQuotation} className="bg-green-600 hover:bg-green-700 text-white">
-                Send Quotation
+              <Button disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create & Send Quotation
               </Button>
             </div>
           </div>
         </div>
       </div>
-      {showPdfPreview && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg shadow-lg p-4 max-w-4xl w-full h-[80vh] flex flex-col">
-            <Button
-              className="self-end cursor-pointer mb-2 text-red-500"
-              variant="ghost"
-              onClick={() => setShowPdfPreview(false)}
-            >
-              Close
-            </Button>
-            <PDFViewer width="100%" height="100%">
-              <QuotationPDF payload={payload} />
-            </PDFViewer>
-          </div>
-        </div>
-      )}
     </Layout>
   );
 }
