@@ -32,6 +32,8 @@ model Quotation {
   destinationName String?
   totalNights     Int      @default(0)
 
+  place String?
+
   flightCostPerPerson Float?
   landCostPerPerson   Float?
   totalCostPerPerson  Float?
@@ -68,11 +70,11 @@ model QuotationAccommodation {
   quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
   quotationId String
 
-  location  String 
-  hotelName String 
-  roomType  String 
+  location  String
+  hotelName String
+  roomType  String
   nights    Int
-  price     Float  
+  price     Float
 }
 
 model QuotationTransfer {
@@ -80,9 +82,9 @@ model QuotationTransfer {
   quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
   quotationId String
 
-  type        String 
-  vehicleName String? 
-  price       Float 
+  type        String
+  vehicleName String?
+  price       Float
 }
 
 model QuotationItinerary {

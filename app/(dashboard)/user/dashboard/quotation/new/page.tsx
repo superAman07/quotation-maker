@@ -319,6 +319,82 @@ export default function NewQuotationPage() {
     setExclusions(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleSubmit = async (status: 'DRAFT' | 'SENT') => {
+    setIsSubmitting(true);
+
+    // 1. Calculate derived values
+    const totalNights = accommodations.reduce((sum, acc) => sum + acc.nights, 0);
+    const totalAccommodationCost = accommodations.reduce((sum, acc) => sum + (acc.price * acc.nights), 0);
+    const totalTransferCost = transfers.reduce((sum, t) => sum + t.price, 0);
+    const selectedMealPlanObject = allMealPlans.find(p => p.name === selectedMealPlan);
+    const mealPlanCost = selectedMealPlanObject ? selectedMealPlanObject.ratePerPerson : 0;
+
+    const landCostPerHead = travelDetails.groupSize > 0
+      ? (totalAccommodationCost + totalTransferCost) / travelDetails.groupSize + mealPlanCost
+      : 0;
+    
+    const totalPerHead = landCostPerHead + flightDetails.costPerPerson;
+    const totalGroupCost = totalPerHead * travelDetails.groupSize;
+
+    // 2. Find the destination name
+    const selectedCountry = allCountries.find(c => c.id === travelDetails.countryId);
+    const place = selectedCountry ? selectedCountry.name : 'N/A';
+
+    // 3. Assemble the payload
+    const payload = {
+      // Client Info
+      clientName: clientInfo.name,
+      clientEmail: clientInfo.email,
+      clientPhone: clientInfo.phone,
+      clientAddress: clientInfo.address,
+
+      // Travel Details
+      travelDate: travelDetails.travelDate,
+      groupSize: travelDetails.groupSize,
+      totalNights: totalNights,
+      place: place, 
+      
+      // Flight Details
+      flightCost: flightDetails.costPerPerson,
+      flightImageUrl: flightDetails.imageUrl,
+
+      // Services
+      accommodations: accommodations.map(({ id, ...rest }) => rest), // Remove client-side ID
+      transfers: transfers.map(({ id, ...rest }) => rest), // Remove client-side ID
+      mealPlan: selectedMealPlan,
+      itinerary: itinerary.map(({ id, ...rest }) => rest), // Remove client-side ID
+      inclusions: inclusions.map(item => ({ item })), // Format for Prisma create
+      exclusions: exclusions.map(item => ({ item })), // Format for Prisma create
+      
+      // Costing
+      landCostPerHead: landCostPerHead,
+      totalPerHead: totalPerHead,
+      totalGroupCost: totalGroupCost,
+
+      // Meta
+      notes: notes,
+      status: status,
+    };
+
+    console.log("SUBMITTING PAYLOAD:", JSON.stringify(payload, null, 2));
+
+    try {
+      // We will uncomment and use this in the next step
+      // const response = await axios.post('/api/user/new-quotation', payload);
+      // toast({ title: "Success", description: `Quotation saved as ${status.toLowerCase()}.` });
+      // router.push('/user/dashboard/quotations'); // Redirect after success
+      
+      // For now, just show a success toast
+      toast({ title: "Payload Assembled!", description: "Check the browser console to see the payload." });
+
+    } catch (error) {
+      console.error("Failed to create quotation:", error);
+      toast({ title: "Error", description: "Could not save the quotation.", variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <Layout>
@@ -783,7 +859,7 @@ export default function NewQuotationPage() {
               <Button variant="secondary" className='bg-orange-100 cursor-pointer hover:bg-orange-200 text-gray-600' disabled={isSubmitting}>
                 Preview PDF
               </Button>
-              <Button disabled={isSubmitting} className='bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'>
+              <Button disabled={isSubmitting} className='bg-blue-500 text-white hover:bg-blue-600 cursor-pointer' onClick={() => handleSubmit('SENT')}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create & Send Quotation
               </Button>
