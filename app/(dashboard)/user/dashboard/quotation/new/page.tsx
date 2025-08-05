@@ -135,6 +135,9 @@ export default function NewQuotationPage() {
   const [exclusions, setExclusions] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
 
+  const [newInclusion, setNewInclusion] = useState('');
+  const [newExclusion, setNewExclusion] = useState('');
+
   // --- Fetched Admin Data State ---
   const [allHotels, setAllHotels] = useState<HotelBlueprint[]>([]);
   const [allTransfers, setAllTransfers] = useState<TransferBlueprint[]>([]);
@@ -282,6 +285,39 @@ export default function NewQuotationPage() {
 
   const [selectedMealPlan, setSelectedMealPlan] = useState('');
 
+  const addItineraryDay = () => {
+    setItinerary(prev => [...prev, { id: Date.now().toString(), dayTitle: '', description: '' }]);
+  };
+
+  const updateItineraryDay = (id: string, field: keyof ItineraryItem, value: string) => {
+    setItinerary(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
+  };
+
+  const removeItineraryDay = (id: string) => {
+    setItinerary(prev => prev.filter(item => item.id !== id));
+  };
+
+  const addInclusion = () => {
+    if (newInclusion.trim()) {
+      setInclusions(prev => [...prev, newInclusion.trim()]);
+      setNewInclusion('');
+    }
+  };
+
+  const removeInclusion = (index: number) => {
+    setInclusions(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const addExclusion = () => {
+    if (newExclusion.trim()) {
+      setExclusions(prev => [...prev, newExclusion.trim()]);
+      setNewExclusion('');
+    }
+  };
+
+  const removeExclusion = (index: number) => {
+    setExclusions(prev => prev.filter((_, i) => i !== index));
+  };
 
   if (isLoading) {
     return (
@@ -310,8 +346,7 @@ export default function NewQuotationPage() {
 
         {/* Main Form Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="space-y-8">
-            {/* Client Information */}
+          <div className="space-y-8"> 
             <Card>
               <CardHeader>
                 <CardTitle className='text-gray-600'>Client Information</CardTitle>
@@ -546,12 +581,10 @@ export default function NewQuotationPage() {
                   <h3 className="text-lg font-medium text-gray-800 mb-4">Transfers</h3>
                   <div className="space-y-4">
                     {transfers.map((t) => {
-                      // Filter available transfers by the selected country
                       const availableTransfers = travelDetails.countryId
                         ? allTransfers.filter(at => at.countryId === travelDetails.countryId)
                         : [];
-                      
-                      // Get currency info for conversion display
+                    
                       const currencyInfo = travelDetails.countryId
                         ? allCountryCurrencies.find(c => c.countryId === travelDetails.countryId)
                         : null;
@@ -635,21 +668,105 @@ export default function NewQuotationPage() {
               </CardContent>
             </Card>
 
+            {/* Itinerary Section */}
             <Card>
               <CardHeader>
                 <CardTitle className='text-gray-600'>Itinerary</CardTitle>
+                <p className="text-sm text-gray-500">Create a detailed day-by-day plan for the trip.</p>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-500">Day-by-day itinerary builder will go here.</p>
+                <div className="space-y-6">
+                  {itinerary.map((item, index) => (
+                    <div key={item.id} className="p-4 border rounded-lg bg-gray-50/50 relative">
+                      <div className="flex items-center mb-3">
+                        <span className="font-bold text-gray-700 mr-4">Day {index + 1}</span>
+                        <Input
+                          placeholder="e.g., Arrival in Leh & Acclimatization"
+                          value={item.dayTitle}
+                          onChange={(e) => updateItineraryDay(item.id, 'dayTitle', e.target.value)}
+                          className="flex-grow text-gray-600"
+                        />
+                      </div>
+                      <Textarea
+                        placeholder="Describe the activities for the day..."
+                        value={item.description}
+                        onChange={(e) => updateItineraryDay(item.id, 'description', e.target.value)}
+                        className="min-h-[100px] text-gray-600"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="absolute top-2 right-2 text-red-500 hover:bg-red-50 cursor-pointer"
+                        onClick={() => removeItineraryDay(item.id)}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                <Button variant="outline" size="sm" className="mt-6 text-gray-600 cursor-pointer" onClick={addItineraryDay}>
+                  <Plus className="w-4 h-4 mr-2" /> Add Day
+                </Button>
               </CardContent>
             </Card>
 
+            {/* Inclusions & Exclusions Section */}
             <Card>
               <CardHeader>
                 <CardTitle className='text-gray-600'>Inclusions & Exclusions</CardTitle>
+                <p className="text-sm text-gray-500">Manually add inclusion and exclusion items for this quotation.</p>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-500">Inclusions and Exclusions selection will go here.</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8"> 
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-3">Inclusions</h4>
+                    <div className="flex gap-2 mb-4">
+                      <Input
+                        placeholder="Add an inclusion item..."
+                        value={newInclusion}
+                        onChange={(e) => setNewInclusion(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && addInclusion()}
+                        className="text-gray-600"
+                      />
+                      <Button onClick={addInclusion} className="cursor-pointer bg-amber-800">Add</Button>
+                    </div>
+                    <ul className="space-y-2 list-disc list-inside text-gray-600">
+                      {inclusions.map((item, index) => (
+                        <li key={index} className="flex items-center justify-between">
+                          <span>{item}</span>
+                          <Button variant="ghost" size="sm" onClick={() => removeInclusion(index)}>
+                            <Trash2 className="w-4 h-4 text-red-500 cursor-pointer" />
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Exclusions Column */}
+                  <div>
+                    <h4 className="font-semibold text-gray-700 mb-3">Exclusions</h4>
+                    <div className="flex gap-2 mb-4">
+                      <Input
+                        placeholder="Add an exclusion item..."
+                        value={newExclusion}
+                        onChange={(e) => setNewExclusion(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && addExclusion()}
+                        className="text-gray-600"
+                      />
+                      <Button onClick={addExclusion} className="cursor-pointer bg-amber-800">Add</Button>
+                    </div>
+                    <ul className="space-y-2 list-disc list-inside text-gray-600">
+                      {exclusions.map((item, index) => (
+                        <li key={index} className="flex items-center justify-between">
+                          <span>{item}</span>
+                          <Button variant="ghost" size="sm" onClick={() => removeExclusion(index)}>
+                            <Trash2 className="w-4 h-4 text-red-500 cursor-pointer" />
+                          </Button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
