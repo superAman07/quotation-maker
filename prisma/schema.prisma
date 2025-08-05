@@ -68,11 +68,11 @@ model QuotationAccommodation {
   quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
   quotationId String
 
-  location  String // e.g., "Leh"
-  hotelName String // e.g., "The Grand Dragon"
-  roomType  String // e.g., "Deluxe Room"
+  location  String 
+  hotelName String 
+  roomType  String 
   nights    Int
-  price     Float // Price per night AT THE TIME OF QUOTING
+  price     Float  
 }
 
 model QuotationTransfer {
@@ -80,9 +80,9 @@ model QuotationTransfer {
   quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
   quotationId String
 
-  type        String // "Intercity" or "Local Sightseeing"
-  vehicleName String // "Toyota Innova"
-  price       Float // Price for this transfer AT THE TIME OF QUOTING
+  type        String 
+  vehicleName String? 
+  price       Float 
 }
 
 model QuotationItinerary {
@@ -105,6 +105,18 @@ model QuotationExclusion {
   quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
   quotationId String
   item        String
+}
+
+model InclusionTemplate {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
+}
+
+model ExclusionTemplate {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  description String?
 }
 
 // model Accommodation {
