@@ -75,6 +75,7 @@ interface MealPlanBlueprint {
   id: number;
   name: string;
   ratePerPerson: number;
+  countryId: number;
 }
 
 interface DestinationBlueprint {
@@ -618,11 +619,16 @@ export default function NewQuotationPage() {
                     id="mealPlan"
                     value={selectedMealPlan}
                     onChange={e => setSelectedMealPlan(e.target.value)}
-                    className="mt-2 block w-full md:w-1/3 h-10 border-gray-300 cursor-pointer text-gray-600 rounded-md shadow-sm"
+                    disabled={!travelDetails.countryId}
+                    className="mt-2 block w-full md:w-1/3 h-10 border-gray-300 cursor-pointer text-gray-600 rounded-md shadow-sm disabled:bg-gray-100"
                   >
-                    <option value="">Select Meal Plan</option>
-                    {allMealPlans.map(plan => (
-                      <option key={plan.id} value={plan.name}>{plan.name} (₹{plan.ratePerPerson}/person)</option>
+                    <option value="">
+                      {travelDetails.countryId ? 'Select Meal Plan' : 'Select Country First'}
+                    </option>
+                    {allMealPlans
+                      .filter(plan => plan.countryId === travelDetails.countryId)
+                      .map(plan => (
+                        <option key={plan.id} value={plan.name}>{plan.name} (₹{plan.ratePerPerson}/person)</option>
                     ))}
                   </select>
                 </div>
@@ -654,13 +660,13 @@ export default function NewQuotationPage() {
         <div className="fixed bottom-0 left-0 lg:left-64 right-0 bg-white/80 backdrop-blur-sm border-t shadow-lg z-30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex justify-end items-center gap-3">
-              <Button variant="outline" disabled={isSubmitting}>
+              <Button variant="outline" className='border-gray-300 cursor-pointer text-gray-600 hover:bg-gray-100' disabled={isSubmitting}>
                 Save as Draft
               </Button>
-              <Button variant="secondary" disabled={isSubmitting}>
+              <Button variant="secondary" className='bg-orange-100 cursor-pointer hover:bg-orange-200 text-gray-600' disabled={isSubmitting}>
                 Preview PDF
               </Button>
-              <Button disabled={isSubmitting}>
+              <Button disabled={isSubmitting} className='bg-blue-500 text-white hover:bg-blue-600 cursor-pointer'>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create & Send Quotation
               </Button>
