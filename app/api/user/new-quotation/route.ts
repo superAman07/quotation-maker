@@ -1,6 +1,95 @@
 import { NextRequest, NextResponse } from "next/server";
-export async function POST(){
-    return NextResponse.json({message: "System Under process"}, {status: 201})
+import { prisma } from "@/lib/prisma";
+import { parse } from "cookie";
+import { jwtVerify } from "jose";
+import { QuotationStatus } from "@prisma/client";
+
+const JWT_SECRET = process.env.JWT_SECRET!;
+
+export async function POST(req: NextRequest) {
+    try {
+        // 1. Authenticate the user
+        const cookie = req.headers.get("cookie");
+        if (!cookie) {
+            return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+        }
+        const { auth_token } = parse(cookie);
+        if (!auth_token) {
+            return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+        }
+        
+        let payload;
+        try {
+            const secret = new TextEncoder().encode(JWT_SECRET);
+            const verified = await jwtVerify(auth_token, secret);
+            payload = verified.payload;
+        } catch {
+            return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+        }
+
+        // 2. Destructure the incoming data
+        const data = await req.json();
+        const {
+            clientName, clientEmail, clientPhone, clientAddress,
+            travelDate, groupSize, totalNights, place,
+            flightCost, flightImageUrl,
+            accommodations, transfers, mealPlan, itinerary,
+            inclusions, exclusions,
+            landCostPerHead, totalPerHead, totalGroupCost,
+            notes, status
+        } = data;
+
+        // 3. Find the Meal Plan ID
+        let mealPlanId = null;
+        if (mealPlan) {
+            const mealPlanRecord = await prisma.mealPlan.findFirst({
+                where: { name: mealPlan },
+                select: { id: true }
+            });
+            if (mealPlanRecord) {
+                mealPlanId = mealPlanRecord.id;
+            }
+        }
+
+        const today = new Date();
+        const dateStr = today.toISOString().slice(2, 10).replace(/-/g, '');
+        const randomStr = Math.random().toString(36).substring(2, 7).toUpperCase();
+        const quotationNo = `Q-${dateStr}-${randomStr}`;
+
+        // 4. Create the Quotation in the database
+        const quotation = await prisma.quotation.create({
+            data: {
+                quotationNo,
+                clientName, 
+                clientEmail, 
+                clientPhone, 
+                clientAddress,
+                travelDate: new Date(travelDate),
+                groupSize, 
+                totalNights, 
+                place,
+                flightCostPerPerson: flightCost, 
+                flightImageUrl,
+                landCostPerPerson: landCostPerHead, 
+                totalCostPerPerson: totalPerHead, 
+                totalGroupCost,
+                notes,
+                status: status as QuotationStatus,
+                createdBy: { connect: { id: Number((payload as { userId: string }).userId) } },
+                mealPlanId: mealPlanId,
+                accommodations: { create: accommodations },
+                transfers: { create: transfers },
+                itinerary: { create: itinerary },
+                inclusions: { create: inclusions },
+                exclusions: { create: exclusions },
+            },
+        });
+
+        return NextResponse.json({ message: "Quotation created successfully", quotation }, { status: 201 });
+    } catch (error) {
+        console.error("QUOTATION CREATE ERROR:", error);
+        return NextResponse.json({ error: "Internal server error while creating quotation." }, { status: 500 });
+    }
 }
 
 // import { prisma } from "@/lib/prisma";
