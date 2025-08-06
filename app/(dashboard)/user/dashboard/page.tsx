@@ -255,10 +255,10 @@ export default function Dashboard() {
                       </td>
                       <td className="p-4">
                         <div className="font-bold text-[#252426]">
-                          ₹{quotation.totalGroupCost.toLocaleString()}
+                          ₹{quotation.totalGroupCost ? quotation.totalGroupCost.toLocaleString() : '0'}
                         </div>
                         <div className="text-sm text-gray-400">
-                          ₹{quotation.totalPerHead.toLocaleString()}/person
+                          ₹{quotation.totalPerHead ? quotation.totalPerHead.toLocaleString() : '0'}/person
                         </div>
                       </td>
                       <td className="p-4">
