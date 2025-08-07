@@ -166,6 +166,8 @@ export default function NewQuotationPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [showPdfPreview, setShowPdfPreview] = useState(false);
+  const [previewData, setPreviewData] = useState<any>(null);
 
   useEffect(() => {
     async function fetchAllBlueprints() {
@@ -377,26 +379,24 @@ export default function NewQuotationPage() {
       return;
     }
     setIsSubmitting(true);
-
-    // 1. Calculate derived values
+    
     const totalNights = accommodations.reduce((sum, acc) => sum + acc.nights, 0);
     const totalAccommodationCost = accommodations.reduce((sum, acc) => sum + (acc.price * acc.nights), 0);
     const totalTransferCost = transfers.reduce((sum, t) => sum + t.price, 0);
     const selectedMealPlanObject = allMealPlans.find(p => p.name === selectedMealPlan);
     const mealPlanCost = selectedMealPlanObject ? selectedMealPlanObject.ratePerPerson : 0;
 
-    const landCostPerHead = travelDetails.groupSize > 0
-      ? (totalAccommodationCost + totalTransferCost) / travelDetails.groupSize + mealPlanCost
-      : 0;
+    const totalActivitiesCost = activities.reduce((sum, act) => sum + act.totalPrice, 0);
+
+    const activitiesCostPerPerson = totalActivitiesCost;
+    const landCostPerHead = mealPlanCost + (totalAccommodationCost / travelDetails.groupSize) + (totalTransferCost / travelDetails.groupSize) + activitiesCostPerPerson;
 
     const totalPerHead = landCostPerHead + flightDetails.costPerPerson;
     const totalGroupCost = totalPerHead * travelDetails.groupSize;
 
-    // 2. Find the destination name
     const selectedCountry = allCountries.find(c => c.id === travelDetails.countryId);
     const place = selectedCountry ? selectedCountry.name : 'N/A';
 
-    // 3. Assemble the payload
     const payload = {
       // Client Info
       clientName: clientInfo.name,
@@ -436,20 +436,84 @@ export default function NewQuotationPage() {
     console.log("SUBMITTING PAYLOAD:", JSON.stringify(payload, null, 2));
 
     try {
-      // We will uncomment and use this in the next step
       const response = await axios.post('/api/user/new-quotation', payload);
       toast({ title: "Success", description: `Quotation saved as ${status.toLowerCase()}.` });
-      window.location.href = '/user/dashboard/quotations'; // Redirect after success
+      window.location.href = '/user/dashboard/quotations';  
       console.log("Quotation created successfully:", response.data);
-      // For now, just show a success toast
+      
       toast({ title: "Payload Assembled!", description: "Check the browser console to see the payload." });
-
     } catch (error) {
       console.error("Failed to create quotation:", error);
       toast({ title: "Error", description: "Could not save the quotation.", variant: "destructive" });
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handlePdfPreview = () => {
+    // Calculate derived values (same as in handleSubmit)
+    const totalNights = accommodations.reduce((sum, acc) => sum + acc.nights, 0);
+    const totalAccommodationCost = accommodations.reduce((sum, acc) => sum + (acc.price * acc.nights), 0);
+    const totalTransferCost = transfers.reduce((sum, t) => sum + t.price, 0);
+    const selectedMealPlanObject = allMealPlans.find(p => p.name === selectedMealPlan);
+    const mealPlanCost = selectedMealPlanObject ? selectedMealPlanObject.ratePerPerson : 0;
+
+    const totalActivitiesCost = activities.reduce((sum, act) => sum + act.totalPrice, 0);
+
+    const activitiesCostPerPerson = totalActivitiesCost;
+
+    const accommodationAndTransferCostPerPerson = travelDetails.groupSize > 0 ? (totalAccommodationCost + totalTransferCost) / travelDetails.groupSize : 0;
+
+    const landCostPerHead = mealPlanCost + accommodationAndTransferCostPerPerson + activitiesCostPerPerson;
+
+    const totalPerHead = landCostPerHead + flightDetails.costPerPerson;
+    const totalGroupCost = totalPerHead * travelDetails.groupSize;
+
+    // Find the country name
+    const selectedCountry = allCountries.find(c => c.id === travelDetails.countryId);
+    const place = selectedCountry ? selectedCountry.name : 'N/A';
+
+    // Format the data for PDF
+    const pdfData = {
+      // Client info
+      clientName: clientInfo.name || 'Client Name',
+      clientEmail: clientInfo.email,
+      clientPhone: clientInfo.phone,
+      clientAddress: clientInfo.address,
+
+      // Travel details
+      travelDate: travelDetails.travelDate,
+      groupSize: travelDetails.groupSize,
+      totalNights: totalNights,
+      place: place,
+      mealPlan: selectedMealPlan,
+
+      // Flight details
+      flightCost: flightDetails.costPerPerson,
+      flightImageUrl: flightDetails.imageUrl,
+
+      // Services
+      accommodation: accommodations.map(({ id, ...rest }) => rest),
+      transfers: transfers.map(({ id, ...rest }) => rest),
+      mealPlanCost: mealPlanCost,
+      itinerary: itinerary.map(({ id, ...rest }) => rest),
+      inclusions: inclusions,
+      exclusions: exclusions,
+      activities: activities.map(({ id, ...rest }) => rest),
+      activitiesCost: activitiesCostPerPerson,
+      accommodationAndTransferCost: accommodationAndTransferCostPerPerson,
+
+      // Costs
+      landCostPerHead: landCostPerHead,
+      totalPerHead: totalPerHead,
+      totalGroupCost: totalGroupCost,
+
+      // Others
+      logoUrl: '/logo.png'
+    };
+
+    setPreviewData(pdfData);
+    setShowPdfPreview(true);
   };
 
   if (isLoading) {
@@ -687,10 +751,10 @@ export default function NewQuotationPage() {
                             <Input placeholder="Room Type" className='text-gray-600' value={acc.roomType} onChange={e => updateAccommodation(acc.id, 'roomType', e.target.value)} />
                             <Input type="number" placeholder="Nights" className='text-gray-600' value={acc.nights} onChange={e => updateAccommodation(acc.id, 'nights', parseInt(e.target.value))} />
                             <div className="relative">
-                              <Input type="number" placeholder="Price/Night (INR)" className='text-gray-600' value={acc.price} onChange={e => updateAccommodation(acc.id, 'price', parseFloat(e.target.value))} />
+                              <Input type="number" placeholder="Price/Night (INR)" className='text-gray-600' value={acc.price * (acc.nights || 1)} onChange={e => updateAccommodation(acc.id, 'price', parseFloat(e.target.value))} />
                               {currencyInfo && acc.price > 0 && (
                                 <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
-                                  {currencyCode} {(acc.price * conversionRate).toFixed(2)}
+                                  {currencyCode} {(acc.price * conversionRate * (acc.nights || 1)).toFixed(2)}
                                 </div>
                               )}
                             </div>
@@ -1024,10 +1088,20 @@ export default function NewQuotationPage() {
         <div className="fixed bottom-0 left-0 lg:left-64 right-0 bg-white/80 backdrop-blur-sm border-t shadow-lg z-30">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
             <div className="flex justify-end items-center gap-3">
-              <Button variant="outline" className='border-gray-300 cursor-pointer text-gray-600 hover:bg-gray-100' disabled={isSubmitting}>
+              <Button
+                variant="outline"
+                className='border-gray-300 cursor-pointer text-gray-600 hover:bg-gray-100'
+                disabled={isSubmitting}
+                onClick={() => handleSubmit('DRAFT')}
+              >
                 Save as Draft
               </Button>
-              <Button variant="secondary" className='bg-orange-100 cursor-pointer hover:bg-orange-200 text-gray-600' disabled={isSubmitting}>
+              <Button
+                variant="secondary"
+                className='bg-orange-100 cursor-pointer hover:bg-orange-200 text-gray-600'
+                disabled={isSubmitting || !clientInfo.name || !travelDetails.travelDate}
+                onClick={handlePdfPreview}
+              >
                 Preview PDF
               </Button>
               <Button disabled={isSubmitting || !clientInfo.name || !travelDetails.travelDate} className='bg-blue-500 text-white hover:bg-blue-600 cursor-pointer' onClick={() => handleSubmit('SENT')}>
@@ -1038,6 +1112,28 @@ export default function NewQuotationPage() {
           </div>
         </div>
       </div>
+      {/* PDF Preview Modal */}
+      {showPdfPreview && previewData && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+          <div className="bg-white rounded-lg shadow-lg p-4 max-w-4xl w-full h-[80vh] flex flex-col">
+            <div className="flex justify-between items-center mb-2">
+              <h2 className="text-lg font-semibold">PDF Preview</h2>
+              <Button
+                className="self-end cursor-pointer text-red-500"
+                variant="ghost"
+                onClick={() => setShowPdfPreview(false)}
+              >
+                Close
+              </Button>
+            </div>
+            <div className="flex-1">
+              <PDFViewer width="100%" height="100%" className="border rounded">
+                <QuotationPDF payload={previewData} />
+              </PDFViewer>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }
