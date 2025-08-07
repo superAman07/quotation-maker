@@ -712,6 +712,7 @@ export default function NewQuotationPage() {
 
                               <Label htmlFor={`acc-hotel-${acc.id}`} className="text-sm font-medium text-gray-500">Hotel</Label>
                               <select
+                                id={`acc-hotel-${acc.id}`}
                                 className="w-full h-10 border-gray-300 text-gray-600 rounded-md shadow-sm"
                                 value={acc.hotelName}
                                 disabled={!acc.location}
@@ -756,15 +757,15 @@ export default function NewQuotationPage() {
                             </div>
                             <div className='space-y-2'>
                               <Label htmlFor={`acc-room-${acc.id}`} className="text-sm font-medium text-gray-500">Room Type</Label>
-                              <Input placeholder="Room Type" className='text-gray-600' value={acc.roomType} onChange={e => updateAccommodation(acc.id, 'roomType', e.target.value)} />
+                              <Input id={`acc-room-${acc.id}`} placeholder="Room Type" className='text-gray-600' value={acc.roomType} onChange={e => updateAccommodation(acc.id, 'roomType', e.target.value)} />
                             </div>
                             <div className='space-y-2'>
                               <Label htmlFor={`acc-nights-${acc.id}`} className="text-sm font-medium text-gray-500">Nights</Label>
-                              <Input type="number" placeholder="Nights" className='text-gray-600' value={acc.nights} onChange={e => updateAccommodation(acc.id, 'nights', parseInt(e.target.value))} />
+                              <Input id={`acc-nights-${acc.id}`} type="number" placeholder="Nights" className='text-gray-600' value={acc.nights} onChange={e => updateAccommodation(acc.id, 'nights', parseInt(e.target.value))} />
                             </div>
                             <div className="space-y-2 relative">
                               <Label htmlFor={`acc-price-${acc.id}`} className="text-sm font-medium text-gray-500">Price/Night (₹)</Label>
-                              <Input type="number" placeholder="Price/Night (INR)" className='text-gray-600' value={acc.price * (acc.nights || 1)} onChange={e => updateAccommodation(acc.id, 'price', parseFloat(e.target.value))} />
+                              <Input id={`acc-price-${acc.id}`} type="number" placeholder="Price/Night (INR)" className='text-gray-600' value={acc.price * (acc.nights || 1)} onChange={e => updateAccommodation(acc.id, 'price', parseFloat(e.target.value))} />
                               {currencyInfo && acc.price > 0 && (
                                 <div className="absolute right-3 top-1/2  text-xs text-gray-500 pointer-events-none">
                                   {currencyCode} {(acc.price * conversionRate * (acc.nights || 1)).toFixed(2)}
@@ -804,41 +805,49 @@ export default function NewQuotationPage() {
                       return (
                         <div key={t.id} className="p-4 border rounded-lg bg-gray-50/50 space-y-3 relative">
                           <div className="grid grid-cols-1 md:grid-cols-3 text-gray-600 gap-4">
-                            <select
-                              value={t.type}
-                              disabled={!travelDetails.countryId}
-                              onChange={e => {
-                                const selectedType = e.target.value;
-                                const selectedTransfer = availableTransfers.find(at => at.type === selectedType);
+                            <div className='space-y-2'>
+                              <Label htmlFor={`t-type-${t.id}`} className="text-sm font-medium text-gray-500">Transfer Type</Label>
+                              <select
+                                id={`t-type-${t.id}`}
+                                value={t.type}
+                                disabled={!travelDetails.countryId}
+                                onChange={e => {
+                                  const selectedType = e.target.value;
+                                  const selectedTransfer = availableTransfers.find(at => at.type === selectedType);
 
-                                updateTransfer(t.id, 'type', selectedType);
-                                if (selectedTransfer) {
-                                  updateTransfer(t.id, 'price', selectedTransfer.priceInINR);
-                                } else {
-                                  updateTransfer(t.id, 'price', 0);
-                                }
-                              }}
-                              className="w-full cursor-pointer h-10 border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
-                            >
-                              <option value="">
-                                {travelDetails.countryId ? 'Select Transfer Type' : 'Select Country First'}
-                              </option>
-                              {availableTransfers.map(transferType => (
-                                <option key={transferType.id} value={transferType.type}>
-                                  {transferType.type}
+                                  updateTransfer(t.id, 'type', selectedType);
+                                  if (selectedTransfer) {
+                                    updateTransfer(t.id, 'price', selectedTransfer.priceInINR);
+                                  } else {
+                                    updateTransfer(t.id, 'price', 0);
+                                  }
+                                }}
+                                className="w-full cursor-pointer h-10 border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
+                              >
+                                <option value="">
+                                  {travelDetails.countryId ? 'Select Transfer Type' : 'Select Country First'}
                                 </option>
-                              ))}
-                            </select>
-
-                            <Input placeholder="Vehicle Name (Optional)" value={t.vehicleName} onChange={e => updateTransfer(t.id, 'vehicleName', e.target.value)} />
-
-                            <div className="relative">
-                              <Input type="number" placeholder="Price" value={t.price} onChange={e => updateTransfer(t.id, 'price', parseFloat(e.target.value))} />
-                              {currencyInfo && t.price > 0 && (
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
-                                  {currencyCode} {(t.price * conversionRate).toFixed(2)}
-                                </div>
-                              )}
+                                {availableTransfers.map(transferType => (
+                                  <option key={transferType.id} value={transferType.type}>
+                                    {transferType.type}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className='space-y-2'>
+                              <Label htmlFor={`t-vehicle-${t.id}`} className="text-sm font-medium text-gray-500">Vehicle Name (Optional)</Label>
+                              <Input id={`t-vehicle-${t.id}`} placeholder="Vehicle Name (Optional)" value={t.vehicleName} onChange={e => updateTransfer(t.id, 'vehicleName', e.target.value)} />
+                            </div>
+                            <div className='space-y-2'>
+                              <Label htmlFor={`t-price-${t.id}`} className="text-sm font-medium text-gray-500">Price</Label>
+                              <div className="relative">
+                                <Input type="number" placeholder="Price" value={t.price} onChange={e => updateTransfer(t.id, 'price', parseFloat(e.target.value))} />
+                                {currencyInfo && t.price > 0 && (
+                                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                                    {currencyCode} {(t.price * conversionRate).toFixed(2)}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                           <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 cursor-pointer absolute top-1 right-1" onClick={() => removeTransfer(t.id)}>
