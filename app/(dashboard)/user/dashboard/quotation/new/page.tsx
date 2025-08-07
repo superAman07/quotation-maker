@@ -379,7 +379,7 @@ export default function NewQuotationPage() {
       return;
     }
     setIsSubmitting(true);
-    
+
     const totalNights = accommodations.reduce((sum, acc) => sum + acc.nights, 0);
     const totalAccommodationCost = accommodations.reduce((sum, acc) => sum + (acc.price * acc.nights), 0);
     const totalTransferCost = transfers.reduce((sum, t) => sum + t.price, 0);
@@ -438,9 +438,9 @@ export default function NewQuotationPage() {
     try {
       const response = await axios.post('/api/user/new-quotation', payload);
       toast({ title: "Success", description: `Quotation saved as ${status.toLowerCase()}.` });
-      window.location.href = '/user/dashboard/quotations';  
+      window.location.href = '/user/dashboard/quotations';
       console.log("Quotation created successfully:", response.data);
-      
+
       toast({ title: "Payload Assembled!", description: "Check the browser console to see the payload." });
     } catch (error) {
       console.error("Failed to create quotation:", error);
@@ -582,9 +582,9 @@ export default function NewQuotationPage() {
                       name="countryId"
                       value={travelDetails.countryId}
                       onChange={handleTravelDetailsChange}
-                      className="w-full h-10 border-gray-300 rounded-md text-gray-600 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full cursor-pointer h-10 border-gray-300 rounded-md text-gray-600 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                     >
-                      <option value="">Select a country</option>
+                      <option className='cursor-pointer' value="">Select a country</option>
                       {allCountries.map(country => (
                         <option key={country.id} value={country.id}>{country.name}</option>
                       ))}
@@ -598,7 +598,7 @@ export default function NewQuotationPage() {
                       value={travelDetails.airportId}
                       onChange={handleTravelDetailsChange}
                       disabled={!travelDetails.countryId}
-                      className="w-full h-10 border-gray-300 rounded-md text-gray-600 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+                      className="w-full cursor-pointer h-10 border-gray-300 rounded-md text-gray-600 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
                     >
                       <option value="">
                         {travelDetails.countryId ? 'Select an airport' : 'Select country first'}
@@ -612,7 +612,7 @@ export default function NewQuotationPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="travelDate" className='text-gray-600'>Travel Date</Label>
-                    <Input id="travelDate" name="travelDate" type="date" className='text-gray-600' value={travelDetails.travelDate} onChange={handleTravelDetailsChange} />
+                    <Input id="travelDate" name="travelDate" type="date" className='text-gray-600 cursor-pointer' value={travelDetails.travelDate} onChange={handleTravelDetailsChange} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="groupSize" className='text-gray-600'>Group Size</Label>
@@ -681,85 +681,98 @@ export default function NewQuotationPage() {
                       return (
                         <div key={acc.id} className="p-4 border rounded-lg bg-gray-50/50 space-y-3 relative">
                           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                            <select
-                              className="w-full h-10 border-gray-300 text-gray-600 rounded-md shadow-sm"
-                              value={acc.location}
-                              onChange={e => {
-                                updateAccommodation(acc.id, 'location', e.target.value);
-                                updateAccommodation(acc.id, 'hotelName', '');
-                                updateAccommodation(acc.id, 'roomType', '');
-                                updateAccommodation(acc.id, 'price', 0);
-                              }}
-                            >
-                              <option value="">Select Location</option>
-                              {(() => {
-                                const selectedCountryId = travelDetails.countryId;
-                                const relevantLocations = selectedCountryId
-                                  ? allDestinations.filter(d => d.countryId === selectedCountryId)
-                                  : allDestinations;
-
-                                return relevantLocations.map(dest => (
-                                  <option key={dest.id} value={dest.state ?? ''}>{dest.state ?? 'Unknown'}</option>
-                                ));
-                              })()}
-                            </select>
-
-                            {/* Hotel Dropdown */}
-                            <select
-                              className="w-full h-10 border-gray-300 text-gray-600 rounded-md shadow-sm"
-                              value={acc.hotelName}
-                              disabled={!acc.location}
-                              onChange={e => {
-                                const hotelName = e.target.value;
-                                const hotel = filteredHotels.find(h => h.name === hotelName);
-
-                                console.log("Selected hotel:", hotel);
-                                updateAccommodation(acc.id, 'hotelName', hotelName);
-
-                                if (hotel) {
-                                  if (hotel.rateCards && hotel.rateCards.length > 0) {
-                                    updateAccommodation(acc.id, 'roomType', hotel.rateCards[0].roomType);
-                                    updateAccommodation(acc.id, 'price', hotel.rateCards[0].rate);
-                                    console.log("Using rate card price:", hotel.rateCards[0].rate);
-                                  }
-                                  else if (hotel.basePricePerNight) {
-                                    updateAccommodation(acc.id, 'roomType', 'Standard');
-                                    updateAccommodation(acc.id, 'price', hotel.basePricePerNight);
-                                    console.log("Using base price:", hotel.basePricePerNight);
-                                  }
-                                  else {
-                                    updateAccommodation(acc.id, 'roomType', '');
-                                    updateAccommodation(acc.id, 'price', 0);
-                                    console.log("No pricing data found for hotel");
-                                  }
-                                } else {
+                            <div className='space-y-2'>
+                              <Label htmlFor={`acc-location-${acc.id}`} className="text-sm font-medium text-gray-500">Location</Label>
+                              <select
+                                className="w-full h-10 cursor-pointer border-gray-300 text-gray-600 rounded-md shadow-sm"
+                                value={acc.location}
+                                onChange={e => {
+                                  updateAccommodation(acc.id, 'location', e.target.value);
+                                  updateAccommodation(acc.id, 'hotelName', '');
                                   updateAccommodation(acc.id, 'roomType', '');
                                   updateAccommodation(acc.id, 'price', 0);
-                                }
-                              }}
-                            >
-                              <option value="">
-                                {acc.location
-                                  ? (filteredHotels.length > 0 ? 'Select Hotel' : 'No hotels in location')
-                                  : 'Select Location First'}
-                              </option>
-                              {filteredHotels.map(hotel => (
-                                <option key={hotel.id} value={hotel.name}>{hotel.name}</option>
-                              ))}
-                            </select>
+                                }}
+                              >
+                                <option value="">Select Location</option>
+                                {(() => {
+                                  const selectedCountryId = travelDetails.countryId;
+                                  const relevantLocations = selectedCountryId
+                                    ? allDestinations.filter(d => d.countryId === selectedCountryId)
+                                    : allDestinations;
 
-                            <Input placeholder="Room Type" className='text-gray-600' value={acc.roomType} onChange={e => updateAccommodation(acc.id, 'roomType', e.target.value)} />
-                            <Input type="number" placeholder="Nights" className='text-gray-600' value={acc.nights} onChange={e => updateAccommodation(acc.id, 'nights', parseInt(e.target.value))} />
-                            <div className="relative">
-                              <Input type="number" placeholder="Price/Night (INR)" className='text-gray-600' value={acc.price * (acc.nights || 1)} onChange={e => updateAccommodation(acc.id, 'price', parseFloat(e.target.value))} />
+                                  return relevantLocations.map(dest => (
+                                    <option key={dest.id} value={dest.state ?? ''}>{dest.state ?? 'Unknown'}</option>
+                                  ));
+                                })()}
+                              </select>
+                            </div>
+
+                            {/* Hotel Dropdown */}
+                            <div> 
+                              <Label htmlFor={`acc-hotel-${acc.id}`} className="text-sm font-medium text-gray-500">Hotel</Label>
+                              <select
+                                id={`acc-hotel-${acc.id}`}
+                                className="w-full h-10 cursor-pointer border-gray-300 text-gray-600 rounded-md shadow-sm"
+                                value={acc.hotelName}
+                                disabled={!acc.location}
+                                onChange={e => {
+                                  const hotelName = e.target.value;
+                                  const hotel = filteredHotels.find(h => h.name === hotelName);
+
+                                  console.log("Selected hotel:", hotel);
+                                  updateAccommodation(acc.id, 'hotelName', hotelName);
+
+                                  if (hotel) {
+                                    if (hotel.rateCards && hotel.rateCards.length > 0) {
+                                      updateAccommodation(acc.id, 'roomType', hotel.rateCards[0].roomType);
+                                      updateAccommodation(acc.id, 'price', hotel.rateCards[0].rate);
+                                      console.log("Using rate card price:", hotel.rateCards[0].rate);
+                                    }
+                                    else if (hotel.basePricePerNight) {
+                                      updateAccommodation(acc.id, 'roomType', 'Standard');
+                                      updateAccommodation(acc.id, 'price', hotel.basePricePerNight);
+                                      console.log("Using base price:", hotel.basePricePerNight);
+                                    }
+                                    else {
+                                      updateAccommodation(acc.id, 'roomType', '');
+                                      updateAccommodation(acc.id, 'price', 0);
+                                      console.log("No pricing data found for hotel");
+                                    }
+                                  } else {
+                                    updateAccommodation(acc.id, 'roomType', '');
+                                    updateAccommodation(acc.id, 'price', 0);
+                                  }
+                                }}
+                              >
+                                <option value="">
+                                  {acc.location
+                                    ? (filteredHotels.length > 0 ? 'Select Hotel' : 'No hotels in location')
+                                    : 'Select Location First'}
+                                </option>
+                                {filteredHotels.map(hotel => (
+                                  <option key={hotel.id} value={hotel.name}>{hotel.name}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className='space-y-2'>
+                              <Label htmlFor={`acc-room-${acc.id}`} className="text-sm font-medium text-gray-500">Room Type</Label>
+                              <Input id={`acc-room-${acc.id}`} placeholder="Room Type" className='text-gray-600' value={acc.roomType} onChange={e => updateAccommodation(acc.id, 'roomType', e.target.value)} />
+                            </div>
+                            <div className='space-y-2'>
+                              <Label htmlFor={`acc-nights-${acc.id}`} className="text-sm font-medium text-gray-500">Nights</Label>
+                              <Input id={`acc-nights-${acc.id}`} type="number" placeholder="Nights" className='text-gray-600' value={acc.nights} onChange={e => updateAccommodation(acc.id, 'nights', parseInt(e.target.value))} />
+                            </div>
+                            <div className="space-y-2 relative">
+                              <Label htmlFor={`acc-price-${acc.id}`} className="text-sm font-medium text-gray-500">Price/Night (₹)</Label>
+                              <Input id={`acc-price-${acc.id}`} type="number" placeholder="Price/Night (INR)" className='text-gray-600' value={acc.price * (acc.nights || 1)} onChange={e => updateAccommodation(acc.id, 'price', parseFloat(e.target.value))} />
                               {currencyInfo && acc.price > 0 && (
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                                <div className="absolute right-3 top-1/2  text-xs text-gray-500 pointer-events-none">
                                   {currencyCode} {(acc.price * conversionRate * (acc.nights || 1)).toFixed(2)}
                                 </div>
                               )}
                             </div>
                           </div>
-                          <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 absolute top-1 right-1" onClick={() => removeAccommodation(acc.id)}>
+                          <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 cursor-pointer absolute top-1 right-1" onClick={() => removeAccommodation(acc.id)}>
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
@@ -791,41 +804,49 @@ export default function NewQuotationPage() {
                       return (
                         <div key={t.id} className="p-4 border rounded-lg bg-gray-50/50 space-y-3 relative">
                           <div className="grid grid-cols-1 md:grid-cols-3 text-gray-600 gap-4">
-                            <select
-                              value={t.type}
-                              disabled={!travelDetails.countryId}
-                              onChange={e => {
-                                const selectedType = e.target.value;
-                                const selectedTransfer = availableTransfers.find(at => at.type === selectedType);
+                            <div className='space-y-2'>
+                              <Label htmlFor={`t-type-${t.id}`} className="text-sm font-medium text-gray-500">Transfer Type</Label>
+                              <select
+                                id={`t-type-${t.id}`}
+                                value={t.type}
+                                disabled={!travelDetails.countryId}
+                                onChange={e => {
+                                  const selectedType = e.target.value;
+                                  const selectedTransfer = availableTransfers.find(at => at.type === selectedType);
 
-                                updateTransfer(t.id, 'type', selectedType);
-                                if (selectedTransfer) {
-                                  updateTransfer(t.id, 'price', selectedTransfer.priceInINR);
-                                } else {
-                                  updateTransfer(t.id, 'price', 0);
-                                }
-                              }}
-                              className="w-full cursor-pointer h-10 border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
-                            >
-                              <option value="">
-                                {travelDetails.countryId ? 'Select Transfer Type' : 'Select Country First'}
-                              </option>
-                              {availableTransfers.map(transferType => (
-                                <option key={transferType.id} value={transferType.type}>
-                                  {transferType.type}
+                                  updateTransfer(t.id, 'type', selectedType);
+                                  if (selectedTransfer) {
+                                    updateTransfer(t.id, 'price', selectedTransfer.priceInINR);
+                                  } else {
+                                    updateTransfer(t.id, 'price', 0);
+                                  }
+                                }}
+                                className="w-full cursor-pointer h-10 border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
+                              >
+                                <option value="">
+                                  {travelDetails.countryId ? 'Select Transfer Type' : 'Select Country First'}
                                 </option>
-                              ))}
-                            </select>
-
-                            <Input placeholder="Vehicle Name (Optional)" value={t.vehicleName} onChange={e => updateTransfer(t.id, 'vehicleName', e.target.value)} />
-
-                            <div className="relative">
-                              <Input type="number" placeholder="Price" value={t.price} onChange={e => updateTransfer(t.id, 'price', parseFloat(e.target.value))} />
-                              {currencyInfo && t.price > 0 && (
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
-                                  {currencyCode} {(t.price * conversionRate).toFixed(2)}
-                                </div>
-                              )}
+                                {availableTransfers.map(transferType => (
+                                  <option key={transferType.id} value={transferType.type}>
+                                    {transferType.type}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className='space-y-2'>
+                              <Label htmlFor={`t-vehicle-${t.id}`} className="text-sm font-medium text-gray-500">Vehicle Name (Optional)</Label>
+                              <Input id={`t-vehicle-${t.id}`} placeholder="Vehicle Name (Optional)" value={t.vehicleName} onChange={e => updateTransfer(t.id, 'vehicleName', e.target.value)} />
+                            </div>
+                            <div className='space-y-2'>
+                              <Label htmlFor={`t-price-${t.id}`} className="text-sm font-medium text-gray-500">Price</Label>
+                              <div className="relative">
+                                <Input id={`t-price-${t.id}`} type="number" placeholder="Price" value={t.price} onChange={e => updateTransfer(t.id, 'price', parseFloat(e.target.value))} />
+                                {currencyInfo && t.price > 0 && (
+                                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                                    {currencyCode} {(t.price * conversionRate).toFixed(2)}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                           <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 cursor-pointer absolute top-1 right-1" onClick={() => removeTransfer(t.id)}>
@@ -858,81 +879,102 @@ export default function NewQuotationPage() {
                       return (
                         <div key={activity.id} className="p-4 border rounded-lg bg-gray-50/50 space-y-3 relative">
                           <div className="grid grid-cols-1 md:grid-cols-4 text-gray-600 gap-4">
-                            <select
-                              value={activity.name}
-                              disabled={!travelDetails.countryId}
-                              onChange={e => {
-                                const selectedActivity = availableActivities.find(a => a.name === e.target.value);
-                                if (selectedActivity) {
-                                  updateActivity(activity.id, 'name', selectedActivity.name);
-                                  updateActivity(activity.id, 'transfer', selectedActivity.transfer);
-                                  updateActivity(activity.id, 'adultPrice', selectedActivity.ticketPriceAdult);
-                                  updateActivity(activity.id, 'childPrice', selectedActivity.ticketPriceChild || 0);
-                                }
-                              }}
-                              className="w-full cursor-pointer h-10 border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
-                            >
-                              <option value="">
-                                {travelDetails.countryId ? 'Select Activity' : 'Select Country First'}
-                              </option>
-                              {availableActivities.map(act => (
-                                <option key={act.id} value={act.name}>
-                                  {act.name} {act.transfer ? `(${act.transfer})` : ''}
+                            <div className='space-y-2'>
+                              <Label htmlFor={`act-name-${activity.id}`} className="text-sm font-medium text-gray-500">Activity</Label>
+                              <select
+                                id={`act-name-${activity.id}`}
+                                value={activity.name}
+                                disabled={!travelDetails.countryId}
+                                onChange={e => {
+                                  const selectedActivity = availableActivities.find(a => a.name === e.target.value);
+                                  if (selectedActivity) {
+                                    if (travelDetails.groupSize === 1 && (selectedActivity.ticketPriceChild ?? 0) > 0) {
+                                      toast({
+                                        title: "Group Size Mismatch",
+                                        description: "This activity includes a child price, but the group size is only 1. Please increase the group size or choose another activity.",
+                                        variant: "default",
+                                        className: "bg-orange-100 border-orange-300"
+                                      });
+                                    }
+                                    updateActivity(activity.id, 'name', selectedActivity.name);
+                                    updateActivity(activity.id, 'transfer', selectedActivity.transfer);
+                                    updateActivity(activity.id, 'adultPrice', selectedActivity.ticketPriceAdult);
+                                    updateActivity(activity.id, 'childPrice', selectedActivity.ticketPriceChild || 0);
+                                  }
+                                }}
+                                className="w-full cursor-pointer h-10 border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
+                              >
+                                <option value="">
+                                  {travelDetails.countryId ? 'Select Activity' : 'Select Country First'}
                                 </option>
-                              ))}
-                            </select>
-
-                            <Input
-                              type="number"
-                              placeholder="Quantity"
-                              className='text-gray-600'
-                              value={activity.quantity}
-                              onChange={e => updateActivity(activity.id, 'quantity', parseInt(e.target.value))}
-                            />
-
-                            <div className="relative">
-                              <Input
-                                type="number"
-                                placeholder="Adult Price"
-                                className='text-gray-600'
-                                value={activity.adultPrice || 0}
-                                onChange={e => updateActivity(activity.id, 'adultPrice', parseFloat(e.target.value))}
-                              />
-                              {currencyInfo && activity.adultPrice > 0 && (
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
-                                  {currencyCode} {(activity.adultPrice * conversionRate).toFixed(2)}
-                                </div>
-                              )}
+                                {availableActivities.map(act => (
+                                  <option key={act.id} value={act.name}>
+                                    {act.name} {act.transfer ? `(${act.transfer})` : ''}
+                                  </option>
+                                ))}
+                              </select>
                             </div>
-
-                            <div className="relative">
+                            <div className='space-y-2'>
+                              <Label htmlFor={`act-qty-${activity.id}`} className="text-sm font-medium text-gray-500">Quantity</Label>
                               <Input
                                 type="number"
-                                placeholder="Child Price"
+                                placeholder="Quantity"
                                 className='text-gray-600'
-                                value={activity.childPrice || 0}
-                                onChange={e => updateActivity(activity.id, 'childPrice', parseFloat(e.target.value))}
+                                value={activity.quantity}
+                                onChange={e => updateActivity(activity.id, 'quantity', parseInt(e.target.value))}
                               />
-                              {currencyInfo && (activity.childPrice ?? 0) > 0 && (
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
-                                  {currencyCode} {((activity.childPrice ?? 0) * conversionRate).toFixed(2)}
-                                </div>
-                              )}
                             </div>
+                            <div className='space-y-2'>
+                              <Label htmlFor={`act-adult-${activity.id}`} className="text-sm font-medium text-gray-500">Adult Price</Label>
+                              <div className="relative">
+                                <Input
+                                  type="number"
+                                  placeholder="Adult Price"
+                                  className='text-gray-600'
+                                  value={activity.adultPrice || 0}
+                                  onChange={e => updateActivity(activity.id, 'adultPrice', parseFloat(e.target.value))}
+                                />
+                                {currencyInfo && activity.adultPrice > 0 && (
+                                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                                    {currencyCode} {(activity.adultPrice * conversionRate).toFixed(2)}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className='space-x-2'>
+                              <Label htmlFor={`act-child-${activity.id}`} className="text-sm font-medium text-gray-500">Child Price</Label>
+                              <div className="relative">
+                                <Input
+                                  type="number"
+                                  placeholder="Child Price"
+                                  className='text-gray-600'
+                                  value={activity.childPrice || 0}
+                                  onChange={e => updateActivity(activity.id, 'childPrice', parseFloat(e.target.value))}
+                                />
+                                {currencyInfo && (activity.childPrice ?? 0) > 0 && (
+                                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                                    {currencyCode} {((activity.childPrice ?? 0) * conversionRate).toFixed(2)}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className='space-y-2'>
+                              <Label htmlFor={`act-total-${activity.id}`} className="text-sm font-medium text-gray-500">Total Price</Label>
 
-                            <div className="relative">
-                              <Input
-                                disabled
-                                type="number"
-                                placeholder="Total Price"
-                                className='text-gray-600 bg-gray-50'
-                                value={activity.totalPrice || 0}
-                              />
-                              {currencyInfo && activity.totalPrice > 0 && (
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
-                                  {currencyCode} {(activity.totalPrice * conversionRate).toFixed(2)}
-                                </div>
-                              )}
+                              <div className="relative">
+                                <Input
+                                  disabled
+                                  type="number"
+                                  placeholder="Total Price"
+                                  className='text-gray-600 bg-gray-50'
+                                  value={activity.totalPrice || 0}
+                                />
+                                {currencyInfo && activity.totalPrice > 0 && (
+                                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                                    {currencyCode} {(activity.totalPrice * conversionRate).toFixed(2)}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                           <Button
