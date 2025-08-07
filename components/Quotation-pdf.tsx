@@ -658,7 +658,7 @@ export function QuotationPDF({ payload }: any) {
                     {/* Accommodation */}
                     <View style={styles.accommodationContainer}>
                         <Text style={styles.accommodationHeader}>Accommodation Details</Text>
-                        {payload.accommodation.map((acc: any, i: number) => (
+                        {payload.accommodation && payload.accommodation.map((acc: any, i: number) => (
                             <View style={styles.accommodationRow} key={i}>
                                 <Text style={styles.accommodationLocation}>
                                     {acc.location} ({acc.nights} Nights):

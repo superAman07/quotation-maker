@@ -20,13 +20,17 @@ import {
   Mail,
   Phone,
   Home,
-  User
+  User,
+  FileText,
+  Loader2
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { PDFViewer } from '@react-pdf/renderer';
 import { QuotationPDF } from '@/components/Quotation-pdf';
+import axios from 'axios';
+import { toast } from '@/hooks/use-toast';
 
 
 interface ServiceItem {
@@ -35,6 +39,56 @@ interface ServiceItem {
   cost: number;
 }
 
+const formatCurrency = (amount: number | null | undefined) => {
+  if (amount === null || amount === undefined) return '₹0';
+  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(amount);
+};
+
+const createPdfPayloadFromQuotation = (quote: any) => {
+  if (!quote) return null;
+
+  const totalAccommodationCost = quote.accommodations?.reduce((sum: number, acc: any) => sum + (acc.price * acc.nights), 0) || 0;
+  const totalTransferCost = quote.transfers?.reduce((sum: number, t: any) => sum + t.price, 0) || 0;
+  const totalActivitiesCost = quote.activities?.reduce((sum: number, act: any) => sum + act.totalPrice, 0) || 0;
+
+  const mealPlanCost = quote.mealPlan?.ratePerPerson || 0;
+  const activitiesCostPerPerson = totalActivitiesCost;
+  
+  const accommodationAndTransferCostPerPerson = quote.groupSize > 0 
+    ? (totalAccommodationCost + totalTransferCost) / quote.groupSize 
+    : 0;
+
+  const landCostPerHead = mealPlanCost + accommodationAndTransferCostPerPerson + activitiesCostPerPerson;
+  const totalPerHead = landCostPerHead + (quote.flightCostPerPerson || 0);
+  const totalGroupCost = totalPerHead * quote.groupSize;
+
+  return {
+    clientName: quote.clientName,
+    clientEmail: quote.clientEmail,
+    clientPhone: quote.clientPhone,
+    clientAddress: quote.clientAddress,
+    travelDate: quote.travelDate,
+    groupSize: quote.groupSize,
+    totalNights: quote.totalNights,
+    place: quote.place,
+    mealPlan: quote.mealPlan?.name || 'Not Included',
+    flightCost: quote.flightCostPerPerson || 0,
+    flightImageUrl: quote.flightImageUrl,
+    accommodation: quote.accommodations || [],
+    transfers: quote.transfers || [],
+    itinerary: quote.itinerary || [],
+    inclusions: quote.inclusions || [],
+    exclusions: quote.exclusions || [],
+    activities: quote.activities || [],
+    mealPlanCost: mealPlanCost,
+    activitiesCost: activitiesCostPerPerson,
+    accommodationAndTransferCost: accommodationAndTransferCostPerPerson,
+    landCostPerHead: landCostPerHead,
+    totalPerHead: totalPerHead,
+    totalGroupCost: totalGroupCost,
+    logoUrl: '/logo.png'
+  };
+};
 
 export default function QuotationDetail() {
   const params = useParams();
@@ -42,18 +96,29 @@ export default function QuotationDetail() {
 
   const [quotation, setQuotation] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-
   const [showPdfPreview, setShowPdfPreview] = useState(false);
-  const [selectedQuotation, setSelectedQuotation] = useState<any>(null);
+
+  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [pdfPayload, setPdfPayload] = useState<any>(null);
+  // const [selectedQuotation, setSelectedQuotation] = useState<any>(null);
 
   useEffect(() => {
-    fetch(`/api/user/quotations/${quotationId}`)
-      .then(res => res.json())
-      .then(data => {
-        setQuotation(data);
-        setLoading(false);
-      });
+    if (quotationId) {
+      axios.get(`/api/user/quotations/${quotationId}`)
+        .then(res => {
+          setQuotation(res.data);
+        })
+        .catch(err => console.error("Failed to fetch quotation", err))
+        .finally(() => setLoading(false));
+    }
   }, [quotationId]);
+
+  const handleDownloadClick = () => {
+    if (!quotation) return;  
+    const payload = createPdfPayloadFromQuotation(quotation);
+    setPdfPayload(payload);
+    setShowPdfPreview(true);
+  };
 
   interface ItineraryItem {
     day: number;
@@ -71,17 +136,30 @@ export default function QuotationDetail() {
     }
   };
 
-  const handleDownloadClick = async () => {
-    setShowPdfPreview(true);
-    setLoading(true);
-    const res = await fetch(`/api/user/quotations/${quotationId}`);
-    const data = await res.json();
-    setSelectedQuotation({
-      ...data,
-      logoUrl: data.logoUrl && data.logoUrl.trim() !== '' ? data.logoUrl : '/logo.png',
-    });
-    setLoading(false);
+  const handleSendQuotation = async () => {
+    setIsActionLoading(true);
+    try {
+      await axios.patch(`/api/user/quotations/${quotationId}`, { status: 'Sent' });
+      setQuotation((prev: any) => ({ ...prev, status: 'Sent' }));
+      toast({ title: "Success", description: "Quotation has been marked as Sent." });
+    } catch (error) {
+      toast({ title: "Error", description: "Could not update quotation status.", variant: "destructive" });
+    } finally {
+      setIsActionLoading(false);
+    }
   };
+
+  // const handleDownloadClick = async () => {
+  //   setShowPdfPreview(true);
+  //   setLoading(true);
+  //   const res = await fetch(`/api/user/quotations/${quotationId}`);
+  //   const data = await res.json();
+  //   setSelectedQuotation({
+  //     ...data,
+  //     logoUrl: data.logoUrl && data.logoUrl.trim() !== '' ? data.logoUrl : '/logo.png',
+  //   });
+  //   setLoading(false);
+  // };
 
   if (loading) {
     return (
@@ -258,19 +336,16 @@ export default function QuotationDetail() {
                     </div>
                     <p className="text-lg font-semibold text-gray-900">{quotation.totalNights} Nights</p>
                   </div>
-                  <div className="bg-red-50 p-4 rounded-xl">
-                    <div className="flex items-center gap-3 mb-2">
-                      <Plane className="w-5 h-5 text-red-600" />
-                      <span className="text-sm font-medium text-red-800">Transport</span>
-                    </div>
-                    <p className="text-lg font-semibold text-gray-900 capitalize">{quotation.vehicleUsed}</p>
-                  </div>
-                  <div className="bg-teal-50 p-4 rounded-xl">
+                  <div className="bg-teal-50 p-4 rounded-xl col-span-1 md:col-span-2 lg:col-span-1">
                     <div className="flex items-center gap-3 mb-2">
                       <Car className="w-5 h-5 text-teal-600" />
-                      <span className="text-sm font-medium text-teal-800">Local Vehicle</span>
+                      <span className="text-sm font-medium text-teal-800">Vehicles</span>
                     </div>
-                    <p className="text-lg font-semibold text-gray-900 capitalize">{quotation.localVehicleUsed}</p>
+                    <p className="text-lg font-semibold text-gray-900 capitalize">
+                      {quotation.transfers?.length > 0
+                        ? quotation.transfers.map((t: any) => t.vehicleName || t.type).join(', ')
+                        : 'Not Specified'}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -282,21 +357,25 @@ export default function QuotationDetail() {
                   Detailed Itinerary
                 </h2>
                 <div className="space-y-4">
-                  {quotation.itinerary.map((item: any, index: number) => (
-                    <div key={item.id} className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow">
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0">
-                          <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-semibold text-sm">
-                            {index + 1}
+                  {quotation.itinerary && quotation.itinerary?.length > 0 && (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                      <h3 className="text-xl font-bold text-gray-900 mb-4">Itinerary</h3>
+                      <div className="space-y-6">
+                        {quotation.itinerary.map((day: any, index: number) => (
+                          <div key={day.id} className="flex gap-4">
+                            <div className="flex flex-col items-center">
+                              <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold">{index + 1}</div>
+                              <div className="flex-1 w-px bg-gray-200 my-2"></div>
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-gray-800">{day.dayTitle}</h4>
+                              <p className="text-gray-600 mt-1">{day.description}</p>
+                            </div>
                           </div>
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-2 capitalize">{item.dayTitle}</h3>
-                          <p className="text-gray-700 leading-relaxed">{item.description}</p>
-                        </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
 
@@ -307,72 +386,104 @@ export default function QuotationDetail() {
                   Accommodation
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {quotation.accommodation.map((acc: any) => (
-                    <div key={acc.id} className="border border-gray-200 rounded-xl p-5 hover:shadow-md transition-shadow">
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                          <Hotel className="w-6 h-6 text-blue-600" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="text-lg font-semibold text-gray-900 mb-1 capitalize">{acc.location}</h3>
-                          <p className="text-gray-700 font-medium capitalize">{acc.hotelName}</p>
-                          <p className="text-sm text-gray-500 mt-2">{acc.nights} nights stay</p>
-                        </div>
+                  {quotation.accommodations && quotation.accommodations?.length > 0 && (
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                      <h3 className="text-xl font-bold text-gray-900 mb-4">Accommodation</h3>
+                      <div className="space-y-4">
+                        {quotation.accommodations.map((acc: any) => (
+                          <div key={acc.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                              <Hotel className="w-6 h-6 text-blue-600" />
+                            </div>
+                            <div className="flex-1">
+                              <h4 className="text-lg font-semibold text-gray-900 mb-1 capitalize">{acc.hotelName}</h4>
+                              <p className="text-gray-700 font-medium capitalize">{acc.location}</p>
+                              <p className="text-sm text-gray-500 mt-2">{acc.nights} nights stay in a {acc.roomType}</p>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
 
+              {/* Transfers */}
+              {quotation.transfers && quotation.transfers?.length > 0 && (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Transfers</h3>
+                  <div className="space-y-4">
+                    {quotation.transfers.map((transfer: any) => (
+                      <div key={transfer.id} className="flex items-center gap-4 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-12 h-12 bg-teal-100 rounded-xl flex items-center justify-center">
+                          <Car className="w-6 h-6 text-teal-600" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-gray-800">{transfer.type}</h4>
+                          <p className="text-sm text-gray-600">{transfer.vehicleName || 'Vehicle not specified'}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Inclusions & Exclusions */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    Inclusions
-                  </h2>
-                  <div className="space-y-3">
-                    {quotation.inclusions.map((inclusion: any) => (
-                      <div key={inclusion.id} className="flex items-start gap-3">
-                        <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-                        <p className="text-gray-700 capitalize">{inclusion.item}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                    <XCircle className="w-5 h-5 text-red-600" />
-                    Exclusions
-                  </h2>
-                  <div className="space-y-3">
-                    {quotation.exclusions.map((exclusion: any) => (
-                      <div key={exclusion.id} className="flex items-start gap-3">
-                        <XCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-                        <p className="text-gray-700 capitalize">{exclusion.item}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                {quotation.inclusions?.length > 0 && <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"><CheckCircle className="text-green-500 w-5 h-5" /> Inclusions</h3>
+                  <ul className="space-y-2 list-inside">
+                    {quotation.inclusions.map((item: any) => <li key={item.id} className="text-gray-600">{item.item}</li>)}
+                  </ul>
+                </div>}
+                {quotation.exclusions?.length > 0 && <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"><XCircle className="text-red-500 w-5 h-5" /> Exclusions</h3>
+                  <ul className="space-y-2 list-inside">
+                    {quotation.exclusions.map((item: any) => <li key={item.id} className="text-gray-600">{item.item}</li>)}
+                  </ul>
+                </div>}
               </div>
 
               {/* Notes */}
               {quotation.notes && (
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <Edit className="w-5 h-5 text-blue-600" />
-                    Notes & Terms
-                  </h2>
-                  <div className="bg-gray-50 p-4 rounded-xl">
-                    <p className="text-gray-700 leading-relaxed">{quotation.notes}</p>
-                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2"><FileText className="w-5 h-5 text-gray-500" /> Notes</h3>
+                  <p className="text-gray-600 whitespace-pre-wrap">{quotation.notes}</p>
                 </div>
               )}
             </div>
 
             {/* Right Column - Pricing Summary */}
             <div className="space-y-8">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-8">
+              <div className="xl:sticky top-24 self-start">
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                  <h3 className="text-xl font-bold text-gray-900 mb-4">Cost Summary</h3>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center text-gray-700">
+                      <span>Flight Cost (per person)</span>
+                      <span className="font-semibold">{formatCurrency(quotation.flightCostPerPerson)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-gray-700">
+                      <span>Land Package (per person)</span>
+                      <span className="font-semibold">{formatCurrency(quotation.landCostPerPerson)}</span>
+                    </div>
+                    <div className="border-t my-2"></div>
+                    <div className="flex justify-between items-center text-gray-900 font-bold">
+                      <span>Total (per person)</span>
+                      <span>{formatCurrency(quotation.totalCostPerPerson)}</span>
+                    </div>
+                  </div>
+                  <div className="border-t pt-4 mt-4">
+                    <div className="bg-gray-900 text-white p-4 rounded-xl">
+                      <div className="flex items-center justify-between">
+                        <span className="text-lg font-bold">Grand Total</span>
+                        <span className="text-2xl font-bold">{formatCurrency(quotation.totalGroupCost)}</span>
+                      </div>
+                      <p className="text-sm text-gray-300 mt-1">For {quotation.groupSize} people</p>
+                    </div>
+                  </div>
+                </div>
+                {/* <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-8">
                 <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
                   <DollarSign className="w-5 h-5 text-blue-600" />
                   Pricing Summary
@@ -380,15 +491,15 @@ export default function QuotationDetail() {
                 <div className="space-y-4">
                   <div className="bg-blue-50 p-4 rounded-xl">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-blue-800">Flight Cost</span>
-                      <span className="text-lg font-semibold text-gray-900">{formatCurrency(quotation.flightCost)}</span>
+                      <span>Flight Cost (per person)</span>
+                      <span className="font-semibold">{formatCurrency(quotation.flightCostPerPerson)}</span>
                     </div>
                     <p className="text-xs text-blue-600">Per person</p>
                   </div>
                   <div className="bg-green-50 p-4 rounded-xl">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-green-800">Land Cost</span>
-                      <span className="text-lg font-semibold text-gray-900">{formatCurrency(quotation.landCostPerHead)}</span>
+                      <span>Land Package (per person)</span>
+                      <span className="font-semibold">{formatCurrency(quotation.landCostPerPerson)}</span>
                     </div>
                     <p className="text-xs text-green-600">Per person</p>
                   </div>
@@ -408,22 +519,23 @@ export default function QuotationDetail() {
                       <p className="text-sm text-gray-300 mt-1">For {quotation.groupSize} people</p>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
 
               {/* Actions */}
-              {quotation.status === 'DRAFT' && (
-                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+              {quotation.status === 'Draft' && (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mt-8">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Actions</h3>
                   <div className="space-y-3">
-                    <button className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2">
-                      <Send className="w-4 h-4" />
+                    <button onClick={handleSendQuotation} disabled={isActionLoading} className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:bg-blue-400">
+                      {isActionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                       Send to Client
                     </button>
-                    <button className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-                      <Edit className="w-4 h-4" />
-                      Edit Quotation
-                    </button>
+                    {/* Edit button can be enabled later */}
+                    {/* <button className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
+                  <Edit className="w-4 h-4" />
+                  Edit Quotation
+                </button> */}
                   </div>
                 </div>
               )}
@@ -445,7 +557,7 @@ export default function QuotationDetail() {
               <div className="flex-1 flex items-center justify-center">Loading PDF...</div>
             ) : (
               <PDFViewer width="100%" height="100%">
-                <QuotationPDF payload={selectedQuotation} />
+                <QuotationPDF payload={pdfPayload} />
               </PDFViewer>
             )}
           </div>

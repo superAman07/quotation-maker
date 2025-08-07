@@ -56,7 +56,6 @@ export async function POST(req: NextRequest) {
         const randomStr = Math.random().toString(36).substring(2, 7).toUpperCase();
         const quotationNo = `Q-${dateStr}-${randomStr}`;
 
-        // 4. Create the Quotation in the database
         const quotation = await prisma.quotation.create({
             data: {
                 quotationNo,
@@ -76,8 +75,7 @@ export async function POST(req: NextRequest) {
                 notes: notes || null,
                 status: status as QuotationStatus,
                 createdBy: { connect: { id: Number((payload as { userId: string }).userId) } },
-                mealPlanId: mealPlanId || null,
-                
+                ...(mealPlanId && { mealPlan: { connect: { id: mealPlanId } } }),                
                 accommodations: accommodations?.length ? { create: accommodations } : undefined,
                 transfers: transfers?.length ? { create: transfers } : undefined,
                 itinerary: itinerary?.length ? { create: itinerary } : undefined,

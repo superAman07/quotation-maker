@@ -11,12 +11,78 @@ import {
   Plus,
   Calendar,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Loader2
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { PDFViewer } from '@react-pdf/renderer';
 import { QuotationPDF } from '@/components/Quotation-pdf';
+import axios from 'axios';
+import { toast } from '@/hooks/use-toast';
+
+const formatCurrency = (amount: number | null | undefined) => {
+  if (amount === null || amount === undefined) {
+    return '₹0';
+  }
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 0,
+  }).format(amount);
+};
+
+const createPdfPayloadFromQuotation = (quote: any) => {
+  if (!quote) return null;
+
+  // Calculate costs from the detailed data
+  const totalAccommodationCost = quote.accommodations?.reduce((sum: number, acc: any) => sum + (acc.price * acc.nights), 0) || 0;
+  const totalTransferCost = quote.transfers?.reduce((sum: number, t: any) => sum + t.price, 0) || 0;
+  const totalActivitiesCost = quote.activities?.reduce((sum: number, act: any) => sum + act.totalPrice, 0) || 0;
+ 
+  const mealPlanCost = quote.mealPlan?.ratePerPerson || 0;
+  const activitiesCostPerPerson = totalActivitiesCost;
+
+  const accommodationAndTransferCostPerPerson = quote.groupSize > 0
+    ? (totalAccommodationCost + totalTransferCost) / quote.groupSize
+    : 0;
+
+  const landCostPerHead = mealPlanCost + accommodationAndTransferCostPerPerson + activitiesCostPerPerson;
+  const totalPerHead = landCostPerHead + (quote.flightCostPerPerson || 0);
+  const totalGroupCost = totalPerHead * quote.groupSize;
+
+  // Transform the data into the structure the PDF component expects
+  return {
+    clientName: quote.clientName,
+    clientEmail: quote.clientEmail,
+    clientPhone: quote.clientPhone,
+    clientAddress: quote.clientAddress,
+    travelDate: quote.travelDate,
+    groupSize: quote.groupSize,
+    totalNights: quote.totalNights,
+    place: quote.place,
+    // FIX: Extract the name from the mealPlan object
+    mealPlan: quote.mealPlan?.name || 'Not Included',
+    flightCost: quote.flightCostPerPerson || 0,
+    flightImageUrl: quote.flightImageUrl,
+    // Ensure arrays are passed, even if empty
+    accommodation: quote.accommodations || [],
+    transfers: quote.transfers || [],
+    itinerary: quote.itinerary || [],
+    // FIX: Transform inclusions/exclusions from array of objects to array of strings/objects
+    inclusions: quote.inclusions || [],
+    exclusions: quote.exclusions || [],
+    activities: quote.activities || [],
+    // Pass all calculated costs
+    mealPlanCost: mealPlanCost,
+    activitiesCost: activitiesCostPerPerson,
+    accommodationAndTransferCost: accommodationAndTransferCostPerPerson,
+    landCostPerHead: landCostPerHead,
+    totalPerHead: totalPerHead,
+    totalGroupCost: totalGroupCost,
+    logoUrl: '/logo.png' // Add logo URL
+  };
+};
 
 export default function QuotationsList() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -25,29 +91,34 @@ export default function QuotationsList() {
 
   const [showPdfPreview, setShowPdfPreview] = useState(false);
   const [selectedQuotation, setSelectedQuotation] = useState<any>(null);
+  const [pdfPayload, setPdfPayload] = useState<any>(null);
+  const [isPdfLoading, setIsPdfLoading] = useState(false);
 
   const [quotations, setQuotations] = useState<any>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('/api/user/quotations')
-      .then(res => res.json())
-      .then(data => {
-        setQuotations(data);
-        setLoading(false);
-      });
-  }, []);
+    axios.get('/api/user/quotations')
+      .then(res => setQuotations(res.data))
+      .catch(() => toast({ title: "Error", description: "Failed to fetch quotations.", variant: "destructive" }))
+      .finally(() => setLoading(false));
+  }, [toast]);
 
-  const handleDownloadClick = async (id: string) => {
+  const handleDownloadClick = async (quotationId: string) => {
+    setIsPdfLoading(true);
     setShowPdfPreview(true);
-    setLoading(true);
-    const res = await fetch(`/api/user/quotations/${id}`);
-    const data = await res.json();
-    setSelectedQuotation({
-      ...data,
-      logoUrl: data.logoUrl && data.logoUrl.trim() !== '' ? data.logoUrl : '/logo.png',
-    });
-    setLoading(false);
+    setPdfPayload(null);
+
+    try {
+      const res = await axios.get(`/api/user/quotations/${quotationId}`);
+      const payload = createPdfPayloadFromQuotation(res.data);
+      setPdfPayload(payload);
+    } catch (error) {
+      toast({ title: "Error", description: "Could not load quotation details for PDF.", variant: "destructive" });
+      setShowPdfPreview(false);
+    } finally {
+      setIsPdfLoading(false);
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -193,15 +264,15 @@ export default function QuotationsList() {
                     <span className="font-medium">Travelers:</span> {quote.groupSize}
                   </p>
                   <p className="text-lg font-bold text-[#6C733D]">
-                    ${typeof quote.totalGroupCost === 'number' ? quote.totalGroupCost.toLocaleString() : '0'}
+                    {formatCurrency(quote.totalGroupCost)}
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <button className="flex-1 bg-[#6C733D] text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-[#5a5f33] transition-colors flex items-center justify-center gap-1">
+                  <Link href={`/user/dashboard/quotations/${quote.id}`} className="flex-1 bg-[#6C733D] text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-[#5a5f33] transition-colors flex items-center justify-center gap-1">
                     <Eye className="w-4 h-4" />
                     View
-                  </button> 
-                  <button className="flex-1 cursor-pointer border border-gray-300 text-gray-600 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-1">
+                  </Link>
+                  <button onClick={() => handleDownloadClick(quote.id)} className="flex-1 cursor-pointer border border-gray-300 text-gray-600 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-1">
                     <Download className="w-4 h-4" />
                     PDF
                   </button>
@@ -248,13 +319,13 @@ export default function QuotationsList() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#6C733D]">
-                      ${typeof quote.totalGroupCost === 'number' ? quote.totalGroupCost.toLocaleString() : '0'}
+                      {formatCurrency(quote.totalGroupCost)}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       <div className="flex gap-2">
                         <Link href={`/user/dashboard/quotations/${quote.id}`} className="text-[#6C733D] hover:text-[#5a5f33] p-1" title="View">
                           <Eye className="w-4 h-4" />
-                        </Link> 
+                        </Link>
                         <button onClick={() => handleDownloadClick(quote.id)} className="text-[#6C733D] hover:text-[#5a5f33] cursor-pointer p-1" title="Download PDF">
                           <Download className="w-4 h-4" />
                         </button>
@@ -295,11 +366,13 @@ export default function QuotationsList() {
             >
               Close
             </Button>
-            {loading ? (
-              <div className="flex-1 flex items-center justify-center">Loading PDF...</div>
+            {isPdfLoading || !pdfPayload ? (
+              <div className="flex-1 flex items-center justify-center">
+                <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
+              </div>
             ) : (
               <PDFViewer width="100%" height="100%">
-                <QuotationPDF payload={selectedQuotation} />
+                <QuotationPDF payload={pdfPayload} />
               </PDFViewer>
             )}
           </div>

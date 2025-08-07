@@ -57,6 +57,7 @@ model Quotation {
   updatedAt   DateTime        @updatedAt
 
   mealPlanId Int?
+  mealPlan   MealPlan? @relation(fields: [mealPlanId], references: [id])
 
   accommodations QuotationAccommodation[]
   transfers      QuotationTransfer[]
@@ -239,14 +240,13 @@ model Transfer {
 }
 
 model MealPlan {
-  id            Int     @id @default(autoincrement())
-  name          String  @unique
+  id            Int         @id @default(autoincrement())
+  name          String      @unique
   description   String?
   ratePerPerson Float
   countryId     Int
-  country       Country @relation(fields: [countryId], references: [id])
-
-  // quotations Quotation[]
+  country       Country     @relation(fields: [countryId], references: [id])
+  quotations    Quotation[] 
 }
 
 model Package {
