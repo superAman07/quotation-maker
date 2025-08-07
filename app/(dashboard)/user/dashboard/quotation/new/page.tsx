@@ -367,6 +367,15 @@ export default function NewQuotationPage() {
   };
 
   const handleSubmit = async (status: 'DRAFT' | 'SENT') => {
+    if (!clientInfo.name) {
+      toast({ title: "Error", description: "Client name is required" });
+      return;
+    }
+
+    if (!travelDetails.travelDate) {
+      toast({ title: "Error", description: "Travel date is required" });
+      return;
+    }
     setIsSubmitting(true);
 
     // 1. Calculate derived values
@@ -459,7 +468,7 @@ export default function NewQuotationPage() {
     <Layout>
       <div className="min-h-screen bg-gray-50 pb-32">
         {/* Header */}
-        <div className="bg-white shadow-sm border-b sticky top-0 z-20">
+        <div className="bg-white shadow-sm border-b top-0 z-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <h1 className="text-2xl font-bold text-gray-600">
               Create New Quotation
@@ -795,7 +804,6 @@ export default function NewQuotationPage() {
                                   updateActivity(activity.id, 'transfer', selectedActivity.transfer);
                                   updateActivity(activity.id, 'adultPrice', selectedActivity.ticketPriceAdult);
                                   updateActivity(activity.id, 'childPrice', selectedActivity.ticketPriceChild || 0);
-                                  // updateActivity(activity.id, 'totalPrice', selectedActivity.ticketPriceAdult * activity.quantity);
                                 }
                               }}
                               className="w-full cursor-pointer h-10 border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
@@ -823,7 +831,7 @@ export default function NewQuotationPage() {
                                 type="number"
                                 placeholder="Adult Price"
                                 className='text-gray-600'
-                                value={activity.adultPrice}
+                                value={activity.adultPrice || 0}
                                 onChange={e => updateActivity(activity.id, 'adultPrice', parseFloat(e.target.value))}
                               />
                               {currencyInfo && activity.adultPrice > 0 && (
@@ -854,7 +862,7 @@ export default function NewQuotationPage() {
                                 type="number"
                                 placeholder="Total Price"
                                 className='text-gray-600 bg-gray-50'
-                                value={activity.totalPrice}
+                                value={activity.totalPrice || 0}
                               />
                               {currencyInfo && activity.totalPrice > 0 && (
                                 <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
@@ -1022,7 +1030,7 @@ export default function NewQuotationPage() {
               <Button variant="secondary" className='bg-orange-100 cursor-pointer hover:bg-orange-200 text-gray-600' disabled={isSubmitting}>
                 Preview PDF
               </Button>
-              <Button disabled={isSubmitting} className='bg-blue-500 text-white hover:bg-blue-600 cursor-pointer' onClick={() => handleSubmit('SENT')}>
+              <Button disabled={isSubmitting || !clientInfo.name || !travelDetails.travelDate} className='bg-blue-500 text-white hover:bg-blue-600 cursor-pointer' onClick={() => handleSubmit('SENT')}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create & Send Quotation
               </Button>
