@@ -511,12 +511,58 @@ const styles = StyleSheet.create({
         color: colors.background,
         marginBottom: 3,
     },
+    activitiesContainer: {
+        backgroundColor: colors.background,
+        borderWidth: 1,
+        borderColor: colors.border,
+        borderRadius: 8,
+        marginBottom: 25,
+        overflow: 'hidden',
+    },
+    activitiesHeader: {
+        color: colors.primary,
+        paddingTop: 15,
+        paddingBottom: 15,
+        paddingLeft: 20,
+        fontSize: 13,
+        fontWeight: 'bold',
+        backgroundColor: colors.lightGray,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
+    },
+    activityRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingLeft: 20,
+        paddingRight: 20,
+        paddingTop: 12,
+        paddingBottom: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
+    },
+    activityName: {
+        flex: 2,
+        fontSize: 10,
+        color: colors.text,
+    },
+    activityPricing: {
+        flex: 1,
+        alignItems: 'flex-end',
+    },
+    activityPrice: {
+        fontSize: 9,
+        color: colors.textLight,
+    },
 });
 
 export function QuotationPDF({ payload }: any) {
     const location = payload.accommodation && payload.accommodation.length > 0
         ? payload.accommodation[0].location
         : "Ladakh";
+
+    const vehicleName = payload.transfers && payload.transfers.length > 0 && payload.transfers[0].vehicleName
+        ? payload.transfers[0].vehicleName
+        : "Not Specified";
 
     function formatDate(dateStr: string) {
         if (!dateStr) return "";
@@ -566,7 +612,7 @@ export function QuotationPDF({ payload }: any) {
                         </View>
                         <View style={styles.travelDetailItem}>
                             <Text style={styles.detailLabel}>Vehicle:</Text>
-                            <Text style={styles.detailValue}>{payload.localVehicleUsed}</Text>
+                            <Text style={styles.detailValue}>{vehicleName}</Text>
                         </View>
                     </View>
                 </View>
@@ -575,10 +621,10 @@ export function QuotationPDF({ payload }: any) {
                     {/* Greeting */}
                     <View style={styles.greetingContainer}>
                         <Text style={styles.greetingText}>
-                            Greeting From <Text style={styles.greetingHighlight}>Travomine</Text>. 
-                            At Travomine Leisure Pvt. Ltd., we don't just plan trips — we craft experiences. 
-                            Every detail is curated to ensure your {location} adventure is nothing short of magical. 
-                            From soaring mountain passes to tranquil blue lakes, prepare to be mesmerized by the raw 
+                            Greeting From <Text style={styles.greetingHighlight}>Travomine</Text>.
+                            At Travomine Leisure Pvt. Ltd., we don't just plan trips — we craft experiences.
+                            Every detail is curated to ensure your {location} adventure is nothing short of magical.
+                            From soaring mountain passes to tranquil blue lakes, prepare to be mesmerized by the raw
                             beauty and timeless culture of this Himalayan paradise. Let's begin your unforgettable journey!
                         </Text>
                     </View>
@@ -622,17 +668,51 @@ export function QuotationPDF({ payload }: any) {
                         ))}
                     </View>
 
+                    {/* Activities Section */}
+                    {payload.activities && payload.activities.length > 0 && (
+                        <View style={styles.activitiesContainer}>
+                            <Text style={styles.activitiesHeader}>Included Activities</Text>
+                            {payload.activities.map((activity: any, i: number) => (
+                                <View style={styles.activityRow} key={i}>
+                                    <Text style={styles.activityName}>{activity.name}</Text>
+                                    <View style={styles.activityPricing}>
+                                        <Text style={styles.activityPrice}>
+                                            Adult: ₹{activity.adultPrice} × {activity.quantity}
+                                        </Text>
+                                        {activity.childPrice > 0 && (
+                                            <Text style={styles.activityPrice}>
+                                                Child: ₹{activity.childPrice} × {activity.quantity}
+                                            </Text>
+                                        )}
+                                    </View>
+                                </View>
+                            ))}
+                        </View>
+                    )}
+
                     {/* Cost Summary */}
                     <View style={styles.costContainer}>
                         <Text style={styles.costHeader}>Cost Breakdown</Text>
                         <View style={styles.costRow}>
-                            <Text style={styles.costLabel}>• Land Package:</Text>
-                            <Text style={styles.costValue}>₹{payload.landCostPerHead} per person</Text>
-                        </View>
-                        <View style={styles.costRow}>
                             <Text style={styles.costLabel}>• Flight Cost:</Text>
                             <Text style={styles.costValue}>₹{payload.flightCost} per person</Text>
                         </View>
+                        <View style={styles.costRow}>
+                            <Text style={styles.costLabel}>• Accommodation & Transfers:</Text>
+                            <Text style={styles.costValue}>₹{Math.round(payload.accommodationAndTransferCost || 0)} per person</Text> 
+                        </View>
+                        {payload.mealPlanCost > 0 && (
+                            <View style={styles.costRow}>
+                                <Text style={styles.costLabel}>• Meal Plan:</Text>
+                                <Text style={styles.costValue}>₹{Math.round(payload.mealPlanCost)} per person</Text>
+                            </View>
+                        )}
+                        {payload.activitiesCost > 0 && (
+                            <View style={styles.costRow}>
+                                <Text style={styles.costLabel}>• Activities:</Text>
+                                <Text style={styles.costValue}>₹{payload.activitiesCost} per person</Text>
+                            </View>
+                        )}
                         <View style={styles.costRow}>
                             <Text style={styles.costLabel}>• Total per person:</Text>
                             <Text style={styles.costValue}>₹{payload.totalPerHead || "0"}</Text>
@@ -680,8 +760,8 @@ export function QuotationPDF({ payload }: any) {
                     <View style={styles.whyContainer}>
                         <Text style={styles.whyHeader}>Why Choose Travomine?</Text>
                         <Text style={styles.whyText}>
-                            We don't just offer tours — we deliver experiences that touch your soul. 
-                            With expert local knowledge, trusted partnerships, and heartfelt care, 
+                            We don't just offer tours — we deliver experiences that touch your soul.
+                            With expert local knowledge, trusted partnerships, and heartfelt care,
                             we turn your travel dreams into vivid realities.
                         </Text>
                     </View>
