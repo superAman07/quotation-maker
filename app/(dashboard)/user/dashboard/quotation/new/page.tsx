@@ -117,6 +117,16 @@ interface AirportBlueprint {
   countryId: number;
 }
 
+interface ActivityItem {
+  id: string;
+  name: string;
+  transfer: string | null;
+  adultPrice: number;
+  childPrice: number | null;
+  quantity: number;
+  totalPrice: number;
+}
+
 export default function NewQuotationPage() {
   const { toast } = useToast();
 
@@ -134,6 +144,8 @@ export default function NewQuotationPage() {
   const [inclusions, setInclusions] = useState<string[]>([]);
   const [exclusions, setExclusions] = useState<string[]>([]);
   const [notes, setNotes] = useState('');
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+  const [allActivities, setAllActivities] = useState<any[]>([]);
 
   const [newInclusion, setNewInclusion] = useState('');
   const [newExclusion, setNewExclusion] = useState('');
@@ -166,6 +178,7 @@ export default function NewQuotationPage() {
           transfersRes,
           mealPlansRes,
           currenciesRes,
+          activitiesRes,
         ] = await Promise.all([
           axios.get('/api/user/countries'),
           axios.get('/api/user/airports'),
@@ -174,6 +187,8 @@ export default function NewQuotationPage() {
           axios.get('/api/admin/transfer'),
           axios.get('/api/user/meal-plans'),
           axios.get('/api/user/country-currencies'),
+          axios.get('/api/user/activities'),
+
         ]);
 
         console.log("Destinations from API:", destinationsRes.data.destinations);
@@ -185,6 +200,7 @@ export default function NewQuotationPage() {
         setAllTransfers(transfersRes.data || []);
         setAllMealPlans(mealPlansRes.data || []);
         setAllCountryCurrencies(currenciesRes.data || []);
+        setAllActivities(activitiesRes.data || []);
 
       } catch (error) {
         console.error("Failed to fetch initial data", error);
@@ -319,7 +335,47 @@ export default function NewQuotationPage() {
     setExclusions(prev => prev.filter((_, i) => i !== index));
   };
 
+  const addActivity = () => {
+    setActivities(prev => [...prev, {
+      id: Date.now().toString(),
+      name: '',
+      transfer: null,
+      adultPrice: 0,
+      childPrice: 0,
+      quantity: 1,
+      totalPrice: 0
+    }]);
+  };
+
+  const updateActivity = (id: string, field: keyof ActivityItem, value: any) => {
+    setActivities(prev => prev.map(activity => {
+      if (activity.id === id) {
+        const updated = { ...activity, [field]: value };
+
+        if (field === 'quantity' || field === 'adultPrice' || field === 'childPrice') {
+          updated.totalPrice = ((updated.adultPrice ?? 0) + (updated.childPrice ?? 0)) * updated.quantity;
+        }
+
+        return updated;
+      }
+      return activity;
+    }));
+  };
+
+  const removeActivity = (id: string) => {
+    setActivities(prev => prev.filter(activity => activity.id !== id));
+  };
+
   const handleSubmit = async (status: 'DRAFT' | 'SENT') => {
+    if (!clientInfo.name) {
+      toast({ title: "Error", description: "Client name is required" });
+      return;
+    }
+
+    if (!travelDetails.travelDate) {
+      toast({ title: "Error", description: "Travel date is required" });
+      return;
+    }
     setIsSubmitting(true);
 
     // 1. Calculate derived values
@@ -332,7 +388,7 @@ export default function NewQuotationPage() {
     const landCostPerHead = travelDetails.groupSize > 0
       ? (totalAccommodationCost + totalTransferCost) / travelDetails.groupSize + mealPlanCost
       : 0;
-    
+
     const totalPerHead = landCostPerHead + flightDetails.costPerPerson;
     const totalGroupCost = totalPerHead * travelDetails.groupSize;
 
@@ -352,20 +408,21 @@ export default function NewQuotationPage() {
       travelDate: travelDetails.travelDate,
       groupSize: travelDetails.groupSize,
       totalNights: totalNights,
-      place: place, 
-      
+      place: place,
+
       // Flight Details
       flightCost: flightDetails.costPerPerson,
       flightImageUrl: flightDetails.imageUrl,
 
       // Services
-      accommodations: accommodations.map(({ id, ...rest }) => rest), // Remove client-side ID
-      transfers: transfers.map(({ id, ...rest }) => rest), // Remove client-side ID
+      accommodations: accommodations.map(({ id, ...rest }) => rest),
+      transfers: transfers.map(({ id, ...rest }) => rest),
       mealPlan: selectedMealPlan,
-      itinerary: itinerary.map(({ id, ...rest }) => rest), // Remove client-side ID
-      inclusions: inclusions.map(item => ({ item })), // Format for Prisma create
-      exclusions: exclusions.map(item => ({ item })), // Format for Prisma create
-      
+      itinerary: itinerary.map(({ id, ...rest }) => rest),
+      inclusions: inclusions.map(item => ({ item })),
+      exclusions: exclusions.map(item => ({ item })),
+      activities: activities.map(({ id, ...rest }) => rest),
+
       // Costing
       landCostPerHead: landCostPerHead,
       totalPerHead: totalPerHead,
@@ -411,7 +468,7 @@ export default function NewQuotationPage() {
     <Layout>
       <div className="min-h-screen bg-gray-50 pb-32">
         {/* Header */}
-        <div className="bg-white shadow-sm border-b sticky top-0 z-20">
+        <div className="bg-white shadow-sm border-b top-0 z-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <h1 className="text-2xl font-bold text-gray-600">
               Create New Quotation
@@ -422,7 +479,7 @@ export default function NewQuotationPage() {
 
         {/* Main Form Content */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="space-y-8"> 
+          <div className="space-y-8">
             <Card>
               <CardHeader>
                 <CardTitle className='text-gray-600'>Client Information</CardTitle>
@@ -539,7 +596,7 @@ export default function NewQuotationPage() {
                 <CardTitle className='text-gray-600'>Services</CardTitle>
                 <p className="text-sm text-gray-500">Select accommodation, transport, and meal plans for this quotation.</p>
               </CardHeader>
-              <CardContent className="space-y-8"> 
+              <CardContent className="space-y-8">
                 <div>
                   <h3 className="text-lg font-medium text-gray-800 mb-4">Accommodation</h3>
                   <div className="space-y-4">
@@ -571,7 +628,7 @@ export default function NewQuotationPage() {
                               }}
                             >
                               <option value="">Select Location</option>
-                              {(() => { 
+                              {(() => {
                                 const selectedCountryId = travelDetails.countryId;
                                 const relevantLocations = selectedCountryId
                                   ? allDestinations.filter(d => d.countryId === selectedCountryId)
@@ -600,18 +657,18 @@ export default function NewQuotationPage() {
                                     updateAccommodation(acc.id, 'roomType', hotel.rateCards[0].roomType);
                                     updateAccommodation(acc.id, 'price', hotel.rateCards[0].rate);
                                     console.log("Using rate card price:", hotel.rateCards[0].rate);
-                                  } 
+                                  }
                                   else if (hotel.basePricePerNight) {
-                                    updateAccommodation(acc.id, 'roomType', 'Standard'); 
+                                    updateAccommodation(acc.id, 'roomType', 'Standard');
                                     updateAccommodation(acc.id, 'price', hotel.basePricePerNight);
                                     console.log("Using base price:", hotel.basePricePerNight);
-                                  } 
+                                  }
                                   else {
                                     updateAccommodation(acc.id, 'roomType', '');
                                     updateAccommodation(acc.id, 'price', 0);
                                     console.log("No pricing data found for hotel");
                                   }
-                                } else { 
+                                } else {
                                   updateAccommodation(acc.id, 'roomType', '');
                                   updateAccommodation(acc.id, 'price', 0);
                                 }
@@ -660,7 +717,7 @@ export default function NewQuotationPage() {
                       const availableTransfers = travelDetails.countryId
                         ? allTransfers.filter(at => at.countryId === travelDetails.countryId)
                         : [];
-                    
+
                       const currencyInfo = travelDetails.countryId
                         ? allCountryCurrencies.find(c => c.countryId === travelDetails.countryId)
                         : null;
@@ -676,7 +733,7 @@ export default function NewQuotationPage() {
                               onChange={e => {
                                 const selectedType = e.target.value;
                                 const selectedTransfer = availableTransfers.find(at => at.type === selectedType);
-                                
+
                                 updateTransfer(t.id, 'type', selectedType);
                                 if (selectedTransfer) {
                                   updateTransfer(t.id, 'price', selectedTransfer.priceInINR);
@@ -695,9 +752,9 @@ export default function NewQuotationPage() {
                                 </option>
                               ))}
                             </select>
-                            
+
                             <Input placeholder="Vehicle Name (Optional)" value={t.vehicleName} onChange={e => updateTransfer(t.id, 'vehicleName', e.target.value)} />
-                            
+
                             <div className="relative">
                               <Input type="number" placeholder="Price" value={t.price} onChange={e => updateTransfer(t.id, 'price', parseFloat(e.target.value))} />
                               {currencyInfo && t.price > 0 && (
@@ -719,6 +776,120 @@ export default function NewQuotationPage() {
                   </Button>
                 </div>
 
+                {/* Activities Section */}
+                <div>
+                  <h3 className="text-lg font-medium text-gray-800 mb-4">Activities</h3>
+                  <div className="space-y-4">
+                    {activities.map((activity) => {
+                      const availableActivities = travelDetails.countryId
+                        ? allActivities.filter(act => act.countryId === travelDetails.countryId)
+                        : [];
+
+                      const currencyInfo = travelDetails.countryId
+                        ? allCountryCurrencies.find(c => c.countryId === travelDetails.countryId)
+                        : null;
+                      const conversionRate = currencyInfo?.conversionRate || 1;
+                      const currencyCode = currencyInfo?.currencyCode || 'INR';
+
+                      return (
+                        <div key={activity.id} className="p-4 border rounded-lg bg-gray-50/50 space-y-3 relative">
+                          <div className="grid grid-cols-1 md:grid-cols-4 text-gray-600 gap-4">
+                            <select
+                              value={activity.name}
+                              disabled={!travelDetails.countryId}
+                              onChange={e => {
+                                const selectedActivity = availableActivities.find(a => a.name === e.target.value);
+                                if (selectedActivity) {
+                                  updateActivity(activity.id, 'name', selectedActivity.name);
+                                  updateActivity(activity.id, 'transfer', selectedActivity.transfer);
+                                  updateActivity(activity.id, 'adultPrice', selectedActivity.ticketPriceAdult);
+                                  updateActivity(activity.id, 'childPrice', selectedActivity.ticketPriceChild || 0);
+                                }
+                              }}
+                              className="w-full cursor-pointer h-10 border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
+                            >
+                              <option value="">
+                                {travelDetails.countryId ? 'Select Activity' : 'Select Country First'}
+                              </option>
+                              {availableActivities.map(act => (
+                                <option key={act.id} value={act.name}>
+                                  {act.name} {act.transfer ? `(${act.transfer})` : ''}
+                                </option>
+                              ))}
+                            </select>
+
+                            <Input
+                              type="number"
+                              placeholder="Quantity"
+                              className='text-gray-600'
+                              value={activity.quantity}
+                              onChange={e => updateActivity(activity.id, 'quantity', parseInt(e.target.value))}
+                            />
+
+                            <div className="relative">
+                              <Input
+                                type="number"
+                                placeholder="Adult Price"
+                                className='text-gray-600'
+                                value={activity.adultPrice || 0}
+                                onChange={e => updateActivity(activity.id, 'adultPrice', parseFloat(e.target.value))}
+                              />
+                              {currencyInfo && activity.adultPrice > 0 && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                                  {currencyCode} {(activity.adultPrice * conversionRate).toFixed(2)}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="relative">
+                              <Input
+                                type="number"
+                                placeholder="Child Price"
+                                className='text-gray-600'
+                                value={activity.childPrice || 0}
+                                onChange={e => updateActivity(activity.id, 'childPrice', parseFloat(e.target.value))}
+                              />
+                              {currencyInfo && (activity.childPrice ?? 0) > 0 && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                                  {currencyCode} {((activity.childPrice ?? 0) * conversionRate).toFixed(2)}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="relative">
+                              <Input
+                                disabled
+                                type="number"
+                                placeholder="Total Price"
+                                className='text-gray-600 bg-gray-50'
+                                value={activity.totalPrice || 0}
+                              />
+                              {currencyInfo && activity.totalPrice > 0 && (
+                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                                  {currencyCode} {(activity.totalPrice * conversionRate).toFixed(2)}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500 hover:bg-red-50 cursor-pointer absolute top-1 right-1"
+                            onClick={() => removeActivity(activity.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <Button variant="outline" size="sm" className="mt-4 text-gray-600 cursor-pointer" onClick={addActivity}>
+                    <Plus className="w-4 h-4 mr-2" /> Add Activity
+                  </Button>
+                </div>
+
+                <Separator />
+
                 <Separator />
 
                 {/* Meal Plan Section */}
@@ -738,7 +909,7 @@ export default function NewQuotationPage() {
                       .filter(plan => plan.countryId === travelDetails.countryId)
                       .map(plan => (
                         <option key={plan.id} value={plan.name}>{plan.name} (₹{plan.ratePerPerson}/person)</option>
-                    ))}
+                      ))}
                   </select>
                 </div>
               </CardContent>
@@ -793,7 +964,7 @@ export default function NewQuotationPage() {
                 <p className="text-sm text-gray-500">Manually add inclusion and exclusion items for this quotation.</p>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8"> 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <div>
                     <h4 className="font-semibold text-gray-700 mb-3">Inclusions</h4>
                     <div className="flex gap-2 mb-4">
@@ -859,7 +1030,7 @@ export default function NewQuotationPage() {
               <Button variant="secondary" className='bg-orange-100 cursor-pointer hover:bg-orange-200 text-gray-600' disabled={isSubmitting}>
                 Preview PDF
               </Button>
-              <Button disabled={isSubmitting} className='bg-blue-500 text-white hover:bg-blue-600 cursor-pointer' onClick={() => handleSubmit('SENT')}>
+              <Button disabled={isSubmitting || !clientInfo.name || !travelDetails.travelDate} className='bg-blue-500 text-white hover:bg-blue-600 cursor-pointer' onClick={() => handleSubmit('SENT')}>
                 {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create & Send Quotation
               </Button>
