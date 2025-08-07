@@ -582,9 +582,9 @@ export default function NewQuotationPage() {
                       name="countryId"
                       value={travelDetails.countryId}
                       onChange={handleTravelDetailsChange}
-                      className="w-full h-10 border-gray-300 rounded-md text-gray-600 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                      className="w-full cursor-pointer h-10 border-gray-300 rounded-md text-gray-600 shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                     >
-                      <option value="">Select a country</option>
+                      <option className='cursor-pointer' value="">Select a country</option>
                       {allCountries.map(country => (
                         <option key={country.id} value={country.id}>{country.name}</option>
                       ))}
@@ -598,7 +598,7 @@ export default function NewQuotationPage() {
                       value={travelDetails.airportId}
                       onChange={handleTravelDetailsChange}
                       disabled={!travelDetails.countryId}
-                      className="w-full h-10 border-gray-300 rounded-md text-gray-600 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
+                      className="w-full cursor-pointer h-10 border-gray-300 rounded-md text-gray-600 shadow-sm focus:ring-indigo-500 focus:border-indigo-500 disabled:bg-gray-100"
                     >
                       <option value="">
                         {travelDetails.countryId ? 'Select an airport' : 'Select country first'}
@@ -612,7 +612,7 @@ export default function NewQuotationPage() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="travelDate" className='text-gray-600'>Travel Date</Label>
-                    <Input id="travelDate" name="travelDate" type="date" className='text-gray-600' value={travelDetails.travelDate} onChange={handleTravelDetailsChange} />
+                    <Input id="travelDate" name="travelDate" type="date" className='text-gray-600 cursor-pointer' value={travelDetails.travelDate} onChange={handleTravelDetailsChange} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="groupSize" className='text-gray-600'>Group Size</Label>
@@ -684,7 +684,7 @@ export default function NewQuotationPage() {
                             <div className='space-y-2'>
                               <Label htmlFor={`acc-location-${acc.id}`} className="text-sm font-medium text-gray-500">Location</Label>
                               <select
-                                className="w-full h-10 border-gray-300 text-gray-600 rounded-md shadow-sm"
+                                className="w-full h-10 cursor-pointer border-gray-300 text-gray-600 rounded-md shadow-sm"
                                 value={acc.location}
                                 onChange={e => {
                                   updateAccommodation(acc.id, 'location', e.target.value);
@@ -713,7 +713,7 @@ export default function NewQuotationPage() {
                               <Label htmlFor={`acc-hotel-${acc.id}`} className="text-sm font-medium text-gray-500">Hotel</Label>
                               <select
                                 id={`acc-hotel-${acc.id}`}
-                                className="w-full h-10 border-gray-300 text-gray-600 rounded-md shadow-sm"
+                                className="w-full h-10 cursor-pointer border-gray-300 text-gray-600 rounded-md shadow-sm"
                                 value={acc.hotelName}
                                 disabled={!acc.location}
                                 onChange={e => {
