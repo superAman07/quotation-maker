@@ -708,8 +708,7 @@ export default function NewQuotationPage() {
                             </div>
 
                             {/* Hotel Dropdown */}
-                            <div>
-
+                            <div> 
                               <Label htmlFor={`acc-hotel-${acc.id}`} className="text-sm font-medium text-gray-500">Hotel</Label>
                               <select
                                 id={`acc-hotel-${acc.id}`}
