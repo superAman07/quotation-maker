@@ -379,7 +379,7 @@ export default function NewQuotationPage() {
       return;
     }
     setIsSubmitting(true);
-    
+
     const totalNights = accommodations.reduce((sum, acc) => sum + acc.nights, 0);
     const totalAccommodationCost = accommodations.reduce((sum, acc) => sum + (acc.price * acc.nights), 0);
     const totalTransferCost = transfers.reduce((sum, t) => sum + t.price, 0);
@@ -864,6 +864,14 @@ export default function NewQuotationPage() {
                               onChange={e => {
                                 const selectedActivity = availableActivities.find(a => a.name === e.target.value);
                                 if (selectedActivity) {
+                                  if (travelDetails.groupSize === 1 && (selectedActivity.ticketPriceChild ?? 0) > 0) {
+                                    toast({
+                                      title: "Group Size Mismatch",
+                                      description: "This activity includes a child price, but the group size is only 1. Please increase the group size or choose another activity.",
+                                      variant: "default",
+                                      className: "bg-orange-100 border-orange-300"
+                                    });
+                                  }
                                   updateActivity(activity.id, 'name', selectedActivity.name);
                                   updateActivity(activity.id, 'transfer', selectedActivity.transfer);
                                   updateActivity(activity.id, 'adultPrice', selectedActivity.ticketPriceAdult);
