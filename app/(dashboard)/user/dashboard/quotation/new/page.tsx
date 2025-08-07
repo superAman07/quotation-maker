@@ -438,9 +438,9 @@ export default function NewQuotationPage() {
     try {
       const response = await axios.post('/api/user/new-quotation', payload);
       toast({ title: "Success", description: `Quotation saved as ${status.toLowerCase()}.` });
-      window.location.href = '/user/dashboard/quotations';  
+      window.location.href = '/user/dashboard/quotations';
       console.log("Quotation created successfully:", response.data);
-      
+
       toast({ title: "Payload Assembled!", description: "Check the browser console to see the payload." });
     } catch (error) {
       console.error("Failed to create quotation:", error);
@@ -681,85 +681,98 @@ export default function NewQuotationPage() {
                       return (
                         <div key={acc.id} className="p-4 border rounded-lg bg-gray-50/50 space-y-3 relative">
                           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                            <select
-                              className="w-full h-10 border-gray-300 text-gray-600 rounded-md shadow-sm"
-                              value={acc.location}
-                              onChange={e => {
-                                updateAccommodation(acc.id, 'location', e.target.value);
-                                updateAccommodation(acc.id, 'hotelName', '');
-                                updateAccommodation(acc.id, 'roomType', '');
-                                updateAccommodation(acc.id, 'price', 0);
-                              }}
-                            >
-                              <option value="">Select Location</option>
-                              {(() => {
-                                const selectedCountryId = travelDetails.countryId;
-                                const relevantLocations = selectedCountryId
-                                  ? allDestinations.filter(d => d.countryId === selectedCountryId)
-                                  : allDestinations;
-
-                                return relevantLocations.map(dest => (
-                                  <option key={dest.id} value={dest.state ?? ''}>{dest.state ?? 'Unknown'}</option>
-                                ));
-                              })()}
-                            </select>
-
-                            {/* Hotel Dropdown */}
-                            <select
-                              className="w-full h-10 border-gray-300 text-gray-600 rounded-md shadow-sm"
-                              value={acc.hotelName}
-                              disabled={!acc.location}
-                              onChange={e => {
-                                const hotelName = e.target.value;
-                                const hotel = filteredHotels.find(h => h.name === hotelName);
-
-                                console.log("Selected hotel:", hotel);
-                                updateAccommodation(acc.id, 'hotelName', hotelName);
-
-                                if (hotel) {
-                                  if (hotel.rateCards && hotel.rateCards.length > 0) {
-                                    updateAccommodation(acc.id, 'roomType', hotel.rateCards[0].roomType);
-                                    updateAccommodation(acc.id, 'price', hotel.rateCards[0].rate);
-                                    console.log("Using rate card price:", hotel.rateCards[0].rate);
-                                  }
-                                  else if (hotel.basePricePerNight) {
-                                    updateAccommodation(acc.id, 'roomType', 'Standard');
-                                    updateAccommodation(acc.id, 'price', hotel.basePricePerNight);
-                                    console.log("Using base price:", hotel.basePricePerNight);
-                                  }
-                                  else {
-                                    updateAccommodation(acc.id, 'roomType', '');
-                                    updateAccommodation(acc.id, 'price', 0);
-                                    console.log("No pricing data found for hotel");
-                                  }
-                                } else {
+                            <div className='space-y-2'>
+                              <Label htmlFor={`acc-location-${acc.id}`} className="text-sm font-medium text-gray-500">Location</Label>
+                              <select
+                                className="w-full h-10 border-gray-300 text-gray-600 rounded-md shadow-sm"
+                                value={acc.location}
+                                onChange={e => {
+                                  updateAccommodation(acc.id, 'location', e.target.value);
+                                  updateAccommodation(acc.id, 'hotelName', '');
                                   updateAccommodation(acc.id, 'roomType', '');
                                   updateAccommodation(acc.id, 'price', 0);
-                                }
-                              }}
-                            >
-                              <option value="">
-                                {acc.location
-                                  ? (filteredHotels.length > 0 ? 'Select Hotel' : 'No hotels in location')
-                                  : 'Select Location First'}
-                              </option>
-                              {filteredHotels.map(hotel => (
-                                <option key={hotel.id} value={hotel.name}>{hotel.name}</option>
-                              ))}
-                            </select>
+                                }}
+                              >
+                                <option value="">Select Location</option>
+                                {(() => {
+                                  const selectedCountryId = travelDetails.countryId;
+                                  const relevantLocations = selectedCountryId
+                                    ? allDestinations.filter(d => d.countryId === selectedCountryId)
+                                    : allDestinations;
 
-                            <Input placeholder="Room Type" className='text-gray-600' value={acc.roomType} onChange={e => updateAccommodation(acc.id, 'roomType', e.target.value)} />
-                            <Input type="number" placeholder="Nights" className='text-gray-600' value={acc.nights} onChange={e => updateAccommodation(acc.id, 'nights', parseInt(e.target.value))} />
-                            <div className="relative">
+                                  return relevantLocations.map(dest => (
+                                    <option key={dest.id} value={dest.state ?? ''}>{dest.state ?? 'Unknown'}</option>
+                                  ));
+                                })()}
+                              </select>
+                            </div>
+
+                            {/* Hotel Dropdown */}
+                            <div>
+
+                              <Label htmlFor={`acc-hotel-${acc.id}`} className="text-sm font-medium text-gray-500">Hotel</Label>
+                              <select
+                                className="w-full h-10 border-gray-300 text-gray-600 rounded-md shadow-sm"
+                                value={acc.hotelName}
+                                disabled={!acc.location}
+                                onChange={e => {
+                                  const hotelName = e.target.value;
+                                  const hotel = filteredHotels.find(h => h.name === hotelName);
+
+                                  console.log("Selected hotel:", hotel);
+                                  updateAccommodation(acc.id, 'hotelName', hotelName);
+
+                                  if (hotel) {
+                                    if (hotel.rateCards && hotel.rateCards.length > 0) {
+                                      updateAccommodation(acc.id, 'roomType', hotel.rateCards[0].roomType);
+                                      updateAccommodation(acc.id, 'price', hotel.rateCards[0].rate);
+                                      console.log("Using rate card price:", hotel.rateCards[0].rate);
+                                    }
+                                    else if (hotel.basePricePerNight) {
+                                      updateAccommodation(acc.id, 'roomType', 'Standard');
+                                      updateAccommodation(acc.id, 'price', hotel.basePricePerNight);
+                                      console.log("Using base price:", hotel.basePricePerNight);
+                                    }
+                                    else {
+                                      updateAccommodation(acc.id, 'roomType', '');
+                                      updateAccommodation(acc.id, 'price', 0);
+                                      console.log("No pricing data found for hotel");
+                                    }
+                                  } else {
+                                    updateAccommodation(acc.id, 'roomType', '');
+                                    updateAccommodation(acc.id, 'price', 0);
+                                  }
+                                }}
+                              >
+                                <option value="">
+                                  {acc.location
+                                    ? (filteredHotels.length > 0 ? 'Select Hotel' : 'No hotels in location')
+                                    : 'Select Location First'}
+                                </option>
+                                {filteredHotels.map(hotel => (
+                                  <option key={hotel.id} value={hotel.name}>{hotel.name}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className='space-y-2'>
+                              <Label htmlFor={`acc-room-${acc.id}`} className="text-sm font-medium text-gray-500">Room Type</Label>
+                              <Input placeholder="Room Type" className='text-gray-600' value={acc.roomType} onChange={e => updateAccommodation(acc.id, 'roomType', e.target.value)} />
+                            </div>
+                            <div className='space-y-2'>
+                              <Label htmlFor={`acc-nights-${acc.id}`} className="text-sm font-medium text-gray-500">Nights</Label>
+                              <Input type="number" placeholder="Nights" className='text-gray-600' value={acc.nights} onChange={e => updateAccommodation(acc.id, 'nights', parseInt(e.target.value))} />
+                            </div>
+                            <div className="space-y-2 relative">
+                              <Label htmlFor={`acc-price-${acc.id}`} className="text-sm font-medium text-gray-500">Price/Night (₹)</Label>
                               <Input type="number" placeholder="Price/Night (INR)" className='text-gray-600' value={acc.price * (acc.nights || 1)} onChange={e => updateAccommodation(acc.id, 'price', parseFloat(e.target.value))} />
                               {currencyInfo && acc.price > 0 && (
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                                <div className="absolute right-3 top-1/2  text-xs text-gray-500 pointer-events-none">
                                   {currencyCode} {(acc.price * conversionRate * (acc.nights || 1)).toFixed(2)}
                                 </div>
                               )}
                             </div>
                           </div>
-                          <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 absolute top-1 right-1" onClick={() => removeAccommodation(acc.id)}>
+                          <Button variant="ghost" size="sm" className="text-red-500 hover:bg-red-50 cursor-pointer absolute top-1 right-1" onClick={() => removeAccommodation(acc.id)}>
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
