@@ -841,7 +841,7 @@ export default function NewQuotationPage() {
                             <div className='space-y-2'>
                               <Label htmlFor={`t-price-${t.id}`} className="text-sm font-medium text-gray-500">Price</Label>
                               <div className="relative">
-                                <Input type="number" placeholder="Price" value={t.price} onChange={e => updateTransfer(t.id, 'price', parseFloat(e.target.value))} />
+                                <Input id={`t-price-${t.id}`} type="number" placeholder="Price" value={t.price} onChange={e => updateTransfer(t.id, 'price', parseFloat(e.target.value))} />
                                 {currencyInfo && t.price > 0 && (
                                   <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
                                     {currencyCode} {(t.price * conversionRate).toFixed(2)}
@@ -880,89 +880,102 @@ export default function NewQuotationPage() {
                       return (
                         <div key={activity.id} className="p-4 border rounded-lg bg-gray-50/50 space-y-3 relative">
                           <div className="grid grid-cols-1 md:grid-cols-4 text-gray-600 gap-4">
-                            <select
-                              value={activity.name}
-                              disabled={!travelDetails.countryId}
-                              onChange={e => {
-                                const selectedActivity = availableActivities.find(a => a.name === e.target.value);
-                                if (selectedActivity) {
-                                  if (travelDetails.groupSize === 1 && (selectedActivity.ticketPriceChild ?? 0) > 0) {
-                                    toast({
-                                      title: "Group Size Mismatch",
-                                      description: "This activity includes a child price, but the group size is only 1. Please increase the group size or choose another activity.",
-                                      variant: "default",
-                                      className: "bg-orange-100 border-orange-300"
-                                    });
+                            <div className='space-y-2'>
+                              <Label htmlFor={`act-name-${activity.id}`} className="text-sm font-medium text-gray-500">Activity</Label>
+                              <select
+                                id={`act-name-${activity.id}`}
+                                value={activity.name}
+                                disabled={!travelDetails.countryId}
+                                onChange={e => {
+                                  const selectedActivity = availableActivities.find(a => a.name === e.target.value);
+                                  if (selectedActivity) {
+                                    if (travelDetails.groupSize === 1 && (selectedActivity.ticketPriceChild ?? 0) > 0) {
+                                      toast({
+                                        title: "Group Size Mismatch",
+                                        description: "This activity includes a child price, but the group size is only 1. Please increase the group size or choose another activity.",
+                                        variant: "default",
+                                        className: "bg-orange-100 border-orange-300"
+                                      });
+                                    }
+                                    updateActivity(activity.id, 'name', selectedActivity.name);
+                                    updateActivity(activity.id, 'transfer', selectedActivity.transfer);
+                                    updateActivity(activity.id, 'adultPrice', selectedActivity.ticketPriceAdult);
+                                    updateActivity(activity.id, 'childPrice', selectedActivity.ticketPriceChild || 0);
                                   }
-                                  updateActivity(activity.id, 'name', selectedActivity.name);
-                                  updateActivity(activity.id, 'transfer', selectedActivity.transfer);
-                                  updateActivity(activity.id, 'adultPrice', selectedActivity.ticketPriceAdult);
-                                  updateActivity(activity.id, 'childPrice', selectedActivity.ticketPriceChild || 0);
-                                }
-                              }}
-                              className="w-full cursor-pointer h-10 border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
-                            >
-                              <option value="">
-                                {travelDetails.countryId ? 'Select Activity' : 'Select Country First'}
-                              </option>
-                              {availableActivities.map(act => (
-                                <option key={act.id} value={act.name}>
-                                  {act.name} {act.transfer ? `(${act.transfer})` : ''}
+                                }}
+                                className="w-full cursor-pointer h-10 border-gray-300 rounded-md shadow-sm disabled:bg-gray-100"
+                              >
+                                <option value="">
+                                  {travelDetails.countryId ? 'Select Activity' : 'Select Country First'}
                                 </option>
-                              ))}
-                            </select>
-
-                            <Input
-                              type="number"
-                              placeholder="Quantity"
-                              className='text-gray-600'
-                              value={activity.quantity}
-                              onChange={e => updateActivity(activity.id, 'quantity', parseInt(e.target.value))}
-                            />
-
-                            <div className="relative">
-                              <Input
-                                type="number"
-                                placeholder="Adult Price"
-                                className='text-gray-600'
-                                value={activity.adultPrice || 0}
-                                onChange={e => updateActivity(activity.id, 'adultPrice', parseFloat(e.target.value))}
-                              />
-                              {currencyInfo && activity.adultPrice > 0 && (
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
-                                  {currencyCode} {(activity.adultPrice * conversionRate).toFixed(2)}
-                                </div>
-                              )}
+                                {availableActivities.map(act => (
+                                  <option key={act.id} value={act.name}>
+                                    {act.name} {act.transfer ? `(${act.transfer})` : ''}
+                                  </option>
+                                ))}
+                              </select>
                             </div>
-
-                            <div className="relative">
+                            <div className='space-y-2'>
+                              <Label htmlFor={`act-qty-${activity.id}`} className="text-sm font-medium text-gray-500">Quantity</Label>
                               <Input
                                 type="number"
-                                placeholder="Child Price"
+                                placeholder="Quantity"
                                 className='text-gray-600'
-                                value={activity.childPrice || 0}
-                                onChange={e => updateActivity(activity.id, 'childPrice', parseFloat(e.target.value))}
+                                value={activity.quantity}
+                                onChange={e => updateActivity(activity.id, 'quantity', parseInt(e.target.value))}
                               />
-                              {currencyInfo && (activity.childPrice ?? 0) > 0 && (
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
-                                  {currencyCode} {((activity.childPrice ?? 0) * conversionRate).toFixed(2)}
-                                </div>
-                              )}
                             </div>
+                            <div className='space-y-2'>
+                              <Label htmlFor={`act-adult-${activity.id}`} className="text-sm font-medium text-gray-500">Adult Price</Label>
+                              <div className="relative">
+                                <Input
+                                  type="number"
+                                  placeholder="Adult Price"
+                                  className='text-gray-600'
+                                  value={activity.adultPrice || 0}
+                                  onChange={e => updateActivity(activity.id, 'adultPrice', parseFloat(e.target.value))}
+                                />
+                                {currencyInfo && activity.adultPrice > 0 && (
+                                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                                    {currencyCode} {(activity.adultPrice * conversionRate).toFixed(2)}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className='space-x-2'>
+                              <Label htmlFor={`act-child-${activity.id}`} className="text-sm font-medium text-gray-500">Child Price</Label>
+                              <div className="relative">
+                                <Input
+                                  type="number"
+                                  placeholder="Child Price"
+                                  className='text-gray-600'
+                                  value={activity.childPrice || 0}
+                                  onChange={e => updateActivity(activity.id, 'childPrice', parseFloat(e.target.value))}
+                                />
+                                {currencyInfo && (activity.childPrice ?? 0) > 0 && (
+                                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                                    {currencyCode} {((activity.childPrice ?? 0) * conversionRate).toFixed(2)}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                            <div className='space-y-2'>
+                              <Label htmlFor={`act-total-${activity.id}`} className="text-sm font-medium text-gray-500">Total Price</Label>
 
-                            <div className="relative">
-                              <Input
-                                disabled
-                                type="number"
-                                placeholder="Total Price"
-                                className='text-gray-600 bg-gray-50'
-                                value={activity.totalPrice || 0}
-                              />
-                              {currencyInfo && activity.totalPrice > 0 && (
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
-                                  {currencyCode} {(activity.totalPrice * conversionRate).toFixed(2)}
-                                </div>
-                              )}
+                              <div className="relative">
+                                <Input
+                                  disabled
+                                  type="number"
+                                  placeholder="Total Price"
+                                  className='text-gray-600 bg-gray-50'
+                                  value={activity.totalPrice || 0}
+                                />
+                                {currencyInfo && activity.totalPrice > 0 && (
+                                  <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none">
+                                    {currencyCode} {(activity.totalPrice * conversionRate).toFixed(2)}
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </div>
                           <Button
