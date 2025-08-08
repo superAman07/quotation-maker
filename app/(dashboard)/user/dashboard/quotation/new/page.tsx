@@ -354,8 +354,14 @@ export default function NewQuotationPage() {
       if (activity.id === id) {
         const updated = { ...activity, [field]: value };
 
-        if (field === 'quantity' || field === 'adultPrice' || field === 'childPrice') {
-          updated.totalPrice = ((updated.adultPrice ?? 0) + (updated.childPrice ?? 0)) * updated.quantity;
+        // if (field === 'quantity' || field === 'adultPrice' || field === 'childPrice') {
+        //   updated.totalPrice = ((updated.adultPrice ?? 0) + (updated.childPrice ?? 0)) * updated.quantity;
+        // }
+        if (field === 'adultPrice' || field === 'childPrice') {
+          updated.totalPrice = (updated.adultPrice ?? 0) + (updated.childPrice ?? 0);
+        }
+        if (field === 'quantity') { 
+           updated.totalPrice = ((updated.adultPrice ?? 0) + (updated.childPrice ?? 0)) * updated.quantity;
         }
 
         return updated;
@@ -388,8 +394,12 @@ export default function NewQuotationPage() {
 
     const totalActivitiesCost = activities.reduce((sum, act) => sum + act.totalPrice, 0);
 
-    const activitiesCostPerPerson = totalActivitiesCost;
-    const landCostPerHead = mealPlanCost + (totalAccommodationCost / travelDetails.groupSize) + (totalTransferCost / travelDetails.groupSize) + activitiesCostPerPerson;
+    const activitiesCostPerPerson = travelDetails.groupSize > 0 ? totalActivitiesCost / travelDetails.groupSize : 0;
+    const accommodationAndTransferCostPerPerson = travelDetails.groupSize > 0
+      ? (totalAccommodationCost + totalTransferCost) / travelDetails.groupSize
+      : 0;
+    const landCostPerHead = mealPlanCost + accommodationAndTransferCostPerPerson + activitiesCostPerPerson;
+    // const landCostPerHead = mealPlanCost + (totalAccommodationCost / travelDetails.groupSize) + (totalTransferCost / travelDetails.groupSize) + activitiesCostPerPerson;
 
     const totalPerHead = landCostPerHead + flightDetails.costPerPerson;
     const totalGroupCost = totalPerHead * travelDetails.groupSize;
@@ -438,7 +448,7 @@ export default function NewQuotationPage() {
     try {
       const response = await axios.post('/api/user/new-quotation', payload);
       toast({ title: "Success", description: `Quotation saved as ${status.toLowerCase()}.` });
-      window.location.href = '/user/dashboard/quotations';
+      // window.location.href = '/user/dashboard/quotations';
       console.log("Quotation created successfully:", response.data);
 
       toast({ title: "Payload Assembled!", description: "Check the browser console to see the payload." });
@@ -460,7 +470,10 @@ export default function NewQuotationPage() {
 
     const totalActivitiesCost = activities.reduce((sum, act) => sum + act.totalPrice, 0);
 
-    const activitiesCostPerPerson = totalActivitiesCost;
+    // const activitiesCostPerPerson = totalActivitiesCost;
+    const activitiesCostPerPerson = travelDetails.groupSize > 0
+      ? totalActivitiesCost / travelDetails.groupSize
+      : 0;
 
     const accommodationAndTransferCostPerPerson = travelDetails.groupSize > 0 ? (totalAccommodationCost + totalTransferCost) / travelDetails.groupSize : 0;
 
@@ -708,7 +721,7 @@ export default function NewQuotationPage() {
                             </div>
 
                             {/* Hotel Dropdown */}
-                            <div> 
+                            <div>
                               <Label htmlFor={`acc-hotel-${acc.id}`} className="text-sm font-medium text-gray-500">Hotel</Label>
                               <select
                                 id={`acc-hotel-${acc.id}`}
