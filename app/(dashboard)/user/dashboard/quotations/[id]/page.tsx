@@ -4,14 +4,11 @@ import { useParams } from 'next/navigation';
 import Layout from '@/components/Layout';
 import {
   ArrowLeft,
-  Edit,
   Download,
   Send,
   MapPin,
   Calendar,
-  Users,
-  DollarSign,
-  Plane,
+  Users, 
   Car,
   Hotel,
   Clock,
@@ -32,13 +29,6 @@ import { QuotationPDF } from '@/components/Quotation-pdf';
 import axios from 'axios';
 import { toast } from '@/hooks/use-toast';
 
-
-interface ServiceItem {
-  type: string;
-  details: string;
-  cost: number;
-}
-
 const formatCurrency = (amount: number | null | undefined) => {
   if (amount === null || amount === undefined) return '₹0';
   return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(amount);
@@ -47,20 +37,16 @@ const formatCurrency = (amount: number | null | undefined) => {
 const createPdfPayloadFromQuotation = (quote: any) => {
   if (!quote) return null;
 
+  const landCostPerHead = quote.landCostPerHead || 0;
+  const totalPerHead = quote.totalCostPerPerson || 0;
+  const totalGroupCost = quote.totalGroupCost || 0;
+  
   const totalAccommodationCost = quote.accommodations?.reduce((sum: number, acc: any) => sum + (acc.price * acc.nights), 0) || 0;
   const totalTransferCost = quote.transfers?.reduce((sum: number, t: any) => sum + t.price, 0) || 0;
-  const totalActivitiesCost = quote.activities?.reduce((sum: number, act: any) => sum + act.totalPrice, 0) || 0;
-
+  const accommodationAndTransferCostPerPerson = quote.groupSize > 0 ? (totalAccommodationCost + totalTransferCost) / quote.groupSize : 0;
   const mealPlanCost = quote.mealPlan?.ratePerPerson || 0;
-  const activitiesCostPerPerson = totalActivitiesCost;
-  
-  const accommodationAndTransferCostPerPerson = quote.groupSize > 0 
-    ? (totalAccommodationCost + totalTransferCost) / quote.groupSize 
-    : 0;
-
-  const landCostPerHead = mealPlanCost + accommodationAndTransferCostPerPerson + activitiesCostPerPerson;
-  const totalPerHead = landCostPerHead + (quote.flightCostPerPerson || 0);
-  const totalGroupCost = totalPerHead * quote.groupSize;
+  const totalActivitiesCost = quote.activities?.reduce((sum: number, act: any) => sum + act.totalPrice, 0) || 0;
+  const activitiesCostPerPerson = quote.groupSize > 0 ? totalActivitiesCost / quote.groupSize : 0;
 
   return {
     clientName: quote.clientName,
@@ -100,13 +86,13 @@ export default function QuotationDetail() {
 
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [pdfPayload, setPdfPayload] = useState<any>(null);
-  // const [selectedQuotation, setSelectedQuotation] = useState<any>(null);
 
   useEffect(() => {
     if (quotationId) {
       axios.get(`/api/user/quotations/${quotationId}`)
         .then(res => {
-          setQuotation(res.data);
+          const quoteData = res.data;
+          setQuotation(quoteData);
         })
         .catch(err => console.error("Failed to fetch quotation", err))
         .finally(() => setLoading(false));
@@ -114,18 +100,12 @@ export default function QuotationDetail() {
   }, [quotationId]);
 
   const handleDownloadClick = () => {
-    if (!quotation) return;  
+    if (!quotation) return;
     const payload = createPdfPayloadFromQuotation(quotation);
     setPdfPayload(payload);
     setShowPdfPreview(true);
   };
 
-  interface ItineraryItem {
-    day: number;
-    activity: string;
-    date: string;
-    cost: number;
-  }
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Draft': return 'bg-yellow-100 text-yellow-800';
@@ -148,18 +128,6 @@ export default function QuotationDetail() {
       setIsActionLoading(false);
     }
   };
-
-  // const handleDownloadClick = async () => {
-  //   setShowPdfPreview(true);
-  //   setLoading(true);
-  //   const res = await fetch(`/api/user/quotations/${quotationId}`);
-  //   const data = await res.json();
-  //   setSelectedQuotation({
-  //     ...data,
-  //     logoUrl: data.logoUrl && data.logoUrl.trim() !== '' ? data.logoUrl : '/logo.png',
-  //   });
-  //   setLoading(false);
-  // };
 
   if (loading) {
     return (
@@ -236,10 +204,6 @@ export default function QuotationDetail() {
                 </div>
               </div>
               <div className="flex flex-col sm:flex-row gap-3">
-                {/* <Link href={`/user/dashboard/quotations/${quotation.id}/edit`} className="px-4 py-2 border border-blue-600 text-blue-600 rounded-lg hover:bg-blue-50 transition-colors flex items-center justify-center gap-2">
-                  <Edit className="w-4 h-4" />
-                  Edit
-                </Link> */}
                 <button onClick={handleDownloadClick} className="px-4 py-2 bg-[#767d43] cursor-pointer text-white rounded-lg hover:bg-[#5a5f33] transition-colors flex items-center justify-center gap-2">
                   <Download className="w-4 h-4" />
                   Download PDF
@@ -483,43 +447,6 @@ export default function QuotationDetail() {
                     </div>
                   </div>
                 </div>
-                {/* <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sticky top-8">
-                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-blue-600" />
-                  Pricing Summary
-                </h2>
-                <div className="space-y-4">
-                  <div className="bg-blue-50 p-4 rounded-xl">
-                    <div className="flex items-center justify-between mb-2">
-                      <span>Flight Cost (per person)</span>
-                      <span className="font-semibold">{formatCurrency(quotation.flightCostPerPerson)}</span>
-                    </div>
-                    <p className="text-xs text-blue-600">Per person</p>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-xl">
-                    <div className="flex items-center justify-between mb-2">
-                      <span>Land Package (per person)</span>
-                      <span className="font-semibold">{formatCurrency(quotation.landCostPerPerson)}</span>
-                    </div>
-                    <p className="text-xs text-green-600">Per person</p>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-xl">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-purple-800">Total Per Person</span>
-                      <span className="text-lg font-semibold text-gray-900">{formatCurrency(quotation.totalPerHead)}</span>
-                    </div>
-                    <p className="text-xs text-purple-600">Including all costs</p>
-                  </div>
-                  <div className="border-t pt-4">
-                    <div className="bg-gray-900 text-white p-4 rounded-xl">
-                      <div className="flex items-center justify-between">
-                        <span className="text-lg font-bold">Grand Total</span>
-                        <span className="text-2xl font-bold">{formatCurrency(quotation.totalGroupCost)}</span>
-                      </div>
-                      <p className="text-sm text-gray-300 mt-1">For {quotation.groupSize} people</p>
-                    </div>
-                  </div>
-                </div> */}
               </div>
 
               {/* Actions */}
@@ -530,12 +457,7 @@ export default function QuotationDetail() {
                     <button onClick={handleSendQuotation} disabled={isActionLoading} className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:bg-blue-400">
                       {isActionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                       Send to Client
-                    </button>
-                    {/* Edit button can be enabled later */}
-                    {/* <button className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center justify-center gap-2">
-                  <Edit className="w-4 h-4" />
-                  Edit Quotation
-                </button> */}
+                    </button> 
                   </div>
                 </div>
               )}

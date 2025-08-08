@@ -58,7 +58,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
     }
 }
 
-export async function PATCH(req: Request, { params }: { params: { id: string } }) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const cookieStore = await cookies();
     const token = cookieStore.get("auth_token")?.value;
 
@@ -69,7 +69,7 @@ export async function PATCH(req: Request, { params }: { params: { id: string } }
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET!) as Promise<{userId: string; role: string}>;
         const userId = (await decoded).userId;
-        const { id } = params;
+        const { id } = await params;
         const { status } = await req.json();
 
         if (!id || !status) {

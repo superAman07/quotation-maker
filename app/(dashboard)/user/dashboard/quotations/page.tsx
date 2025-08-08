@@ -4,9 +4,7 @@ import { useEffect, useState } from 'react';
 import Layout from '@/components/Layout';
 import {
   Search,
-  Filter,
   Download,
-  Edit,
   Eye,
   Plus,
   Calendar,
@@ -35,23 +33,17 @@ const formatCurrency = (amount: number | null | undefined) => {
 const createPdfPayloadFromQuotation = (quote: any) => {
   if (!quote) return null;
 
-  // Calculate costs from the detailed data
+  const landCostPerHead = quote.landCostPerHead || 0;
+  const totalPerHead = quote.totalCostPerPerson || 0;
+  const totalGroupCost = quote.totalGroupCost || 0;
+  
   const totalAccommodationCost = quote.accommodations?.reduce((sum: number, acc: any) => sum + (acc.price * acc.nights), 0) || 0;
   const totalTransferCost = quote.transfers?.reduce((sum: number, t: any) => sum + t.price, 0) || 0;
-  const totalActivitiesCost = quote.activities?.reduce((sum: number, act: any) => sum + act.totalPrice, 0) || 0;
- 
+  const accommodationAndTransferCostPerPerson = quote.groupSize > 0 ? (totalAccommodationCost + totalTransferCost) / quote.groupSize : 0;
   const mealPlanCost = quote.mealPlan?.ratePerPerson || 0;
-  const activitiesCostPerPerson = totalActivitiesCost;
+  const totalActivitiesCost = quote.activities?.reduce((sum: number, act: any) => sum + act.totalPrice, 0) || 0;
+  const activitiesCostPerPerson = quote.groupSize > 0 ? totalActivitiesCost / quote.groupSize : 0;
 
-  const accommodationAndTransferCostPerPerson = quote.groupSize > 0
-    ? (totalAccommodationCost + totalTransferCost) / quote.groupSize
-    : 0;
-
-  const landCostPerHead = mealPlanCost + accommodationAndTransferCostPerPerson + activitiesCostPerPerson;
-  const totalPerHead = landCostPerHead + (quote.flightCostPerPerson || 0);
-  const totalGroupCost = totalPerHead * quote.groupSize;
-
-  // Transform the data into the structure the PDF component expects
   return {
     clientName: quote.clientName,
     clientEmail: quote.clientEmail,
@@ -68,8 +60,7 @@ const createPdfPayloadFromQuotation = (quote: any) => {
     // Ensure arrays are passed, even if empty
     accommodation: quote.accommodations || [],
     transfers: quote.transfers || [],
-    itinerary: quote.itinerary || [],
-    // FIX: Transform inclusions/exclusions from array of objects to array of strings/objects
+    itinerary: quote.itinerary || [], 
     inclusions: quote.inclusions || [],
     exclusions: quote.exclusions || [],
     activities: quote.activities || [],
@@ -89,8 +80,7 @@ export default function QuotationsList() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
 
-  const [showPdfPreview, setShowPdfPreview] = useState(false);
-  const [selectedQuotation, setSelectedQuotation] = useState<any>(null);
+  const [showPdfPreview, setShowPdfPreview] = useState(false); 
   const [pdfPayload, setPdfPayload] = useState<any>(null);
   const [isPdfLoading, setIsPdfLoading] = useState(false);
 
