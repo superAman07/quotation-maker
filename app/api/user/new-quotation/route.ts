@@ -7,8 +7,7 @@ import { QuotationStatus } from "@prisma/client";
 const JWT_SECRET = process.env.JWT_SECRET!;
 
 export async function POST(req: NextRequest) {
-    try {
-        // 1. Authenticate the user
+    try { 
         const cookie = req.headers.get("cookie");
         if (!cookie) {
             return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
@@ -26,8 +25,7 @@ export async function POST(req: NextRequest) {
         } catch {
             return NextResponse.json({ error: "Invalid token" }, { status: 401 });
         }
-
-        // 2. Destructure the incoming data
+ 
         const data = await req.json();
         const {
             clientName, clientEmail, clientPhone, clientAddress,
@@ -38,8 +36,7 @@ export async function POST(req: NextRequest) {
             landCostPerHead, totalPerHead, totalGroupCost,
             notes, status
         } = data;
-
-        // 3. Find the Meal Plan ID
+ 
         let mealPlanId = null;
         if (mealPlan) {
             const mealPlanRecord = await prisma.mealPlan.findFirst({
