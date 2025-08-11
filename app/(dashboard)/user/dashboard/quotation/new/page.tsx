@@ -531,7 +531,7 @@ export default function NewQuotationPage() {
   if (isLoading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center min-h-[calc(100vh-8rem)]">
+        <div className="flex items-center text-gray-600 justify-center min-h-[calc(100vh-8rem)]">
           <div className="mini-loader"></div>
         </div>
       </Layout>
