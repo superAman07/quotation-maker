@@ -205,7 +205,7 @@ export const UserManagement = () => {
         </div>
 
         {/* User Table Card */}
-        <Card>
+        <Card className='rounded-none border-none shadow-lg'>
           <CardHeader>
             <CardTitle>Users</CardTitle>
             <CardDescription>

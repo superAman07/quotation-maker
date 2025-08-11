@@ -48,22 +48,22 @@ export const UserTable = ({
   }
 
   return (
-    <div className="rounded-md border">
+    <div className=" border overflow-hidden">
       <Table>
         <TableHeader>
-          <TableRow>
-            <TableHead>Email</TableHead>
-            <TableHead>Name</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Assigned Countries</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Created At</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+          <TableRow className="bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 hover:bg-gradient-to-r">
+            <TableHead className="text-white font-semibold">Email</TableHead>
+            <TableHead className="text-white font-semibold">Name</TableHead>
+            <TableHead className="text-white font-semibold">Role</TableHead>
+            <TableHead className="text-white font-semibold">Assigned Countries</TableHead>
+            <TableHead className="text-white font-semibold">Status</TableHead>
+            <TableHead className="text-white font-semibold">Created At</TableHead>
+            <TableHead className="text-right text-white font-semibold">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {users.map((user) => (
-            <TableRow key={user.id}>
+          {users.map((user, index) => (
+            <TableRow key={user.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
               <TableCell className="font-medium">{user.email}</TableCell>
               <TableCell>{user.name}</TableCell>
               <TableCell>
@@ -103,12 +103,12 @@ export const UserTable = ({
                 {format(new Date(user.createdAt), 'MMM dd, yyyy')}
               </TableCell>
               <TableCell className="text-right">
-                <div className="flex items-center justify-end gap-2">
+                <div className="flex items-center justify-end gap-1">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => onEdit(user)}
-                    className="h-8 w-8 p-0"
+                    className="h-8 w-8 p-0 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -116,7 +116,7 @@ export const UserTable = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => onToggleLock(user.id)}
-                    className="h-8 w-8 p-0"
+                    className="h-8 w-8 p-0 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full"
                   >
                     {user.isLocked ? (
                       <Unlock className="h-4 w-4" />
@@ -128,7 +128,7 @@ export const UserTable = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => onResetPassword(user)}
-                    className="h-8 w-8 p-0"
+                    className="h-8 w-8 p-0 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-full"
                   >
                     <RotateCcw className="h-4 w-4" />
                   </Button>
@@ -136,7 +136,7 @@ export const UserTable = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => onDelete(user)}
-                    className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                    className="h-8 w-8 p-0 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
