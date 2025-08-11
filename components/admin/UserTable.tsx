@@ -48,10 +48,10 @@ export const UserTable = ({
   }
 
   return (
-    <div className="border overflow-y-auto h-[50vh]">
-      <table className='w-full'>
-        <thead className=' bg-white'>
-          <tr className="sticky top-0 z-10 bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 hover:bg-gradient-to-r">
+    <div className="overflow-y-auto h-[50vh] rounded-sm border border-gray-200 shadow-sm">
+      <table className="w-full border-collapse">
+        <thead className="bg-white">
+          <tr className="sticky top-0 z-10 bg-gradient-to-r from-blue-800 via-blue-900 to-purple-900">
             <th className="text-white font-semibold p-4 text-left">Email</th>
             <th className="text-white font-semibold p-4 text-left">Name</th>
             <th className="text-white font-semibold p-4 text-left">Role</th>
@@ -61,17 +61,20 @@ export const UserTable = ({
             <th className="text-white font-semibold p-4 text-left pl-20">Actions</th>
           </tr>
         </thead>
-        <tbody className='overflow-y-auto'>
+        <tbody className="divide-y divide-gray-200">
           {users.map((user, index) => (
-            <tr key={user.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
+            <tr 
+              key={user.id} 
+              className={`${index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'} border-b border-gray-100 hover:bg-gray-50`}
+            >
               <td className="font-medium p-4">{user.email}</td>
-              <td className='p-4'>{user.name}</td>
-              <td className='p-4'>
+              <td className="p-4">{user.name}</td>
+              <td className="p-4">
                 <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>
                   {user.role}
                 </Badge>
               </td>
-              <td className='p-4'>
+              <td className="p-4">
                 {user.assignedCountries && user.assignedCountries.length > 0 ? (
                   <div className="flex flex-wrap gap-1 max-w-xs">
                     {user.assignedCountries.map(({ country }) => (
@@ -84,7 +87,7 @@ export const UserTable = ({
                   <span className="text-xs text-muted-foreground">All</span>
                 )}
               </td>
-              <td className='p-4'>
+              <td className="p-4">
                 <span
                   className={
                     user.status === "ACTIVE"
