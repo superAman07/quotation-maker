@@ -1,4 +1,3 @@
-// /app/api/admin/users/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import bcrypt from 'bcrypt'
@@ -14,9 +13,18 @@ export async function GET() {
             email: true,
             name: true,
             role: true,
-            status: true,
+            status: true, 
             createdAt: true,
-            updatedAt: true,
+            assignedCountries: {
+                select: {
+                    country: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
+                },
+            },
         },
         orderBy: { createdAt: 'desc' },
     })
@@ -40,7 +48,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const { email, name, password, role } = await request.json()
+    const { email, name, password, role, assignedCountryIds } = await request.json()
 
     if (!email || !password) {
         return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
@@ -57,6 +65,13 @@ export async function POST(request: NextRequest) {
             name,
             password: hash,
             role: role ?? 'Employee',
+            assignedCountries: {
+                create: assignedCountryIds?.map((countryId: number) => ({
+                    country: {
+                        connect: { id: countryId },
+                    },
+                })),
+            },
         },
         select: {
             id: true,

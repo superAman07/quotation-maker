@@ -5,7 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch'; 
+import { Switch } from '@/components/ui/switch';
+import { Country } from '@/types/hotel';
+import axios from 'axios';
+import { MultiSelect } from '../ui/multi-select';
+
+interface UserCountryAssignment {
+  country: Country;
+}
 
 interface User {
   id: string;
@@ -13,8 +20,9 @@ interface User {
   name: string;
   role: 'Employee' | 'Admin';
   isLocked: boolean;
-  status?: string;  
+  status?: string;
   createdAt: string;
+  assignedCountries?: UserCountryAssignment[];
 }
 
 interface UserModalProps {
@@ -33,6 +41,7 @@ interface FormData {
   password: string;
   confirmPassword: string;
   status: string;
+  assignedCountryIds?: number[];
 }
 
 export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModalProps) => {
@@ -44,8 +53,29 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
     password: '',
     status: "ACTIVE",
     confirmPassword: '',
+    assignedCountryIds: [],
   });
   const [errors, setErrors] = useState<Partial<FormData>>({});
+  const [allCountries, setAllCountries] = useState<Country[]>([]);
+
+  useEffect(() => {
+    const fetchCountries = async () => {
+      if (isOpen) {
+        try {
+          const res = await axios.get('/api/admin/country');
+          if (res.data && Array.isArray(res.data.data)) {
+            setAllCountries(res.data.data);
+          } else { 
+            setAllCountries([]);
+          }
+        } catch (error) {
+          console.error("Failed to fetch countries", error);
+          setAllCountries([]);  
+        }
+      }
+    };
+    fetchCountries();
+  }, [isOpen]);
 
   useEffect(() => {
     if (user && isEditing) {
@@ -57,6 +87,7 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
         password: '',
         status: user.status || "ACTIVE",
         confirmPassword: '',
+        assignedCountryIds: user.assignedCountries?.map(assignment => assignment.country.id) || [],
       });
     } else {
       setFormData({
@@ -67,6 +98,7 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
         password: '',
         status: "ACTIVE",
         confirmPassword: '',
+        assignedCountryIds: [],
       });
     }
     setErrors({});
@@ -75,19 +107,16 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
   const validateForm = (): boolean => {
     const newErrors: Partial<FormData> = {};
 
-    // Email validation
     if (!formData.email) {
       newErrors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Invalid email format';
     }
 
-    // Name validation (only required for new users)
     if (!isEditing && !formData.name) {
       newErrors.name = 'Name is required';
     }
-
-    // Password validation (only for new users or if password is provided)
+ 
     if (!isEditing || formData.password) {
       if (!formData.password) {
         newErrors.password = 'Password is required';
@@ -119,6 +148,8 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
         role: formData.role,
         isLocked: formData.isLocked,
         status: formData.status,
+        assignedCountryIds: formData.assignedCountryIds,
+
       }
       : {
         email: formData.email,
@@ -127,14 +158,14 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
         isLocked: formData.isLocked,
         password: formData.password,
         status: formData.status,
+        assignedCountryIds: formData.assignedCountryIds,
       };
 
     onSave(userData);
   };
 
-  const handleInputChange = (field: keyof FormData, value: string | boolean) => {
+  const handleInputChange = (field: keyof FormData, value: string | boolean | number[]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
@@ -150,7 +181,7 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px] bg-white text-gray-700">
         <DialogHeader>
-          <DialogTitle>{isEditing ? 'Edit User' : 'New User'}</DialogTitle>
+          <DialogTitle className='cursor-pointer'>{isEditing ? 'Edit User' : 'New User'}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -167,7 +198,6 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
             {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
           </div>
 
-          {/* Name */}
           <div className="space-y-2">
             <Label htmlFor="name">Name {!isEditing && '*'}</Label>
             <Input
@@ -180,7 +210,6 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
             {errors.name && <p className="text-sm text-destructive">{errors.name}</p>}
           </div>
 
-          {/* Role */}
           <div className="space-y-2">
             <Label htmlFor="role">Role</Label>
             <Select
@@ -195,6 +224,19 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
                 <SelectItem value="Admin">Admin</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="space-y-2 bg-white">
+            <Label htmlFor="countries">Assign Countries</Label>
+            <MultiSelect
+              options={allCountries.map(c => ({ label: c.name, value: c.id.toString() }))}
+              onValueChange={(selectedIds) => {
+                handleInputChange('assignedCountryIds', selectedIds.map(id => Number(id)));
+              }}
+              defaultValue={formData.assignedCountryIds?.map(id => id.toString()) || []}
+              placeholder="Select countries..."
+              className="text-gray-700 bg-white"
+            />
           </div>
 
           {/* Status */}
@@ -256,10 +298,10 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
 
           {/* Buttons */}
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} className='cursor-pointer'>
               Cancel
             </Button>
-            <Button type="submit" disabled={!isFormValid()}>
+            <Button type="submit" disabled={!isFormValid()} className='cursor-pointer'>
               Save
             </Button>
           </div>

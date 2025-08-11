@@ -8,15 +8,16 @@ datasource db {
 }
 
 model User {
-  id         Int         @id @default(autoincrement())
-  email      String      @unique
-  name       String?
-  password   String
-  role       Role        @default(Employee)
-  quotations Quotation[]
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  status     UserStatus  @default(ACTIVE)
+  id                Int                     @id @default(autoincrement())
+  email             String                  @unique
+  name              String?
+  password          String
+  role              Role                    @default(Employee)
+  quotations        Quotation[]
+  createdAt         DateTime                @default(now())
+  updatedAt         DateTime                @updatedAt
+  status            UserStatus              @default(ACTIVE)
+  assignedCountries UserCountryAssignment[]
 }
 
 model Quotation {
@@ -29,7 +30,6 @@ model Quotation {
   clientAddress String?
   travelDate    DateTime
   groupSize     Int
-  // destinationName String?
   totalNights   Int      @default(0)
 
   place String?
@@ -39,16 +39,12 @@ model Quotation {
   totalCostPerPerson  Float?
   totalGroupCost      Float?
 
-  // flightRoute    String?
   flightImageUrl String?
 
-  // mealPlanName String?
   notes String?
 
   packageId Int?
   package   Package? @relation(fields: [packageId], references: [id])
-  // destinationId Int?
-  // destination   Destination? @relation(fields: [destinationId], references: [id])
 
   createdBy   User            @relation(fields: [createdById], references: [id])
   createdById Int
@@ -136,26 +132,6 @@ model ExclusionTemplate {
   description String?
 }
 
-// model Accommodation {
-//   id          Int       @id @default(autoincrement())
-//   location    String
-//   hotelName   String
-//   nights      Int
-//   quotation   Quotation @relation(fields: [quotationId], references: [id])
-//   quotationId String
-
-//   hotelId Int?
-//   hotel   Hotel? @relation(fields: [hotelId], references: [id])
-// }
-
-// model ItineraryItem {
-//   id          Int       @id @default(autoincrement())
-//   dayTitle    String
-//   description String
-//   quotation   Quotation @relation(fields: [quotationId], references: [id])
-//   quotationId String
-// }
-
 enum Role {
   Employee
   Admin
@@ -234,9 +210,6 @@ model Transfer {
   country    Country  @relation(fields: [countryId], references: [id])
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
-
-  // intercityVehicleQuotations Quotation[] @relation("IntercityVehicle")
-  // localVehicleQuotations     Quotation[] @relation("LocalVehicle")
 }
 
 model MealPlan {
@@ -246,7 +219,7 @@ model MealPlan {
   ratePerPerson Float
   countryId     Int
   country       Country     @relation(fields: [countryId], references: [id])
-  quotations    Quotation[] 
+  quotations    Quotation[]
 }
 
 model Package {
@@ -291,8 +264,8 @@ model Activity {
 }
 
 model Country {
-  id                Int               @id @default(autoincrement())
-  code              String            @unique
+  id                Int                     @id @default(autoincrement())
+  code              String                  @unique
   name              String
   flag              String
   currency          String
@@ -303,6 +276,7 @@ model Country {
   activities        Activity[]
   mealPlans         MealPlan[]
   airports          Airport[]
+  users             UserCountryAssignment[]
 }
 
 model CountryCurrency {
@@ -328,4 +302,14 @@ model Airport {
   countryId Int
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model UserCountryAssignment {
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     Int
+  country    Country  @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  countryId  Int
+  assignedAt DateTime @default(now())
+
+  @@id([userId, countryId])
 }
