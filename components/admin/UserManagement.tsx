@@ -13,7 +13,6 @@ import { Country } from '@/types/hotel';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
-// API Constants
 const API = {
   list: '/api/admin/users',
   create: '/api/admin/users',
