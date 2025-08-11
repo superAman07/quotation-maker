@@ -203,8 +203,7 @@ export const UserManagement = () => {
             New User
           </Button>
         </div>
-
-        {/* User Table Card */}
+ 
         <Card className='rounded-none border-none shadow-lg'>
           <CardHeader>
             <CardTitle>Users</CardTitle>
@@ -212,15 +211,20 @@ export const UserManagement = () => {
               {users.length} user{users.length !== 1 ? 's' : ''} registered
             </CardDescription>
             <div className="flex items-center space-x-4 pt-4">
-              <Input
-                placeholder="Search by name or email..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="max-w-sm"
-              />
+              <div className="relative w-full max-w-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                </span>
+                <Input
+                  placeholder="Search by name or email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 py-2 rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                />
+              </div> 
               <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Filter by role" />
+                <SelectTrigger className="w-[180px] rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold shadow hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
+                  <SelectValue placeholder="Filter by role" className='cursor-pointer' />
                 </SelectTrigger>
                 <SelectContent className="bg-white text-gray-700">
                   <SelectItem value="All">All Roles</SelectItem>
