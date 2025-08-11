@@ -48,30 +48,30 @@ export const UserTable = ({
   }
 
   return (
-    <div className=" border overflow-hidden">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 hover:bg-gradient-to-r">
-            <TableHead className="text-white font-semibold">Email</TableHead>
-            <TableHead className="text-white font-semibold">Name</TableHead>
-            <TableHead className="text-white font-semibold">Role</TableHead>
-            <TableHead className="text-white font-semibold">Assigned Countries</TableHead>
-            <TableHead className="text-white font-semibold">Status</TableHead>
-            <TableHead className="text-white font-semibold">Created At</TableHead>
-            <TableHead className="text-right text-white font-semibold">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
+    <div className="border overflow-y-auto h-[50vh]">
+      <table className='w-full'>
+        <thead className=' bg-white'>
+          <tr className="sticky top-0 z-10 bg-gradient-to-r from-blue-600 via-blue-700 to-purple-700 hover:bg-gradient-to-r">
+            <th className="text-white font-semibold p-4 text-left">Email</th>
+            <th className="text-white font-semibold p-4 text-left">Name</th>
+            <th className="text-white font-semibold p-4 text-left">Role</th>
+            <th className="text-white font-semibold p-4 text-left">Assigned Countries</th>
+            <th className="text-white font-semibold p-4 text-left">Status</th>
+            <th className="text-white font-semibold p-4 text-left">Created At</th>
+            <th className="text-white font-semibold p-4 text-left pl-20">Actions</th>
+          </tr>
+        </thead>
+        <tbody className='overflow-y-auto'>
           {users.map((user, index) => (
-            <TableRow key={user.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
-              <TableCell className="font-medium">{user.email}</TableCell>
-              <TableCell>{user.name}</TableCell>
-              <TableCell>
+            <tr key={user.id} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}>
+              <td className="font-medium p-4">{user.email}</td>
+              <td className='p-4'>{user.name}</td>
+              <td className='p-4'>
                 <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>
                   {user.role}
                 </Badge>
-              </TableCell>
-              <TableCell>
+              </td>
+              <td className='p-4'>
                 {user.assignedCountries && user.assignedCountries.length > 0 ? (
                   <div className="flex flex-wrap gap-1 max-w-xs">
                     {user.assignedCountries.map(({ country }) => (
@@ -83,8 +83,8 @@ export const UserTable = ({
                 ) : (
                   <span className="text-xs text-muted-foreground">All</span>
                 )}
-              </TableCell>
-              <TableCell>
+              </td>
+              <td className='p-4'>
                 <span
                   className={
                     user.status === "ACTIVE"
@@ -98,17 +98,17 @@ export const UserTable = ({
                 >
                   {user.status}
                 </span>
-              </TableCell>
-              <TableCell className="text-muted-foreground">
+              </td>
+              <td className="text-muted-foreground p-4">
                 {format(new Date(user.createdAt), 'MMM dd, yyyy')}
-              </TableCell>
-              <TableCell className="text-right">
+              </td>
+              <td className="text-right p-4">
                 <div className="flex items-center justify-end gap-1">
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={() => onEdit(user)}
-                    className="h-8 w-8 p-0 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full"
+                    className="h-8 w-8 p-0 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full cursor-pointer"
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
@@ -116,7 +116,7 @@ export const UserTable = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => onToggleLock(user.id)}
-                    className="h-8 w-8 p-0 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full"
+                    className="h-8 w-8 p-0 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full cursor-pointer"
                   >
                     {user.isLocked ? (
                       <Unlock className="h-4 w-4" />
@@ -128,7 +128,7 @@ export const UserTable = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => onResetPassword(user)}
-                    className="h-8 w-8 p-0 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-full"
+                    className="h-8 w-8 p-0 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-full cursor-pointer"
                   >
                     <RotateCcw className="h-4 w-4" />
                   </Button>
@@ -136,16 +136,16 @@ export const UserTable = ({
                     variant="ghost"
                     size="sm"
                     onClick={() => onDelete(user)}
-                    className="h-8 w-8 p-0 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full"
+                    className="h-8 w-8 p-0 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-full cursor-pointer"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
-              </TableCell>
-            </TableRow>
+              </td>
+            </tr>
           ))}
-        </TableBody>
-      </Table>
+        </tbody>
+      </table>
     </div>
   );
 };
