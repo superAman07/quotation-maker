@@ -174,7 +174,7 @@ export const UserManagement = () => {
               setSelectedUser(null);
               setIsUserModalOpen(true);
             }}
-            className="flex items-center gap-2"
+            className="flex items-center cursor-pointer gap-2"
           >
             <Plus className="h-4 w-4" />
             New User
