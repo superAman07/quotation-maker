@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -10,6 +10,8 @@ import { ResetPasswordDialog } from './ResetPasswordDialog';
 import { Plus } from 'lucide-react';
 import axios from 'axios';
 import { Country } from '@/types/hotel';
+import { Input } from '../ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 // API Constants
 const API = {
@@ -47,6 +49,8 @@ export const UserManagement = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('All');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -68,6 +72,17 @@ export const UserManagement = () => {
       setLoading(false);
     }
   };
+
+  const filteredUsers = useMemo(() => {
+    return users.filter(user => {
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = user.name?.toLowerCase().includes(searchLower) || user.email.toLowerCase().includes(searchLower);
+      
+      const matchesRole = roleFilter === 'All' || user.role === roleFilter;
+
+      return matchesSearch && matchesRole;
+    });
+  }, [users, searchQuery, roleFilter]);
 
   const handleCreateUser = async (userData: Omit<User, 'id' | 'createdAt'> & { password: string }) => {
     try {
@@ -195,10 +210,28 @@ export const UserManagement = () => {
             <CardDescription>
               {users.length} user{users.length !== 1 ? 's' : ''} registered
             </CardDescription>
+            <div className="flex items-center space-x-4 pt-4">
+              <Input
+                placeholder="Search by name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="max-w-sm"
+              />
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue placeholder="Filter by role" />
+                </SelectTrigger>
+                <SelectContent className="bg-white text-gray-700">
+                  <SelectItem value="All">All Roles</SelectItem>
+                  <SelectItem value="Admin">Admin</SelectItem>
+                  <SelectItem value="Employee">Employee</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardHeader>
           <CardContent>
             <UserTable
-              users={users}
+              users={filteredUsers}
               loading={loading}
               onEdit={openEditModal}
               onDelete={openDeleteDialog}
