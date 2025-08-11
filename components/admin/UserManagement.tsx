@@ -77,7 +77,7 @@ export const UserManagement = () => {
     return users.filter(user => {
       const searchLower = searchQuery.toLowerCase();
       const matchesSearch = user.name?.toLowerCase().includes(searchLower) || user.email.toLowerCase().includes(searchLower);
-      
+
       const matchesRole = roleFilter === 'All' || user.role === roleFilter;
 
       return matchesSearch && matchesRole;
@@ -183,11 +183,12 @@ export const UserManagement = () => {
   return (
     <div className="min-h-screen bg-background p-6 bg-white text-gray-700">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Manage Users</h1>
-            <p className="text-muted-foreground mt-2">
+            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+              Manage Users
+            </h1>
+            <p className="text-muted-foreground font-semibold mt-2">
               Create, edit, lock/unlock, or delete user accounts.
             </p>
           </div>
@@ -196,7 +197,7 @@ export const UserManagement = () => {
               setSelectedUser(null);
               setIsUserModalOpen(true);
             }}
-            className="flex items-center cursor-pointer gap-2"
+            className="flex items-center cursor-pointer gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-lg px-5 py-2.5"
           >
             <Plus className="h-4 w-4" />
             New User
