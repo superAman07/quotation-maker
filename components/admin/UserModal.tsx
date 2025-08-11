@@ -294,10 +294,10 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
 
           {/* Buttons */}
           <div className="flex justify-end space-x-2 pt-4">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={onClose} className='cursor-pointer'>
               Cancel
             </Button>
-            <Button type="submit" disabled={!isFormValid()}>
+            <Button type="submit" disabled={!isFormValid()} className='cursor-pointer'>
               Save
             </Button>
           </div>
