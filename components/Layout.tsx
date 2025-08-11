@@ -18,6 +18,7 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import axios from 'axios';
+import { usePathname } from 'next/navigation';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -29,6 +30,7 @@ export default function Layout({ children }: LayoutProps) {
   const [notificationCount] = useState(3);
   const [isMobile, setIsMobile] = useState(false);
   const [user, setUser] = useState<{ name?: string; email?: string; role?: string } | null>(null)
+  const pathname = usePathname();
   useEffect(() => {
     try {
       axios.get('/api/user/me')
@@ -67,14 +69,14 @@ export default function Layout({ children }: LayoutProps) {
   }, [sidebarOpen, isMobile]);
 
   const navigation = [
-    { name: 'Dashboard', href: '/user/dashboard', icon: Home, current: true },
-    { name: 'New Quotation', href: '/user/dashboard/quotation/new', icon: Plus, current: false },
-    { name: 'All Quotations', href: '/user/dashboard/quotations', icon: FileText, current: false },
-    { name: 'Settings', href: '/settings', icon: Settings, current: false },
+    { name: 'Dashboard', href: '/user/dashboard', icon: Home },
+    { name: 'New Quotation', href: '/user/dashboard/quotation/new', icon: Plus },
+    { name: 'All Quotations', href: '/user/dashboard/quotations', icon: FileText },
+    // { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
   const userNavigation = [
-    { name: 'Your Profile', href: '/user/dashboard/profile' }, 
+    { name: 'Your Profile', href: '/user/dashboard/profile' },
     { name: 'Support', href: '/support' },
   ];
 
@@ -119,20 +121,23 @@ export default function Layout({ children }: LayoutProps) {
       >
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6 space-y-2">
-          {navigation.map((item) => (
-            <a
-              key={item.name}
-              href={item.href}
-              className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group ${item.current
-                ? 'bg-[#3e482e] text-white shadow-lg'
-                : 'text-gray-700 hover:bg-gray-100 hover:text-[#3e482e]'
-                }`}
-            >
-              <item.icon className={`w-5 h-5 transition-colors ${item.current ? 'text-white' : 'text-gray-500 group-hover:text-[#6C733D]'
-                }`} />
-              <span>{item.name}</span>
-            </a>
-          ))}
+          {navigation.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <a
+                key={item.name}
+                href={item.href}
+                className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group ${isActive
+                  ? 'bg-[#3e482e] text-white shadow-lg'
+                  : 'text-gray-700 hover:bg-gray-100 hover:text-[#3e482e]'
+                  }`}
+              >
+                <item.icon className={`w-5 h-5 transition-colors ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-[#6C733D]'
+                  }`} />
+                <span>{item.name}</span>
+              </a>
+            )
+          })}
         </nav>
 
         {/* Sidebar Footer */}
