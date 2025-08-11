@@ -72,7 +72,6 @@ export default function Layout({ children }: LayoutProps) {
     { name: 'Dashboard', href: '/user/dashboard', icon: Home },
     { name: 'New Quotation', href: '/user/dashboard/quotation/new', icon: Plus },
     { name: 'All Quotations', href: '/user/dashboard/quotations', icon: FileText },
-    // { name: 'Settings', href: '/settings', icon: Settings },
   ];
 
   const userNavigation = [
