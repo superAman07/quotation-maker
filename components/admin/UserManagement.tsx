@@ -9,6 +9,7 @@ import { DeleteConfirmationDialog } from './DeleteConfirmationDialog';
 import { ResetPasswordDialog } from './ResetPasswordDialog';
 import { Plus } from 'lucide-react';
 import axios from 'axios';
+import { Country } from '@/types/hotel';
 
 // API Constants
 const API = {
@@ -23,6 +24,10 @@ const API = {
 const DEFAULT_ROLE = 'Employee';
 const DEFAULT_STATUS = false;
 
+interface UserCountryAssignment {
+  country: Country;
+}
+
 export interface User {
   id: string;
   email: string;
@@ -31,6 +36,8 @@ export interface User {
   status?: string;
   isLocked: boolean;
   createdAt: string;
+  assignedCountries?: UserCountryAssignment[];
+
 }
 
 export const UserManagement = () => {

@@ -55,6 +55,7 @@ export const UserTable = ({
             <TableHead>Email</TableHead>
             <TableHead>Name</TableHead>
             <TableHead>Role</TableHead>
+            <TableHead>Assigned Countries</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Created At</TableHead>
             <TableHead className="text-right">Actions</TableHead>
@@ -69,6 +70,19 @@ export const UserTable = ({
                 <Badge variant={user.role === 'Admin' ? 'default' : 'secondary'}>
                   {user.role}
                 </Badge>
+              </TableCell>
+              <TableCell>
+                {user.assignedCountries && user.assignedCountries.length > 0 ? (
+                  <div className="flex flex-wrap gap-1 max-w-xs">
+                    {user.assignedCountries.map(({ country }) => (
+                      <Badge key={country.id} variant="outline" className="font-normal">
+                        {country.name}
+                      </Badge>
+                    ))}
+                  </div>
+                ) : (
+                  <span className="text-xs text-muted-foreground">All</span>
+                )}
               </TableCell>
               <TableCell>
                 <span

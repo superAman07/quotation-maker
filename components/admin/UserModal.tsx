@@ -10,6 +10,10 @@ import { Country } from '@/types/hotel';
 import axios from 'axios';
 import { MultiSelect } from '../ui/multi-select';
 
+interface UserCountryAssignment {
+  country: Country;
+}
+
 interface User {
   id: string;
   email: string;
@@ -18,7 +22,7 @@ interface User {
   isLocked: boolean;
   status?: string;
   createdAt: string;
-  assignedCountries?: Country[];
+  assignedCountries?: UserCountryAssignment[];
 }
 
 interface UserModalProps {
@@ -83,7 +87,7 @@ export const UserModal = ({ isOpen, onClose, onSave, user, isEditing }: UserModa
         password: '',
         status: user.status || "ACTIVE",
         confirmPassword: '',
-        assignedCountryIds: user.assignedCountries?.map(c => c.id) || [],
+        assignedCountryIds: user.assignedCountries?.map(assignment => assignment.country.id) || [],
       });
     } else {
       setFormData({
