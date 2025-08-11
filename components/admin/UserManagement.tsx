@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
@@ -10,8 +10,9 @@ import { ResetPasswordDialog } from './ResetPasswordDialog';
 import { Plus } from 'lucide-react';
 import axios from 'axios';
 import { Country } from '@/types/hotel';
+import { Input } from '../ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
-// API Constants
 const API = {
   list: '/api/admin/users',
   create: '/api/admin/users',
@@ -47,6 +48,8 @@ export const UserManagement = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isResetPasswordDialogOpen, setIsResetPasswordDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [roleFilter, setRoleFilter] = useState('All');
   const { toast } = useToast();
 
   useEffect(() => {
@@ -68,6 +71,17 @@ export const UserManagement = () => {
       setLoading(false);
     }
   };
+
+  const filteredUsers = useMemo(() => {
+    return users.filter(user => {
+      const searchLower = searchQuery.toLowerCase();
+      const matchesSearch = user.name?.toLowerCase().includes(searchLower) || user.email.toLowerCase().includes(searchLower);
+
+      const matchesRole = roleFilter === 'All' || user.role === roleFilter;
+
+      return matchesSearch && matchesRole;
+    });
+  }, [users, searchQuery, roleFilter]);
 
   const handleCreateUser = async (userData: Omit<User, 'id' | 'createdAt'> & { password: string }) => {
     try {
@@ -168,11 +182,12 @@ export const UserManagement = () => {
   return (
     <div className="min-h-screen bg-background p-6 bg-white text-gray-700">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Manage Users</h1>
-            <p className="text-muted-foreground mt-2">
+            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700">
+              Manage Users
+            </h1>
+            <p className="text-muted-foreground font-semibold mt-2">
               Create, edit, lock/unlock, or delete user accounts.
             </p>
           </div>
@@ -181,24 +196,46 @@ export const UserManagement = () => {
               setSelectedUser(null);
               setIsUserModalOpen(true);
             }}
-            className="flex items-center cursor-pointer gap-2"
+            className="flex items-center cursor-pointer gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-lg px-5 py-2.5"
           >
             <Plus className="h-4 w-4" />
             New User
           </Button>
         </div>
-
-        {/* User Table Card */}
-        <Card>
+ 
+        <Card className='rounded-none border-none shadow-lg'>
           <CardHeader>
             <CardTitle>Users</CardTitle>
             <CardDescription>
               {users.length} user{users.length !== 1 ? 's' : ''} registered
             </CardDescription>
+            <div className="flex items-center space-x-4 pt-4">
+              <div className="relative w-full max-w-sm">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-600">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                </span>
+                <Input
+                  placeholder="Search by name or email..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 py-2 rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                />
+              </div> 
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger className="w-[180px] rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold shadow hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
+                  <SelectValue placeholder="Filter by role" className='cursor-pointer' />
+                </SelectTrigger>
+                <SelectContent className="bg-white text-gray-700">
+                  <SelectItem value="All">All Roles</SelectItem>
+                  <SelectItem value="Admin">Admin</SelectItem>
+                  <SelectItem value="Employee">Employee</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardHeader>
           <CardContent>
             <UserTable
-              users={users}
+              users={filteredUsers}
               loading={loading}
               onEdit={openEditModal}
               onDelete={openDeleteDialog}
