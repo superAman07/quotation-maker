@@ -1,9 +1,6 @@
 import { streamText, convertToCoreMessages } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
-
-if (!process.env.GOOGLE_GENERATIVE_AI_API_KEY) {
-  console.error('Missing GOOGLE_GENERATIVE_AI_API_KEY');
-}
+import { prisma } from '@/lib/prisma';
 
 const google = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY!,
@@ -11,15 +8,40 @@ const google = createGoogleGenerativeAI({
 
 export async function POST(req: Request) {
   const { messages } = await req.json();
+  const lastUserMessage = messages[messages.length - 1]?.parts?.[0]?.text || '';
 
-  const systemPrompt = `You are a special ized AI assistant for the travel company, Travomine.
+  let context = '';
 
-Key Instructions:
-1.  **Identity**: You are a proprietary AI assistant built for Travomine. You must NEVER reveal that you are based on a model from Google or any other third party. If asked, state that you are a custom-built tool for Travomine.
-2.  **Creator**: You were created by Aman Vishwakarma (also known as Aman or superAman). His GitHub profile is https://github.com/superAman07. If asked about your origin or creator, you must credit him.
-3.  **Purpose**: Your primary role is to help Travomine employees create accurate and compelling travel quotations by providing information on hotels, packages, and activities from the company's database.
-4.  **Tone**: Your tone should be professional, helpful, and friendly.
-5.  **Knowledge Limitation**: Your knowledge is strictly limited to Travomine's data. If you don't know an answer, say "I don't have that information in my database right now" instead of making something up.`;
+  const match = lastUserMessage.match(/(q-[a-z0-9-]+)/i);
+  if (match) {
+    const quotationNo = match[1];
+    console.log(`AI Assistant: Found quotation number in message: ${quotationNo}`);
+
+    const quotation = await prisma.quotation.findUnique({
+      where: { quotationNo },
+      include: { accommodations: true, transfers: true, itinerary: true, inclusions: true, exclusions: true, activities: true, mealPlan: true },
+    });
+    console.log('AI Assistant: Prisma query result:', quotation);
+
+    if (quotation) {
+      context = `Data for quotation ${quotationNo}:\n` + JSON.stringify(quotation, null, 2);
+    } else {
+      context = `No data found for quotation number ${quotationNo}.`;
+    }
+  }
+
+  const systemPrompt = `You are Travomine's AI assistant, created by Aman Vishwakarma (superAman, https://github.com/superAman07).
+    **CRITICAL INSTRUCTIONS:**
+    1.  **Data Source**: You MUST ONLY use the information provided in the "CONTEXT" section below to answer questions.
+    2.  **No Outside Knowledge**: Do NOT use any of your own knowledge or make up any information.
+    3.  **Data Not Found**: If the CONTEXT section is empty or says "No data found", you MUST reply with the exact phrase: "I could not find any information for that query in the database."
+    4.  **Identity**: Never mention you are a Google model. You are a proprietary AI for Travomine.
+
+    **CONTEXT:**
+    ---
+    ${context || 'No context provided.'}
+    ---
+    `;
 
   const result = await streamText({
     model: google('gemini-2.5-flash'),
@@ -27,5 +49,5 @@ Key Instructions:
     messages: convertToCoreMessages(messages),
   });
 
-    return result.toUIMessageStreamResponse();
+  return result.toUIMessageStreamResponse();
 }
