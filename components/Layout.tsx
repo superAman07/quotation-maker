@@ -19,6 +19,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import axios from 'axios';
 import { usePathname } from 'next/navigation';
+import { FloatingAssistantButton } from './ai-setup/ai-botton';
+import { AssistantPopup } from './ChatAssistant';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -30,6 +32,7 @@ export default function Layout({ children }: LayoutProps) {
   const [notificationCount] = useState(3);
   const [isMobile, setIsMobile] = useState(false);
   const [user, setUser] = useState<{ name?: string; email?: string; role?: string } | null>(null)
+  const [isAssistantOpen, setIsAssistantOpen] = useState(false);
   const pathname = usePathname();
   useEffect(() => {
     try {
@@ -281,6 +284,12 @@ export default function Layout({ children }: LayoutProps) {
           {children}
         </main>
       </div>
+      {!isAssistantOpen && <FloatingAssistantButton onClick={() => setIsAssistantOpen(true)} />}
+      <AssistantPopup
+        isOpen={isAssistantOpen}
+        onClose={() => setIsAssistantOpen(false)}
+        onMinimize={() => setIsAssistantOpen(false)}
+      />
     </div>
   );
 }
