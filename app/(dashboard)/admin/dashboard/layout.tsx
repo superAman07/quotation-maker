@@ -18,12 +18,14 @@ export default async function AdminDashboardLayout({ children }: { children: Rea
     redirect('/admin/auth/login')
   }
 
-  return <SelectedCountryProvider>
-    <div className="min-h-screen bg-gray-50">
-      <AdminNavbar />
-      <AdminLayoutClient>
-        <main className="pt-16">{children}</main>
-      </AdminLayoutClient>
-    </div>
-  </SelectedCountryProvider>
+  return (
+    <SelectedCountryProvider>
+      <div className="min-h-screen bg-gray-50">
+        <AdminNavbar />
+        <AdminLayoutClient>
+          <main className="pt-16">{children}</main>
+        </AdminLayoutClient>
+      </div>
+    </SelectedCountryProvider>
+  )
 }
