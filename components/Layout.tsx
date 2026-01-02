@@ -144,7 +144,7 @@ export default function Layout({ children }: LayoutProps) {
 
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-gray-200">
-          <div className="bg-gradient-to-r from-[#6C733D]/10 to-[#9DA65D]/10 rounded-xl p-4">
+          <div className="bg-linear-to-r from-[#6C733D]/10 to-[#9DA65D]/10 rounded-xl p-4">
             <h3 className="text-sm font-semibold text-[#252426] mb-1">Need Help?</h3>
             <p className="text-xs text-gray-600 mb-3">Contact our support team for assistance</p>
             <button className="w-full cursor-pointer bg-[#3e482e] text-white text-xs font-medium py-2 px-3 rounded-lg hover:bg-[#5a5f33] transition-colors">
@@ -215,7 +215,7 @@ export default function Layout({ children }: LayoutProps) {
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
                   className="flex cursor-pointer items-center gap-2 h-10 px-2 rounded-lg hover:bg-gray-100 transition-colors"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-[#3e482e] to-[#9DA65D] rounded-full flex items-center justify-center">
+                  <div className="w-8 h-8 bg-linear-to-br from-[#3e482e] to-[#9DA65D] rounded-full flex items-center justify-center">
                     <User className="w-4 h-4 text-white" />
                   </div>
                   <div className="hidden sm:block text-left">
