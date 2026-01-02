@@ -119,7 +119,7 @@ export default function Dashboard() {
     <Layout>
       <div className="space-y-6">
         {/* Welcome Banner */}
-        <div className="bg-gradient-to-r from-[#3e482e] to-[#9baa82] text-white p-6 rounded-2xl">
+        <div className="bg-linear-to-r from-[#3e482e] to-[#9baa82] text-white p-6 rounded-2xl">
           <h1 className="text-2xl md:text-3xl font-bold mb-2">Welcome back, {user?.name}!</h1>
           <p className="text-green-100">Ready to create amazing travel experiences?</p>
         </div>
