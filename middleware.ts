@@ -14,11 +14,11 @@ export async function middleware(req: NextRequest) {
     return NextResponse.next();
   }
   const token = parseToken(req);
-  if (!token || !verifyToken(token)) {
-    const url = req.nextUrl.clone();
-    url.pathname = '/user/auth/login';
-    return NextResponse.redirect(url);
-  }
+  // if (!token || !verifyToken(token)) {
+  //   const url = req.nextUrl.clone();
+  //   url.pathname = '/user/auth/login';
+  //   return NextResponse.redirect(url);
+  // }
   return NextResponse.next();
 }
 
