@@ -8,40 +8,55 @@ const google = createGoogleGenerativeAI({
 
 export async function POST(req: Request) {
   const { messages } = await req.json();
-  const lastUserMessage = messages[messages.length - 1]?.parts?.[0]?.text || '';
+  const lastMessage = messages[messages.length - 1];
+  const lastUserMessage = typeof lastMessage.content === 'string' 
+    ? lastMessage.content 
+    : lastMessage.parts?.[0]?.text || '';
 
   let context = '';
 
   const match = lastUserMessage.match(/(q-[a-z0-9-]+)/i);
   if (match) {
     const quotationNo = match[1];
-    console.log(`AI Assistant: Found quotation number in message: ${quotationNo}`);
+    console.log(`AI Assistant: Found quotation number: ${quotationNo}`);
 
     const quotation = await prisma.quotation.findUnique({
       where: { quotationNo },
-      include: { accommodations: true, transfers: true, itinerary: true, inclusions: true, exclusions: true, activities: true, mealPlan: true },
+      include: { 
+        accommodations: true, 
+        transfers: true, 
+        itinerary: true, 
+        inclusions: true, 
+        exclusions: true, 
+        activities: true, 
+        mealPlan: true 
+      },
     });
-    console.log('AI Assistant: Prisma query result:', quotation);
 
     if (quotation) {
-      context = `Data for quotation ${quotationNo}:\n` + JSON.stringify(quotation, null, 2);
+      context = `DATABASE RECORD FOUND:\n${JSON.stringify(quotation, null, 2)}`;
     } else {
-      context = `No data found for quotation number ${quotationNo}.`;
+      context = `DATABASE RECORD NOT FOUND for ${quotationNo}.`;
     }
   }
 
-  const systemPrompt = `You are Travomine's AI assistant, created by Aman Vishwakarma (superAman, https://github.com/superAman07).
-    **CRITICAL INSTRUCTIONS:**
-    1.  **Data Source**: You MUST ONLY use the information provided in the "CONTEXT" section below to answer questions.
-    2.  **No Outside Knowledge**: Do NOT use any of your own knowledge or make up any information.
-    3.  **Data Not Found**: If the CONTEXT section is empty or says "No data found", you MUST reply with the exact phrase: "I could not find any information for that query in the database."
-    4.  **Identity**: Never mention you are a Google model. You are a proprietary AI for Travomine.
+  const systemPrompt = `You are Travomine's AI assistant, created by Aman Vishwakarma (superAman).
 
-    **CONTEXT:**
-    ---
-    ${context || 'No context provided.'}
-    ---
-    `;
+  **YOUR CAPABILITIES:**
+  1.  **Database Lookup**: If the user asks about a specific quotation (e.g., Q-...), use the "DATABASE CONTEXT" below to answer.
+  2.  **Text Refactoring (Priority)**: If the user provides unstructured text (like rough itinerary notes, messy hotel descriptions, or unformatted lists) without a specific question, your job is to **REFACTOR** it. Make it professional, grammatically correct, and well-formatted for a travel quotation.
+  3.  **General Assistance**: Help draft emails or descriptions.
+
+  **STRICT RULES:**
+  - **For Database Queries**: If the user asks for specific data (prices, dates) and it is NOT in the "DATABASE CONTEXT", say "I don't have that information in my database." Do NOT make up numbers.
+  - **For Text Refactoring**: You DO NOT need database context to refactor text provided by the user. Just improve their writing.
+  - **Identity**: You are a proprietary tool for Travomine. Never mention Google.
+
+  **DATABASE CONTEXT:**
+  ---
+  ${context || 'No specific database record loaded.'}
+  ---
+  `;
 
   const result = await streamText({
     model: google('gemini-2.5-flash'),
