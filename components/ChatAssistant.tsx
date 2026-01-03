@@ -15,7 +15,6 @@ interface AssistantPopupProps {
 }
 
 export function AssistantPopup({ isOpen, onClose, onMinimize }: AssistantPopupProps) {
-  // Using your exact working chat logic
   const [input, setInput] = useState('');
   const { messages, status, sendMessage } = useChat();
 
@@ -51,7 +50,6 @@ export function AssistantPopup({ isOpen, onClose, onMinimize }: AssistantPopupPr
           transition={{ duration: 0.3, ease: 'easeInOut' }}
           className="fixed bottom-28 right-8 z-50 flex h-150 w-96 flex-col rounded-2xl border border-gray-200 bg-white shadow-2xl"
         >
-          {/* Header */}
           <div className="flex items-center justify-between rounded-t-2xl border-b bg-gray-100 p-4">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#3e482e]">
@@ -69,7 +67,6 @@ export function AssistantPopup({ isOpen, onClose, onMinimize }: AssistantPopupPr
             </div>
           </div>
 
-          {/* Chat Messages */}
           <ScrollArea className="grow bg-gray-50 p-4" ref={scrollAreaRef}>
             <div className="space-y-4">
               {messages.map(m => (
@@ -92,7 +89,6 @@ export function AssistantPopup({ isOpen, onClose, onMinimize }: AssistantPopupPr
             </div>
           </ScrollArea>
 
-          {/* Input Form */}
           <form onSubmit={handleSubmit} className="flex items-center gap-3 border-t bg-white p-4">
             <Input
               value={input}

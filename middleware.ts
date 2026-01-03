@@ -10,15 +10,24 @@ const PUBLIC_PATHS = ['/user/auth/login',
   '/admin/auth/signup'];
 
 export async function middleware(req: NextRequest) {
-  if (PUBLIC_PATHS.some(path => req.nextUrl.pathname.startsWith(path))) {
+  const { pathname } = req.nextUrl;
+
+  if (pathname === '/') {
     return NextResponse.next();
   }
+
+  if (PUBLIC_PATHS.some(path => pathname.startsWith(path))) {
+    return NextResponse.next();
+  }
+
   const token = parseToken(req);
+  
   if (!token || !verifyToken(token)) {
     const url = req.nextUrl.clone();
-    url.pathname = '/user/auth/login';
+    url.pathname = '/';
     return NextResponse.redirect(url);
   }
+
   return NextResponse.next();
 }
 
