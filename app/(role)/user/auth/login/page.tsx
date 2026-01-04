@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from "react"; 
 import axios from "axios";
+import { Eye, EyeOff } from 'lucide-react';
 
 interface LoginForm {
     email: string;
@@ -73,10 +74,10 @@ export default function Login() {
                             />
                         </div>
 
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                                Password
-                            </label>
+                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                            Password
+                        </label>
+                        <div className="relative">
                             <input
                                 id="password"
                                 type={isVisible ? "text":"password"}
@@ -86,7 +87,7 @@ export default function Login() {
                                 className="w-full px-4 py-3 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors placeholder-gray-400"
                                 required
                             />
-                            <button onClick(()=>setIsVisible(!isVisible))>{isVisible ? "hide": "show"}</button>
+                            <button type="button" className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-800" onClick={()=>setIsVisible(!isVisible)}>{isVisible ? <EyeOff /> : <Eye />}</button>
                         </div>
                         <div className="flex items-center justify-between">
                             <label className="flex items-center">
