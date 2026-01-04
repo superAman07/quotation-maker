@@ -1,5 +1,5 @@
 'use client';
-import { useState } from "react"; 
+import { useState, useEffect } from "react"; 
 import axios from "axios";
 
 interface LoginForm {
@@ -16,6 +16,7 @@ export default function Login() {
     const [form, setForm] = useState({ email: "", password: "" });
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [isVisible, setIsVisible] = useState(false);
 
     async function handleSubmit(e: any) {
         e.preventDefault();
@@ -78,15 +79,15 @@ export default function Login() {
                             </label>
                             <input
                                 id="password"
-                                type="password"
+                                type={isVisible ? "text":"password"}
                                 placeholder="Enter your password"
                                 value={form.password}
                                 onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                                 className="w-full px-4 py-3 text-gray-700 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors placeholder-gray-400"
                                 required
                             />
+                            <button onClick(()=>setIsVisible(!isVisible))>{isVisible ? "hide": "show"}</button>
                         </div>
-
                         <div className="flex items-center justify-between">
                             <label className="flex items-center">
                                 <input
