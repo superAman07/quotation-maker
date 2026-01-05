@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import Layout from '@/components/Layout';
 import {
   Search,
@@ -10,7 +10,8 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
-  Loader2
+  Loader2,
+  X
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -18,6 +19,7 @@ import { PDFViewer } from '@react-pdf/renderer';
 import { QuotationPDF } from '@/components/Quotation-pdf';
 import axios from 'axios';
 import { toast } from '@/hooks/use-toast';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const formatCurrency = (amount: number | null | undefined) => {
   if (amount === null || amount === undefined) {
@@ -138,22 +140,24 @@ export default function QuotationsList() {
     end: string;
   }
 
-  const filteredQuotations = (quotations as Quotation[]).filter((quote: Quotation) => {
-    const matchesSearch =
-      (quote.clientName ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (quote.place ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (quote.quotationNo ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (quote.id ?? '').toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredQuotations = useMemo(() => {
+    return (quotations as any[]).filter((quote: any) => {
+      const matchesSearch =
+        (quote.clientName ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (quote.place ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (quote.quotationNo ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (quote.id ?? '').toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesStatus =
-      statusFilter === 'all' || quote.status.toLowerCase() === statusFilter;
+      const matchesStatus =
+        statusFilter === 'all' || quote.status.toLowerCase() === statusFilter;
 
-    const matchesDate =
-      (!dateRange.start || new Date(quote.travelDate) >= new Date(dateRange.start)) &&
-      (!dateRange.end || new Date(quote.travelDate) <= new Date(dateRange.end));
+      const matchesDate =
+        (!dateRange.start || new Date(quote.travelDate) >= new Date(dateRange.start)) &&
+        (!dateRange.end || new Date(quote.travelDate) <= new Date(dateRange.end));
 
-    return matchesSearch && matchesStatus && matchesDate;
-  });
+      return matchesSearch && matchesStatus && matchesDate;
+    });
+  }, [quotations, searchTerm, statusFilter, dateRange]);
 
   return (
     <Layout>
@@ -232,102 +236,114 @@ export default function QuotationsList() {
 
         {/* Quotations List */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          {/* Mobile Card View */}
-          <div className="md:hidden">
-            {filteredQuotations.map((quote) => (
-              <div key={quote.id} className="border-b border-gray-200 p-4">
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <h3 className="font-semibold text-[#252426]">{quote.clientName}</h3>
-                    <p className="text-sm text-gray-600">{quote.quotationNo}</p>
+        {loading ? (
+            <div className="p-6 space-y-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center space-x-4">
+                  <Skeleton className="h-12 w-full rounded-lg" />
+                </div>
+              ))}
+            </div>
+          ) : (
+          <>  
+            {/* Mobile Card View */}
+            <div className="md:hidden">
+              {filteredQuotations.map((quote) => (
+                <div key={quote.id} className="border-b border-gray-200 p-4">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h3 className="font-semibold text-[#252426]">{quote.clientName}</h3>
+                      <p className="text-sm text-gray-600">{quote.quotationNo}</p>
+                    </div>
+                    <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(quote.status)}`}>
+                      {quote.status}
+                    </span>
                   </div>
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(quote.status)}`}>
-                    {quote.status}
-                  </span>
-                </div>
-                <div className="space-y-2 mb-4">
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Destination:</span> {quote.place || 'N/A'}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Date:</span> {new Date(quote.travelDate).toLocaleDateString()}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    <span className="font-medium">Travelers:</span> {quote.groupSize}
-                  </p>
-                  <p className="text-lg font-bold text-[#6C733D]">
-                    {formatCurrency(quote.totalGroupCost)}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <Link href={`/user/dashboard/quotations/${quote.id}`} className="flex-1 bg-[#6C733D] text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-[#5a5f33] transition-colors flex items-center justify-center gap-1">
-                    <Eye className="w-4 h-4" />
-                    View
-                  </Link>
-                  <button onClick={() => handleDownloadClick(quote.id)} className="flex-1 cursor-pointer border border-gray-300 text-gray-600 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-1">
-                    <Download className="w-4 h-4" />
-                    PDF
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Desktop Table View */}
-          <div className="hidden md:block">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quote No</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Destination</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {filteredQuotations.map((quote) => (
-                  <tr key={quote.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#252426]">
-                      {quote.quotationNo}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div>
-                        <div className="text-sm font-medium text-[#252426]">{quote.clientName}</div>
-                        <div className="text-sm text-gray-500">{quote.groupSize} travelers</div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {quote.place ? quote.place : 'N/A'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                      {new Date(quote.travelDate).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(quote.status)}`}>
-                        {quote.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#6C733D]">
+                  <div className="space-y-2 mb-4">
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Destination:</span> {quote.place || 'N/A'}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Date:</span> {new Date(quote.travelDate).toLocaleDateString()}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium">Travelers:</span> {quote.groupSize}
+                    </p>
+                    <p className="text-lg font-bold text-[#6C733D]">
                       {formatCurrency(quote.totalGroupCost)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      <div className="flex gap-2">
-                        <Link href={`/user/dashboard/quotations/${quote.id}`} className="text-[#6C733D] hover:text-[#5a5f33] p-1" title="View">
-                          <Eye className="w-4 h-4" />
-                        </Link>
-                        <button onClick={() => handleDownloadClick(quote.id)} className="text-[#6C733D] hover:text-[#5a5f33] cursor-pointer p-1" title="Download PDF">
-                          <Download className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Link href={`/user/dashboard/quotations/${quote.id}`} className="flex-1 bg-[#6C733D] text-white py-2 px-3 rounded-lg text-sm font-medium hover:bg-[#5a5f33] transition-colors flex items-center justify-center gap-1">
+                      <Eye className="w-4 h-4" />
+                      View
+                    </Link>
+                    <button onClick={() => handleDownloadClick(quote.id)} className="flex-1 cursor-pointer border border-gray-300 text-gray-600 py-2 px-3 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors flex items-center justify-center gap-1">
+                      <Download className="w-4 h-4" />
+                      PDF
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block">
+              <table className="w-full">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quote No</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Destination</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {filteredQuotations.map((quote) => (
+                    <tr key={quote.id} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#252426]">
+                        {quote.quotationNo}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div>
+                          <div className="text-sm font-medium text-[#252426]">{quote.clientName}</div>
+                          <div className="text-sm text-gray-500">{quote.groupSize} travelers</div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {quote.place ? quote.place : 'N/A'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        {new Date(quote.travelDate).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(quote.status)}`}>
+                          {quote.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-[#6C733D]">
+                        {formatCurrency(quote.totalGroupCost)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        <div className="flex gap-2">
+                          <Link href={`/user/dashboard/quotations/${quote.id}`} className="text-[#6C733D] hover:text-[#5a5f33] p-1" title="View">
+                            <Eye className="w-4 h-4" />
+                          </Link>
+                          <button onClick={() => handleDownloadClick(quote.id)} className="text-[#6C733D] hover:text-[#5a5f33] cursor-pointer p-1" title="Download PDF">
+                            <Download className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+          )}
         </div>
 
         {/* Pagination */}
@@ -349,24 +365,37 @@ export default function QuotationsList() {
         </div>
       </div>
       {showPdfPreview && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-          <div className="bg-white rounded-lg shadow-lg p-4 max-w-4xl w-full h-[80vh] flex flex-col">
-            <Button
-              className="self-end cursor-pointer mb-2 text-red-500"
-              variant="ghost"
-              onClick={() => setShowPdfPreview(false)}
-            >
-              Close
-            </Button>
-            {isPdfLoading || !pdfPayload ? (
-              <div className="flex-1 flex items-center justify-center">
-                <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
-              </div>
-            ) : (
-              <PDFViewer width="100%" height="100%">
-                <QuotationPDF payload={pdfPayload} />
-              </PDFViewer>
-            )}
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-all duration-300 animate-in fade-in">
+          
+          {/* Modal Content with Scale Animation */}
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col transform transition-all scale-100 animate-in zoom-in-95 duration-200 border border-white/20">
+            
+            {/* Modal Header */}
+            <div className="flex justify-between items-center p-4 border-b border-gray-100">
+              <h3 className="font-semibold text-gray-800">PDF Preview</h3>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full hover:bg-red-50 hover:text-red-600 transition-colors"
+                onClick={() => setShowPdfPreview(false)}
+              >
+                <X className="w-5 h-5" />
+              </Button>
+            </div>
+
+            {/* PDF Viewer Container */}
+            <div className="flex-1 bg-gray-50 p-4 overflow-hidden rounded-b-2xl">
+              {isPdfLoading || !pdfPayload ? (
+                <div className="h-full flex flex-col items-center justify-center text-gray-500 gap-3">
+                  <Loader2 className="w-10 h-10 animate-spin text-[#6C733D]" />
+                  <p className="text-sm font-medium animate-pulse">Generating PDF...</p>
+                </div>
+              ) : (
+                <PDFViewer width="100%" height="100%" className="rounded-lg shadow-inner border border-gray-200">
+                  <QuotationPDF payload={pdfPayload} />
+                </PDFViewer>
+              )}
+            </div>
           </div>
         </div>
       )}
