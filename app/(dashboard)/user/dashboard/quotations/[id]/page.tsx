@@ -49,6 +49,7 @@ const createPdfPayloadFromQuotation = (quote: any) => {
   const activitiesCostPerPerson = quote.groupSize > 0 ? totalActivitiesCost / quote.groupSize : 0;
 
   return {
+    quotationNo: quote.quotationNo,
     clientName: quote.clientName,
     clientEmail: quote.clientEmail,
     clientPhone: quote.clientPhone,

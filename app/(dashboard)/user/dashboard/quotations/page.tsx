@@ -45,6 +45,7 @@ const createPdfPayloadFromQuotation = (quote: any) => {
   const activitiesCostPerPerson = quote.groupSize > 0 ? totalActivitiesCost / quote.groupSize : 0;
 
   return {
+    quotationNo: quote.quotationNo,
     clientName: quote.clientName,
     clientEmail: quote.clientEmail,
     clientPhone: quote.clientPhone,
@@ -141,6 +142,7 @@ export default function QuotationsList() {
     const matchesSearch =
       (quote.clientName ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (quote.place ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (quote.quotationNo ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (quote.id ?? '').toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesStatus =
@@ -237,7 +239,7 @@ export default function QuotationsList() {
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <h3 className="font-semibold text-[#252426]">{quote.clientName}</h3>
-                    <p className="text-sm text-gray-600">{quote.id}</p>
+                    <p className="text-sm text-gray-600">{quote.quotationNo}</p>
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(quote.status)}`}>
                     {quote.status}
@@ -276,7 +278,7 @@ export default function QuotationsList() {
             <table className="w-full">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quote ID</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quote No</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Destination</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
@@ -289,7 +291,7 @@ export default function QuotationsList() {
                 {filteredQuotations.map((quote) => (
                   <tr key={quote.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-[#252426]">
-                      {quote.id}
+                      {quote.quotationNo}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div>

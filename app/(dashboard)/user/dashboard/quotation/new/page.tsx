@@ -481,30 +481,26 @@ export default function NewQuotationPage() {
     const totalPerHead = landCostPerHead + flightDetails.costPerPerson;
     const totalGroupCost = totalPerHead * travelDetails.groupSize;
 
-    // Find the country name
     const selectedCountry = allCountries.find(c => c.id === travelDetails.countryId);
     const place = selectedCountry ? selectedCountry.name : 'N/A';
 
-    // Format the data for PDF
     const pdfData = {
-      // Client info
+      quotationNo: "DRAFT",
       clientName: clientInfo.name || 'Client Name',
       clientEmail: clientInfo.email,
       clientPhone: clientInfo.phone,
       clientAddress: clientInfo.address,
 
-      // Travel details
       travelDate: travelDetails.travelDate,
       groupSize: travelDetails.groupSize,
       totalNights: totalNights,
       place: place,
       mealPlan: selectedMealPlan,
 
-      // Flight details
+
       flightCost: flightDetails.costPerPerson,
       flightImageUrl: flightDetails.imageUrl,
 
-      // Services
       accommodation: accommodations.map(({ id, ...rest }) => rest),
       transfers: transfers.map(({ id, ...rest }) => rest),
       mealPlanCost: mealPlanCost,
@@ -515,12 +511,10 @@ export default function NewQuotationPage() {
       activitiesCost: activitiesCostPerPerson,
       accommodationAndTransferCost: accommodationAndTransferCostPerPerson,
 
-      // Costs
       landCostPerHead: landCostPerHead,
       totalPerHead: totalPerHead,
       totalGroupCost: totalGroupCost,
 
-      // Others
       logoUrl: '/logo.png'
     };
 
@@ -1049,14 +1043,14 @@ export default function NewQuotationPage() {
                           placeholder="e.g., Arrival in Leh & Acclimatization"
                           value={item.dayTitle}
                           onChange={(e) => updateItineraryDay(item.id, 'dayTitle', e.target.value)}
-                          className="flex-grow text-gray-600"
+                          className="grow text-gray-600"
                         />
                       </div>
                       <Textarea
                         placeholder="Describe the activities for the day..."
                         value={item.description}
                         onChange={(e) => updateItineraryDay(item.id, 'description', e.target.value)}
-                        className="min-h-[100px] text-gray-600"
+                        className="min-h-25 text-gray-600"
                       />
                       <Button
                         variant="ghost"
