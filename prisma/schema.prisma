@@ -51,16 +51,26 @@ model Quotation {
   status      QuotationStatus @default(DRAFT)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
-
   mealPlanId Int?
   mealPlan   MealPlan? @relation(fields: [mealPlanId], references: [id])
 
   accommodations QuotationAccommodation[]
   transfers      QuotationTransfer[]
+  flights        QuotationFlight[]
   itinerary      QuotationItinerary[]
   inclusions     QuotationInclusion[]
   exclusions     QuotationExclusion[]
   activities     QuotationActivity[]
+}
+
+model QuotationFlight {
+  id          Int       @id @default(autoincrement())
+  quotation   Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  quotationId String
+  type        String    
+  route       String   
+  date        DateTime
+  imageUrl    String   
 }
 
 model QuotationAccommodation {
