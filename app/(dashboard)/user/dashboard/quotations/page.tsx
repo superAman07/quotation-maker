@@ -376,7 +376,7 @@ export default function QuotationsList() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="rounded-full hover:bg-red-50 hover:text-red-600 transition-colors"
+                className="rounded-full hover:bg-red-50 hover:text-red-600 text-gray-600 cursor-pointer transition-colors"
                 onClick={() => setShowPdfPreview(false)}
               >
                 <X className="w-5 h-5" />
