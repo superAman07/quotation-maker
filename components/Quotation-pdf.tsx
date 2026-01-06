@@ -31,6 +31,14 @@ Font.register({
 
 const colors = {
     primaryBlue: '#0056b3',
+    
+    refBlue: '#2563EB',           // Hotel Title
+    refGreen: '#16A34A',          // Transfer Title
+    refOrange: '#EA580C',         // Tours Title
+    refPurple: '#9333EA',         // Pricing Title
+    refYellow: '#FA-CC15',        // Highlight Background
+    refText: '#1F2937',
+
     accentPurple: '#8e24aa',
     accentRed: '#d32f2f',
     highlightYellow: '#fff9c4',
@@ -139,7 +147,7 @@ const styles = StyleSheet.create({
     summaryHeader: {
         fontSize: 12,
         fontWeight: 'bold',
-        color: colors.accentPurple,
+        color: colors.accentRed,
         marginBottom: 8,
     },
     summaryBox: {
@@ -215,17 +223,6 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: colors.textDark,
     },
-    flightCostHighlight: {
-        backgroundColor: colors.highlightYellow,
-        padding: 6,
-        marginTop: 8,
-        alignSelf: 'flex-start',
-        fontSize: 10,
-        fontWeight: 'bold',
-        borderRadius: 3,
-    },
-
-    // ✅ NEW: Colorful Itinerary Styling
     itineraryHeader: {
         fontSize: 12,
         fontWeight: 'bold',
@@ -253,6 +250,27 @@ const styles = StyleSheet.create({
         textAlign: 'justify',
     },
 
+    richSectionHeader: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        marginBottom: 6,
+        marginTop: 15,
+        textTransform: 'uppercase',
+    },
+    richListItem: {
+        fontSize: 10,
+        marginBottom: 3,
+        paddingLeft: 10,
+        color: colors.textDark,
+    },
+    richDisclaimer: {
+        fontSize: 9,
+        fontStyle: 'italic',
+        color: colors.textGray,
+        marginTop: 4,
+        marginBottom: 10,
+    },
+
     // Pricing
     pricingBox: {
         marginTop: 20,
@@ -276,6 +294,37 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: 'bold',
         color: colors.primaryBlue,
+    },
+
+    pricingHighlightRow: {
+        flexDirection: 'row',
+        backgroundColor: '#FFFF00', // Bright Yellow like reference
+        padding: 4,
+        marginBottom: 6,
+        alignSelf: 'flex-start',
+    },
+    pricingTotalRow: {
+        flexDirection: 'row',
+        backgroundColor: '#FFFF00',
+        padding: 4,
+        marginTop: 2,
+        alignSelf: 'flex-start',
+    },
+    
+    // Contact Section
+    contactHeader: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: colors.refBlue,
+        marginTop: 20,
+        marginBottom: 5,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    contactText: {
+        fontSize: 9,
+        marginBottom: 2,
+        color: colors.textDark,
     },
 
     // ✅ NEW: Wishing Message
@@ -330,10 +379,10 @@ export function QuotationPDF({ payload }: any) {
                 <View style={styles.footer} fixed>
                     <Text style={styles.footerBrand}>Travomine Leisure Pvt. Ltd.</Text>
                     <Text style={styles.footerText}>
-                        Address: Your Company Address Here | Phone: +91-9956735725 | Email: info@travomine.com
+                        Address: LGF 17, Ajanta Tower, Near Phoenix United Mall, Kanpur Road, Lucknow, UP – 201301
                     </Text>
                     <Text style={styles.footerText}>
-                        www.travomine.com | Terms & Conditions Apply
+                        Phone: 8957124089, 9956735725 | Email: info@travomine.com | www.travomine.com
                     </Text>
                 </View>
 
@@ -378,12 +427,10 @@ export function QuotationPDF({ payload }: any) {
                     
                     {((payload.flights && payload.flights.length > 0) || payload.flightCost > 0) && (
                         <View style={styles.section} wrap={false}>
-                            <Text style={styles.flightHeader}>✈ FLIGHT DETAILS</Text>
+                            <Text style={styles.flightHeader}>FLIGHT DETAILS</Text>
 
-                            {/* ✅ NEW: Render Multiple Flight Legs */}
                             {payload.flights && payload.flights.length > 0 ? (
                                 payload.flights.map((leg: any, i: number) => {
-                                    // Handle image URL context
                                     const legImgUrl = leg.imageUrl 
                                         ? (leg.imageUrl.startsWith('http') 
                                             ? leg.imageUrl 
@@ -392,13 +439,10 @@ export function QuotationPDF({ payload }: any) {
 
                                     return (
                                         <View key={i} wrap={false} style={{ marginBottom: 5 }}>
-                                            {/* Header: ⭐ TYPE - Route (Date) */}
                                             <Text style={styles.flightLegHeader}>
                                                 <Text style={{ color: '#F59E0B' }}>★ </Text>
                                                 {leg.type} – {leg.route} ({formatDate(leg.date)})
                                             </Text>
-                                            
-                                            {/* Leg Specific Image */}
                                             {legImgUrl && (
                                                 <Image src={legImgUrl} style={styles.flightImage} />
                                             )}
@@ -406,7 +450,6 @@ export function QuotationPDF({ payload }: any) {
                                     );
                                 })
                             ) : payload.flightImageUrl ? (
-                                // Fallback for old data structure
                                 <View style={styles.flightCard}>
                                     <Text style={styles.flightRoute}>Flight Included in Package</Text>
                                     <Image 
@@ -415,8 +458,6 @@ export function QuotationPDF({ payload }: any) {
                                     />
                                 </View>
                             ) : null}
-
-                            {/* ✅ NEW: Total Cost Bar (Like Reference Image) */}
                             {payload.flightCost > 0 && (
                                 <View style={styles.flightTotalCostBox}>
                                     <Text style={styles.flightTotalCostText}>
@@ -428,7 +469,6 @@ export function QuotationPDF({ payload }: any) {
                         </View>
                     )}
 
-                    {/* Colorful Day-wise Itinerary */}
                     {payload.itinerary && payload.itinerary.length > 0 && (
                         <View style={styles.section}>
                             <Text style={styles.itineraryHeader}>DAY-WISE ITINERARY</Text>
@@ -450,47 +490,102 @@ export function QuotationPDF({ payload }: any) {
                         </View>
                     )}
 
-                    {/* Pricing Summary */}
-                    <View style={styles.section} wrap={false}>
-                        <Text style={[styles.summaryHeader, { color: colors.textDark }]}>PRICING SUMMARY</Text>
-                        <View style={styles.pricingBox}>
-                            <View style={styles.priceRow}>
-                                <Text style={styles.priceLabel}>Total Cost ({payload.groupSize} Pax):</Text>
-                                <Text style={styles.priceValue}>{formatCurrency(payload.totalGroupCost)}</Text>
+                    
+
+                    <View break={payload.itinerary?.length > 3}> {/* Forced break if itinerary is long */}
+                        
+                        {/* 🏢 HOTEL DETAILS (BLUE) */}
+                        {payload.accommodation && payload.accommodation.length > 0 && (
+                            <View style={styles.section} wrap={false}>
+                                <Text style={[styles.richSectionHeader, { color: colors.refBlue }]}>HOTEL DETAILS</Text>
+                                {payload.accommodation.map((acc: any, i: number) => (
+                                    <Text key={i} style={styles.richListItem}>
+                                        • {acc.hotelName} – {acc.roomType} ({acc.nights} Nights)
+                                    </Text>
+                                ))}
+                                <Text style={styles.richDisclaimer}>
+                                    Hotels are subject to availability. In case of unavailability, equivalent accommodation will be provided.
+                                </Text>
                             </View>
-                            <View style={styles.priceRow}>
-                                <Text style={{ fontSize: 10 }}>Per Person Cost:</Text>
-                                <Text style={{ fontSize: 10, fontWeight: 'bold' }}>{formatCurrency(payload.totalPerHead)}</Text>
+                        )}
+
+                        {/* 🚌 TRANSFERS INCLUDED (GREEN) */}
+                        {payload.transfers && payload.transfers.length > 0 && (
+                            <View style={styles.section} wrap={false}>
+                                <Text style={[styles.richSectionHeader, { color: colors.refGreen }]}>TRANSFERS INCLUDED</Text>
+                                {payload.transfers.map((t: any, i: number) => (
+                                    <Text key={i} style={styles.richListItem}>
+                                        • {t.type} {t.vehicleName ? `(${t.vehicleName})` : ''}
+                                    </Text>
+                                ))}
                             </View>
-                            <Text style={{ fontSize: 8, marginTop: 5, color: colors.textGray }}>
-                                * Rates are subject to availability at the time of booking.
-                            </Text>
+                        )}
+
+                        {/* 🌴 TOURS INCLUDED (ORANGE) */}
+                        {payload.activities && payload.activities.length > 0 && (
+                            <View style={styles.section} wrap={false}>
+                                <Text style={[styles.richSectionHeader, { color: colors.refOrange }]}>TOURS INCLUDED (ALL FEES INCLUDED)</Text>
+                                {payload.activities.map((act: any, i: number) => (
+                                    <Text key={i} style={styles.richListItem}>
+                                        • {act.name}
+                                    </Text>
+                                ))}
+                            </View>
+                        )}
+
+                        {/* 💰 PRICING SECTION (PURPLE) */}
+                        <View style={styles.section} wrap={false}>
+                            <Text style={[styles.richSectionHeader, { color: colors.refPurple }]}>PRICING SECTION</Text>
+                            
+                            {/* Land Package Cost */}
+                            <View style={styles.pricingHighlightRow}>
+                                <Text style={{ fontSize: 10, fontWeight: 'bold' }}>
+                                    Package Cost (Land Only): {formatCurrency(payload.landCostPerHead)} Per Person
+                                    {payload.groupSize > 1 ? `  ${formatCurrency(payload.landCostPerHead * payload.groupSize)} Total` : ''}
+                                </Text>
+                            </View>
+                            
+                            {/* Total Cost with Flight */}
+                            <View style={styles.pricingTotalRow}>
+                                <Text style={{ fontSize: 10, fontWeight: 'bold' }}>
+                                    Total Cost ({payload.flightCost > 0 ? 'with Flight' : 'Land Only'}): {formatCurrency(payload.totalGroupCost)}
+                                </Text>
+                            </View>
+                        </View>
+
+                        {/* Inclusions & Exclusions */}
+                        <View style={{ flexDirection: 'row', gap: 20, marginBottom: 20 }} wrap={false}>
+                            <View style={{ flex: 1 }}>
+                                <Text style={{ fontWeight: 'bold', marginBottom: 5, color: 'green' }}>Inclusions</Text>
+                                {payload.inclusions?.map((inc: any, i: number) => (
+                                    <Text key={i} style={{ fontSize: 9, marginBottom: 2 }}>• {typeof inc === 'string' ? inc : inc.item}</Text>
+                                ))}
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Text style={{ fontWeight: 'bold', marginBottom: 5, color: 'red' }}>Exclusions</Text>
+                                {payload.exclusions?.map((exc: any, i: number) => (
+                                    <Text key={i} style={{ fontSize: 9, marginBottom: 2 }}>• {typeof exc === 'string' ? exc : exc.item}</Text>
+                                ))}
+                            </View>
+                        </View>
+
+                        {/* 📞 CONTACT DETAIL */}
+                        <View style={styles.section} wrap={false}>
+                            <Text style={styles.contactHeader}>CONTACT DETAILS – TRAVOMINE</Text>
+                            <Text style={[styles.contactText, { fontWeight: 'bold' }]}>Travomine Leisure Pvt. Ltd.</Text>
+                            <Text style={styles.contactText}>Regd Office: B-128, First Floor, Sector-2, Noida, Uttar Pradesh – 201301</Text>
+                            <Text style={styles.contactText}>Branch Office: LGF 17, Ajanta Tower, Near Phoenix United Mall, Kanpur Road, Lucknow</Text>
+                            <Text style={[styles.contactText, { textDecoration: 'underline', color: 'blue' }]}>Email: info@travomine.com</Text>
+                            <Text style={styles.contactText}>Phone: 8957124089, 9956735725</Text>
+                            <Text style={[styles.contactText, { textDecoration: 'underline', color: 'blue' }]}>Website: www.travomine.com</Text>
+                        </View>
+
+                        {/* ✅ NEW: Wishing Message */}
+                        <View style={styles.wishingBox} wrap={false}>
+                            <Text style={styles.wishingText}>WISHING YOU A HAPPY JOURNEY!</Text>
                         </View>
                     </View>
-
-                    {/* Inclusions & Exclusions */}
-                    <View style={{ flexDirection: 'row', gap: 20, marginBottom: 20 }} wrap={false}>
-                        <View style={{ flex: 1 }}>
-                            <Text style={{ fontWeight: 'bold', marginBottom: 5, color: 'green' }}>Inclusions</Text>
-                            {payload.inclusions?.map((inc: any, i: number) => (
-                                <Text key={i} style={{ fontSize: 9, marginBottom: 2 }}>• {typeof inc === 'string' ? inc : inc.item}</Text>
-                            ))}
-                        </View>
-                        <View style={{ flex: 1 }}>
-                            <Text style={{ fontWeight: 'bold', marginBottom: 5, color: 'red' }}>Exclusions</Text>
-                            {payload.exclusions?.map((exc: any, i: number) => (
-                                <Text key={i} style={{ fontSize: 9, marginBottom: 2 }}>• {typeof exc === 'string' ? exc : exc.item}</Text>
-                            ))}
-                        </View>
-                    </View>
-
-                    {/* ✅ NEW: Wishing Message */}
-                    <View style={styles.wishingBox} wrap={false}>
-                        <Text style={styles.wishingText}>WISHING YOU A HAPPY JOURNEY!</Text>
-                    </View>
-
                 </View>
-
             </Page>
         </Document>
     );
