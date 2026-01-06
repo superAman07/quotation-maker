@@ -37,6 +37,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ id: stri
             },
             include: {
                 createdBy: { select: { name: true } },
+                flights: true,
                 accommodations: true,
                 transfers: true,
                 itinerary: true,

@@ -30,7 +30,8 @@ export async function POST(req: NextRequest) {
         const {
             clientName, clientEmail, clientPhone, clientAddress,
             travelDate, groupSize, totalNights, place,
-            flightCost, flightImageUrl,
+            flightCost, 
+            flights,
             accommodations, transfers, mealPlan, itinerary,
             inclusions, exclusions,
             landCostPerHead, totalPerHead, totalGroupCost,
@@ -65,7 +66,7 @@ export async function POST(req: NextRequest) {
                 totalNights: totalNights || 0,
                 place,
                 flightCostPerPerson: flightCost || null,
-                flightImageUrl: flightImageUrl || null,
+                // flightImageUrl: flightImageUrl || null,
                 landCostPerPerson: landCostPerHead || null,
                 totalCostPerPerson: totalPerHead || null,
                 totalGroupCost: totalGroupCost || null,
@@ -73,6 +74,14 @@ export async function POST(req: NextRequest) {
                 status: status as QuotationStatus,
                 createdBy: { connect: { id: Number((payload as { userId: string }).userId) } },
                 ...(mealPlanId && { mealPlan: { connect: { id: mealPlanId } } }),                
+                flights: {
+                    create: flights?.map((f: any) => ({
+                        type: f.type,
+                        route: f.route,
+                        date: new Date(f.date),
+                        imageUrl: f.imageUrl
+                    })) || []
+                },
                 accommodations: accommodations?.length ? { create: accommodations } : undefined,
                 transfers: transfers?.length ? { create: transfers } : undefined,
                 itinerary: itinerary?.length ? { create: itinerary } : undefined,

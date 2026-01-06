@@ -19,7 +19,8 @@ import {
   Home,
   User,
   FileText,
-  Loader2
+  Loader2,
+  Plane
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -60,6 +61,7 @@ const createPdfPayloadFromQuotation = (quote: any) => {
     place: quote.place,
     mealPlan: quote.mealPlan?.name || 'Not Included',
     flightCost: quote.flightCostPerPerson || 0,
+    flights: quote.flights || [], 
     flightImageUrl: quote.flightImageUrl,
     accommodation: quote.accommodations || [],
     transfers: quote.transfers || [],
@@ -314,6 +316,55 @@ export default function QuotationDetail() {
                   </div>
                 </div>
               </div>
+
+              {(quotation.flights && quotation.flights.length > 0) && (
+                <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                  <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                    <Plane className="w-5 h-5 text-[#767d43]" />
+                    Flight Details
+                  </h2>
+                  <div className="space-y-4">
+                    {quotation.flights.map((flight: any) => (
+                      <div key={flight.id} className="border rounded-xl p-4 bg-gray-50 flex flex-col md:flex-row gap-4 items-start">
+                        {/* Flight Image */}
+                        {flight.imageUrl && (
+                          <div className="w-full md:w-48 h-24 bg-white rounded-lg border overflow-hidden shrink-0">
+                            <img 
+                              src={flight.imageUrl} 
+                              alt="Flight Ticket" 
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                        )}
+                        
+                        {/* Flight Info */}
+                        <div className="flex-1 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded uppercase">
+                              {flight.type}
+                            </span>
+                            <span className="text-sm text-gray-500 font-medium flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              {formatDate(flight.date)}
+                            </span>
+                          </div>
+                          <h3 className="font-semibold text-gray-800 text-lg">
+                            {flight.route}
+                          </h3>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {/* Cost Summary for Flights */}
+                    {quotation.flightCostPerPerson > 0 && (
+                      <div className="mt-4 p-3 bg-yellow-50 border border-yellow-100 rounded-lg flex justify-between items-center">
+                        <span className="text-yellow-800 font-medium">Flight Cost (Per Person)</span>
+                        <span className="text-gray-900 font-bold">{formatCurrency(quotation.flightCostPerPerson)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Itinerary */}
               <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">

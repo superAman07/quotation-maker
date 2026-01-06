@@ -193,8 +193,27 @@ const styles = StyleSheet.create({
         width: '100%',
         height: 150,
         objectFit: 'contain',
-        marginVertical: 8,
+        marginVertical: 4,
         borderRadius: 4,
+    },
+    flightLegHeader: {
+        fontSize: 10,
+        fontWeight: 'bold',
+        color: colors.textDark,
+        marginTop: 8,
+        marginBottom: 2,
+    },
+    flightTotalCostBox: {
+        backgroundColor: colors.highlightYellow, // MATCHED REFERENCE YELLOW
+        padding: 6,
+        marginTop: 10,
+        alignSelf: 'flex-start',
+        borderRadius: 2,
+    },
+    flightTotalCostText: {
+        fontSize: 10,
+        fontWeight: 'bold',
+        color: colors.textDark,
     },
     flightCostHighlight: {
         backgroundColor: colors.highlightYellow,
@@ -356,25 +375,56 @@ export function QuotationPDF({ payload }: any) {
                             </View>
                         </View>
                     </View>
-
-                    {/* Flight Details */}
-                    {payload.flightCost > 0 && (
+                    
+                    {((payload.flights && payload.flights.length > 0) || payload.flightCost > 0) && (
                         <View style={styles.section} wrap={false}>
-                            <Text style={styles.flightHeader}>FLIGHT DETAILS</Text>
-                            <View style={styles.flightCard}>
-                                <Text style={styles.flightRoute}>Flight Included in Package</Text>
-                                {payload.flightImageUrl ? (
+                            <Text style={styles.flightHeader}>✈ FLIGHT DETAILS</Text>
+
+                            {/* ✅ NEW: Render Multiple Flight Legs */}
+                            {payload.flights && payload.flights.length > 0 ? (
+                                payload.flights.map((leg: any, i: number) => {
+                                    // Handle image URL context
+                                    const legImgUrl = leg.imageUrl 
+                                        ? (leg.imageUrl.startsWith('http') 
+                                            ? leg.imageUrl 
+                                            : `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}${leg.imageUrl}`)
+                                        : null;
+
+                                    return (
+                                        <View key={i} wrap={false} style={{ marginBottom: 5 }}>
+                                            {/* Header: ⭐ TYPE - Route (Date) */}
+                                            <Text style={styles.flightLegHeader}>
+                                                <Text style={{ color: '#F59E0B' }}>★ </Text>
+                                                {leg.type} – {leg.route} ({formatDate(leg.date)})
+                                            </Text>
+                                            
+                                            {/* Leg Specific Image */}
+                                            {legImgUrl && (
+                                                <Image src={legImgUrl} style={styles.flightImage} />
+                                            )}
+                                        </View>
+                                    );
+                                })
+                            ) : payload.flightImageUrl ? (
+                                // Fallback for old data structure
+                                <View style={styles.flightCard}>
+                                    <Text style={styles.flightRoute}>Flight Included in Package</Text>
                                     <Image 
-                                        src={flightImageUrl}
+                                        src={payload.flightImageUrl.startsWith('http') ? payload.flightImageUrl : `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}${payload.flightImageUrl}`}
                                         style={styles.flightImage}
                                     />
-                                ) : (
-                                    <Text style={styles.flightInfo}>Flight details as per discussion.</Text>
-                                )}
-                                <View style={styles.flightCostHighlight}>
-                                    <Text>Flight Cost: {formatCurrency(payload.flightCost)} Per Person</Text>
                                 </View>
-                            </View>
+                            ) : null}
+
+                            {/* ✅ NEW: Total Cost Bar (Like Reference Image) */}
+                            {payload.flightCost > 0 && (
+                                <View style={styles.flightTotalCostBox}>
+                                    <Text style={styles.flightTotalCostText}>
+                                        Flight Cost : {formatCurrency(payload.flightCost)} Per Person
+                                        {payload.groupSize > 1 ? `   ${formatCurrency(payload.flightCost * payload.groupSize)} For ${payload.groupSize} Persons` : ''}
+                                    </Text>
+                                </View>
+                            )}
                         </View>
                     )}
 
