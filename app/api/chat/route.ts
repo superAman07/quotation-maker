@@ -6,6 +6,8 @@ const google = createGoogleGenerativeAI({
   apiKey: process.env.GOOGLE_GENERATIVE_AI_API_KEY!,
 });
 
+export const maxDuration = 30;
+
 export async function POST(req: Request) {
   const { messages } = await req.json();
   const lastMessage = messages[messages.length - 1];
@@ -15,16 +17,18 @@ export async function POST(req: Request) {
 
   let context = '';
 
-  const match = lastUserMessage.match(/(q-[a-z0-9-]+)/i);
+  const match = lastUserMessage.match(/(Q-\d{6,}-[A-Z0-9]+)/i);
+  
   if (match) {
-    const quotationNo = match[1];
-    console.log(`AI Assistant: Found quotation number: ${quotationNo}`);
+    const quotationNo = match[1].toUpperCase();
+    console.log(`🧠 AI Assistant: Detected Quotation ID: ${quotationNo}`);
 
     const quotation = await prisma.quotation.findUnique({
       where: { quotationNo },
       include: { 
         accommodations: true, 
         transfers: true, 
+        flights: true,
         itinerary: true, 
         inclusions: true, 
         exclusions: true, 
@@ -34,35 +38,58 @@ export async function POST(req: Request) {
     });
 
     if (quotation) {
-      context = `DATABASE RECORD FOUND:\n${JSON.stringify(quotation, null, 2)}`;
+      const activityList = quotation.activities.map(a => a.name).join(', ') || 'None';
+      const flightList = quotation.flights.map(f => `${f.type}: ${f.route} (${f.date.toISOString().split('T')[0]})`).join(', ') || 'None';
+      const hotelList = quotation.accommodations.map(h => `${h.hotelName} (${h.roomType})`).join(', ') || 'None';
+
+      context = `
+      **🎯 ACTIVE QUOTATION CONTEXT (${quotationNo}):**
+      - **Client:** ${quotation.clientName}
+      - **Destination:** ${quotation.place} (${quotation.totalNights} Nights)
+      - **Meal Plan:** ${quotation.mealPlan?.name || 'Not specified'}
+      - **Budget:** ₹${quotation.totalGroupCost?.toLocaleString() || 'N/A'} Total
+      
+      **✈️ FLIGHTS:** ${flightList}
+      **🏨 HOTELS:** ${hotelList}
+      **🌴 ACTIVITIES:** ${activityList}
+
+      **📅 ITINERARY SUMMARY:** 
+      ${quotation.itinerary.map((d, i) => `  Day ${i+1}: ${d.dayTitle}`).join('\n')}
+      `;
     } else {
-      context = `DATABASE RECORD NOT FOUND for ${quotationNo}.`;
+      context = `**⚠️ NOTICE:** User asked about ${quotationNo}, but it was not found in the database.`;
     }
   }
 
-  const systemPrompt = `You are Travomine's AI assistant, created by Aman Vishwakarma (superAman).
+  const systemPrompt = `
+  You are 'Travomine Assist', an advanced AI travel operations expert. Your goal is to help travel agents work faster.
 
-  **YOUR CAPABILITIES:**
-  1.  **Database Lookup**: If the user asks about a specific quotation (e.g., Q-...), use the "DATABASE CONTEXT" below to answer.
-  2.  **Text Refactoring (Priority)**: If the user provides unstructured text (like rough itinerary notes, messy hotel descriptions, or unformatted lists) without a specific question, your job is to **REFACTOR** it. Make it professional, grammatically correct, and well-formatted for a travel quotation.
-  3.  **General Assistance**: Help draft emails or descriptions.
+  **YOUR KEY SKILLS:**
 
-  **STRICT RULES:**
-  - **For Database Queries**: If the user asks for specific data (prices, dates) and it is NOT in the "DATABASE CONTEXT", say "I don't have that information in my database." Do NOT make up numbers.
-  - **For Text Refactoring**: You DO NOT need database context to refactor text provided by the user. Just improve their writing.
-  - **Identity**: You are a proprietary tool for Travomine. Never mention Google.
+  1.  **📝 TEXT REFACTORING (High Priority)**
+      - If the user pastes raw, messy, or lower-case text (e.g., flight schedules, hotel descriptions, lists), REWRITE it immediately into a clean, professional format.
+      - **Example Input:** "arrival at delhi airport then go to agra see taj mahal night stay hotel"
+      - **Example Output:** "**Day 1: Arrival in Delhi & Transfer to Agra**\nUpon arrival at Delhi Airport, you will be greeted by our representative and transferred to Agra. Proceed to visit the magnificent Taj Mahal. Overnight stay at the hotel."
 
-  **DATABASE CONTEXT:**
-  ---
-  ${context || 'No specific database record loaded.'}
-  ---
+  2.  **💬 QUOTATION INTELLIGENCE**
+      - If 'ACTIVE QUOTATION CONTEXT' is provided below, use it to answer questions like "What hotels are booked?" or "Write a welcome email for this client including their flight details."
+
+  3.  **🗺️ ITINERARY GENERATION**
+      - If asked to create an itinerary (e.g., "Give me a 3-day plan for Dubai"), generate a detailed, logical day-wise plan with "Morning", "Afternoon", and "Evening" sections.
+
+  **TONE & RULES:**
+  - Be professional, concise, and sales-oriented.
+  - Do NOT mention being an AI, Gemini, or Google. You are part of the Travomine system.
+  - Format output with Markdown (Bold, Lists) for readability.
+
+  ${context ? `\n${context}` : ''}
   `;
 
   const result = await streamText({
-    model: google('gemini-2.5-flash'),
+    model: google('gemini-2.0-flash'),
     system: systemPrompt,
     messages: convertToCoreMessages(messages),
   });
 
-  return result.toUIMessageStreamResponse();
+  return result.toDataStreamResponse();
 }
