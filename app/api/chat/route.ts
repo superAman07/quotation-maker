@@ -91,5 +91,5 @@ export async function POST(req: Request) {
     messages: convertToCoreMessages(messages),
   });
 
-  return result.toDataStreamResponse();
+  return result.toTextStreamResponse();
 }
