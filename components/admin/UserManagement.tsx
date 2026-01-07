@@ -184,7 +184,7 @@ export const UserManagement = () => {
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700">
+            <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-linear-to-r from-blue-700 to-purple-700">
               Manage Users
             </h1>
             <p className="text-muted-foreground font-semibold mt-2">
@@ -196,7 +196,7 @@ export const UserManagement = () => {
               setSelectedUser(null);
               setIsUserModalOpen(true);
             }}
-            className="flex items-center cursor-pointer gap-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-lg px-5 py-2.5"
+            className="flex items-center cursor-pointer gap-2 bg-linear-to-r from-blue-600 to-purple-600 text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 rounded-lg px-5 py-2.5"
           >
             <Plus className="h-4 w-4" />
             New User
@@ -218,11 +218,11 @@ export const UserManagement = () => {
                   placeholder="Search by name or email..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 py-2 rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-purple-50 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                  className="pl-10 py-2 rounded-lg border border-blue-200 bg-linear-to-r from-blue-50 to-purple-50 text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
                 />
               </div> 
               <Select value={roleFilter} onValueChange={setRoleFilter}>
-                <SelectTrigger className="w-[180px] rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold shadow hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
+                <SelectTrigger className="w-45 rounded-lg bg-linear-to-r from-blue-600 to-purple-600 text-white font-semibold shadow hover:shadow-md focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer">
                   <SelectValue placeholder="Filter by role" className='cursor-pointer' />
                 </SelectTrigger>
                 <SelectContent className="bg-white text-gray-700">
