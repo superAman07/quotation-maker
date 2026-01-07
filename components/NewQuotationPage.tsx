@@ -171,6 +171,10 @@ export default function NewQuotationPage() {
   const [allCountries, setAllCountries] = useState<CountryBlueprint[]>([]);
   const [allAirports, setAllAirports] = useState<AirportBlueprint[]>([]);
 
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [employees, setEmployees] = useState<{ id: number; name: string }[]>([]);
+  const [assignedToId, setAssignedToId] = useState<string>('');
+
   // --- UI & Loading State ---
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -181,6 +185,17 @@ export default function NewQuotationPage() {
   useEffect(() => {
     async function fetchAllBlueprints() {
       try {
+        try {
+            const userRes = await axios.get('/api/user/me');
+            if (userRes.data?.user?.role === 'Admin') {
+                setIsAdmin(true);
+                const usersRes = await axios.get('/api/admin/users'); 
+                const activeStaff = usersRes.data.filter((u: any) => u.status === 'ACTIVE');
+                setEmployees(activeStaff);
+            }
+        } catch (err) {
+            console.error("Failed to fetch user role", err);
+        }
         const [
           countriesRes,
           airportsRes,
@@ -500,6 +515,8 @@ export default function NewQuotationPage() {
       totalPerHead: totalPerHead,
       totalGroupCost: totalGroupCost,
 
+      assignedToId: assignedToId ? parseInt(assignedToId) : undefined,
+
       // Meta
       notes: notes,
       status: status,
@@ -636,6 +653,27 @@ export default function NewQuotationPage() {
                 </div>
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6">
+                {isAdmin && (
+                  <div className="md:col-span-2 bg-indigo-50 border border-indigo-200 p-4 rounded-lg mb-2">
+                    <Label htmlFor="assignedTo" className="text-indigo-800 font-semibold text-sm flex items-center gap-2 mb-2">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      Assign this Lead to Employee:
+                    </Label>
+                    <select
+                      id="assignedTo"
+                      className="w-full h-11 border-2 border-indigo-200 rounded-lg text-gray-700 focus:ring-2 focus:ring-indigo-200 focus:border-indigo-500 cursor-pointer"
+                      value={assignedToId}
+                      onChange={(e) => setAssignedToId(e.target.value)}
+                    >
+                      <option value="">-- Assign to Me (Default) --</option>
+                      {employees.map(emp => (
+                        <option key={emp.id} value={emp.id}>{emp.name} (ID: {emp.id})</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div className="space-y-2 group">
                   <Label htmlFor="name" className='text-gray-700 font-semibold text-sm flex items-center gap-2'>
                     <svg className="w-4 h-4 text-indigo-500" fill="currentColor" viewBox="0 0 20 20">
