@@ -13,7 +13,8 @@ model User {
   name              String?
   password          String
   role              Role                    @default(Employee)
-  quotations        Quotation[]
+  quotations        Quotation[]             @relation("CreatedBy")
+  assignedQuotations Quotation[]            @relation("AssignedTo")
   createdAt         DateTime                @default(now())
   updatedAt         DateTime                @updatedAt
   status            UserStatus              @default(ACTIVE)
@@ -46,8 +47,12 @@ model Quotation {
   packageId Int?
   package   Package? @relation(fields: [packageId], references: [id])
 
-  createdBy   User            @relation(fields: [createdById], references: [id])
+  createdBy   User            @relation("CreatedBy", fields: [createdById], references: [id])
   createdById Int
+
+  assignedTo   User?          @relation("AssignedTo", fields: [assignedToId], references: [id])
+  assignedToId Int?
+
   status      QuotationStatus @default(DRAFT)
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
