@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  transpilePackages: ['@react-pdf/renderer'],
   experimental: {
     serverActions: true,
     serverComponentsExternalPackages: ['@react-pdf/renderer'], 
