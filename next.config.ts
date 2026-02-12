@@ -2,9 +2,14 @@
 const nextConfig = {
   experimental: {
     serverActions: true,
+    serverComponentsExternalPackages: ['@react-pdf/renderer'], 
   },
   env: {
     JWT_SECRET: process.env.JWT_SECRET,
+  },
+  webpack: (config: any) => {
+    config.resolve.alias.canvas = false;
+    return config;
   },
 };
 
