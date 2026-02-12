@@ -6,7 +6,7 @@ const PUBLIC_PATHS = ['/user/auth/login',
   '/user/auth/signup',
   '/api/auth/login',
   '/api/auth/register',
-  '/admin/auth/login',     
+  '/admin/auth/login',
   '/admin/auth/signup'];
 
 export async function middleware(req: NextRequest) {
@@ -21,7 +21,7 @@ export async function middleware(req: NextRequest) {
   }
 
   const token = parseToken(req);
-  
+
   if (!token || !verifyToken(token)) {
     const url = req.nextUrl.clone();
     url.pathname = '/';

@@ -113,3 +113,81 @@ export interface ExclusionTemplate {
   name: string
   description?: string
 }
+
+export enum AppStatus {
+  IDLE = 'IDLE',
+  READING = 'Reading your request...',
+  THINKING = 'Thinking through options...',
+  QUESTIONING = 'Quick question...',
+  DRAFTING = 'Drafting quotation...'
+}
+
+export interface Traveler {
+  type: 'adult' | 'child' | 'infant';
+  age?: number;
+}
+
+export interface Hotel {
+  name: string;
+  nights: number;
+  city: string;
+}
+
+export interface ItineraryDay {
+  day: number;
+  title: string;
+  bullets: string[];
+  overnight: string;
+}
+
+export interface Pricing {
+  accommodation_total: number;
+  vehicle_total: number;
+  permits_total: number;
+  meals_total: number;
+  taxes: number;
+  service_fee: number;
+  grand_total: number;
+  currency: string;
+  package_land_only?: number;
+  flight_cost?: number;
+}
+
+export interface Contact {
+  company: string;
+  phone: string;
+  email: string;
+  website: string;
+}
+
+export interface TravelQuotation {
+  quote_id: string;
+  trip_name: string;
+  pax_total: number;
+  travelers: Traveler[];
+  dates: {
+    start: string;
+    end: string;
+    nights: number;
+  };
+  origin_city: string;
+  destinations: string[];
+  accommodation_level: '3' | '4' | '5';
+  hotels: Hotel[];
+  transport: {
+    type: string;
+    vehicle_detail: string;
+    days: number;
+  };
+  itinerary: ItineraryDay[];
+  inclusions: string[];
+  exclusions: string[];
+  pricing: Pricing;
+  contact: Contact;
+  pdf_template_html: string;
+}
+
+export interface ChatMessage {
+  role: 'user' | 'assistant';
+  content: string;
+}
