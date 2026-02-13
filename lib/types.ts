@@ -160,31 +160,71 @@ export interface Contact {
   website: string;
 }
 
+// export interface TravelQuotation {
+//   quote_id: string;
+//   trip_name: string;
+//   pax_total: number;
+//   travelers: Traveler[];
+//   dates: {
+//     start: string;
+//     end: string;
+//     nights: number;
+//   };
+//   origin_city: string;
+//   destinations: string[];
+//   accommodation_level: '3' | '4' | '5';
+//   hotels: Hotel[];
+//   transport: {
+//     type: string;
+//     vehicle_detail: string;
+//     days: number;
+//   };
+//   itinerary: ItineraryDay[];
+//   inclusions: string[];
+//   exclusions: string[];
+//   pricing: Pricing;
+//   contact: Contact;
+//   pdf_template_html: string;
+// }
 export interface TravelQuotation {
-  quote_id: string;
-  trip_name: string;
-  pax_total: number;
-  travelers: Traveler[];
-  dates: {
-    start: string;
-    end: string;
+  quotationNo: string;
+  place: string;
+  travelDate: string;
+  groupSize: number;
+  totalNights: number;
+  mealPlan: string;
+  flightCost: number;
+  landCostPerHead: number;
+  totalGroupCost: number;
+  accommodation: {
+    hotelName: string;
+    roomType: string;
     nights: number;
-  };
-  origin_city: string;
-  destinations: string[];
-  accommodation_level: '3' | '4' | '5';
-  hotels: Hotel[];
-  transport: {
+  }[];
+  transfers: {
     type: string;
-    vehicle_detail: string;
-    days: number;
-  };
-  itinerary: ItineraryDay[];
+    vehicleName?: string;
+  }[];
+  itinerary: {
+    dayTitle: string;
+    description: string;
+  }[];
+  activities: {
+    name: string;
+  }[];
   inclusions: string[];
   exclusions: string[];
-  pricing: Pricing;
-  contact: Contact;
-  pdf_template_html: string;
+  
+  // Keep these for backward compatibility if needed, but they will be undefined from new API
+  trip_name?: string;
+  quote_id?: string;
+  pax_total?: number;
+  dates?: any;
+  hotels?: any[];
+  transport?: any;
+  pricing?: any;
+  contact?: any;
+  pdf_template_html?: string;
 }
 
 export interface ChatMessage {
