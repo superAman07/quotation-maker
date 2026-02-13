@@ -3,7 +3,6 @@ const nextConfig = {
   transpilePackages: ['@react-pdf/renderer'],
   experimental: {
     serverActions: true,
-    serverComponentsExternalPackages: ['@react-pdf/renderer'], 
   },
   env: {
     JWT_SECRET: process.env.JWT_SECRET,
